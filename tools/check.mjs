@@ -22,6 +22,20 @@ for(const p of ['Setup-OneClickUpdates.bat','native-host/install.ps1','native-ho
 for(const command of ['pulseStatus','pulseStart','pulseStop','pulseRestart','PulseTaskName'])if(!read('native-host/DeskNativeHost.cs').includes(command))throw Error('Missing fixed Pulse control: '+command);
 if(!read('native-host/DeskNativeHost.cs').includes('merge --ff-only'))throw Error('Native helper must use fast-forward-only updates');
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-v055.css')||!read(p).includes('desk-v055.js'))throw Error(p+' missing visual preview styles or cached-calendar teaser');
+
+for(const p of ['index.html','sidepanel.html']){
+ const html=read(p);
+ for(const id of ['deskNextMeeting','deskNextMeetingTime','deskV05GitHub','deskV05Pulse','deskV05Alerts','deskV052Status','deskV05Badge','deskUpdateBar','deskCheckButton','deskInstallButton','grid','searchForm']){
+  if((html.match(new RegExp('id="'+id+'"','g'))||[]).length!==1)throw Error(p+': expected exactly one '+id);
+ }
+ if(!html.includes('<details class="desk-tools-more">')||!html.includes('data-v03="research"')||!html.includes('data-v04="tasks"'))throw Error(p+': utility disclosure lost existing actions');
+ const glance=html.indexOf('<section class="desk-ops-strip"'),updater=html.indexOf('<section id="deskUpdateBar"'),modules=html.indexOf('id="grid"');
+ if(!(glance>0&&updater>glance&&modules>updater))throw Error(p+': dashboard hierarchy order regression');
+}
+const designCss=read('desk-v055.css');
+for(const token of ['[data-theme="slate"]','[data-theme="light"]','body.has-wallpaper','body.side-mode','prefers-reduced-motion','.desk-ops-tile--calendar','.desk-tools-more'])
+ if(!designCss.includes(token))throw Error('Design preview missing responsive/theme support: '+token);
+
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-google-calendar.js'))throw Error(p+' missing read-only Google Calendar script');
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-v052.js')||!read(p).includes('deskV052Status'))throw Error(p+' missing Pulse background controls');
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-v04.js')||!read(p).includes('desk-v05.js')||!read(p).includes('desk-v045.css'))throw Error(p+' missing V0.4/V0.5 integration');
