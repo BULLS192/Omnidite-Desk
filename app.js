@@ -80,7 +80,7 @@ function sanitizeModule(x,ids){
    url:http(vGithubCache.url)
   }:null;
   const pulseSettings={
-   url:(()=>{try{const u=new URL(obj.pulseSettings?.url||'');return u.protocol==='https:'&&(u.hostname==='omnidite.com'||u.hostname.endsWith('.omnidite.com'))&&!u.username&&!u.password?chars(u.href,1000):'';}catch{return '';}})(),
+   url:(()=>{try{const u=new URL(obj.pulseSettings?.url||'');return ((!u.username&&!u.password&&u.protocol==='https:'&&(u.hostname==='omnidite.com'||u.hostname.endsWith('.omnidite.com')))||(!u.username&&!u.password&&u.protocol==='http:'&&['localhost','127.0.0.1'].includes(u.hostname)&&u.port==='4173'&&u.pathname==='/api/providers'&&!u.search&&!u.hash))?chars(u.href,1000):'';}catch{return '';}})(),
    auto:!!obj.pulseSettings?.auto
   };
   const vPulse=obj.pulseCache&&typeof obj.pulseCache==='object'?obj.pulseCache:null;
