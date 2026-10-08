@@ -3,7 +3,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 jobs:
   static-checks:
     runs-on: ubuntu-latest
@@ -13,6 +12,6 @@ jobs:
         with:
           node-version: '22'
       - name: Syntax validation
-        run: node --check app.js && node --check desk-v03.js && node --check background.js
+        run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check background.js
       - name: Manifest and assets checks
-        run: node tools/check.mjs && node tools/v03-smoke.mjs
+        run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs

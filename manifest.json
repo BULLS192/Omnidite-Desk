@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Omnidite Desk — Personal Dashboard",
   "short_name": "Omnidite Desk",
-  "version": "0.3.0",
-  "description": "Personal Chrome command center with project hub, quick capture, layout studio, live weather, and connected wallpaper folders.",
+  "version": "0.5.0",
+  "description": "Local-first Desk with customizable workspaces, browser sessions, project tasks, calendar import, content planning and read-only operations monitoring.",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
@@ -32,5 +32,12 @@
   "host_permissions": [
     "https://geocoding-api.open-meteo.com/*",
     "https://api.open-meteo.com/*"
+  ],
+  "optional_permissions": [
+    "tabs"
+  ],
+  "optional_host_permissions": [
+    "https://api.github.com/*",
+    "https://*.omnidite.com/*"
   ]
 }

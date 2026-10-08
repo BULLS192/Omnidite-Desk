@@ -23,22 +23,36 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [ ] Pass Windows Chrome visual and interaction acceptance tests in both New Tab and Side Panel.
 - [ ] Test state persistence, JSON backup/import, old v0.2.3 upgrade, Chrome Sync and native updater before release.
 
-## V0.4 — Productivity (next, separate branch)
-- [ ] Tab session saving/restoration and named work sessions. If tabs permission is necessary, request it only with a clear Chrome permissions explanation.
-- [ ] Better task records: project, due date, priorities and completion history with backward-compatible migration.
-- [ ] Unified on-device search across local workspaces, tasks, captures and links, with duplicate detection and keyboard navigation.
-- [ ] Research capture improvements (context menu or capture from active tab with permission review, collections and export).
-- [ ] Google Calendar **read-only** upcoming-events widget with explicit OAuth/account connection. Do not re-use ChatGPT connector credentials in the extension.
-- [ ] Optional content calendar for Omnidite articles and social drafts using local data initially.
+## V0.4 — Productivity (implementation on V0.5 branch; Chrome acceptance pending)
+- [x] Named tab-session saving/restoration; explicit optional Chrome tabs permission and open-tab confirmation.
+- [x] Project-linked planner tasks with priority, due date and completion, separate from existing widget tasks (preserved).
+- [x] Local search across workspaces, task planner, projects, content, captures, sessions and links.
+- [ ] Duplicate-detection polish across independent widget/content stores.
+- [x] Side-panel capture of current website after opt-in tabs permission.
+- [ ] Context menu, collections and dedicated research export.
+- [x] Local read-only .ics calendar snapshot import with supported timestamps and import replacement.
+- [ ] Optional Google Calendar OAuth read-only live connection (requires a dedicated registered OAuth client; NOT present in this release).
+- [x] Local content calendar for Omnidite articles and social planning.
 - **Acceptance:** work offline except explicitly connected widgets, no unintended browser/tab reads, sane sync size limits, no loss of data.
 
-## V0.5 — Connected Operations (future)
-- [ ] Read-only GitHub activity: open PRs, issues, workflow failures and relevant commits for selected repositories.
-- [ ] Connect Desk to a minimal, separately authenticated Omnidite Pulse status feed to display Vercel/Render/Supabase monitoring instead of storing admin tokens in the extension.
-- [ ] Per-project quick status and notifications with freshness/timestamp indication.
-- [ ] Alerts and usage thresholds with configurable quiet behavior.
-- [ ] Privacy review, credential rotation and offline/expired-session fallback.
+## V0.5 — Connected Operations (implementation on V0.5 branch; external feed acceptance pending)
+- [x] Public GitHub repository read-only activity with opt-in API permissions, cached PR/issues/workflows and manual refresh.
+- [ ] Individual issue/commit details and authenticated private repository support (not included).
+- [x] Opt-in HTTPS omnidite.com Pulse JSON adapter + JSON snapshot import; no administrator tokens in extension.
+- [ ] Secure private/authenticated feed serving agreed schema from Omnidite Pulse (not provisioned).
+- [x] GitHub and Pulse statuses with last-checked times and local alert history (not push notifications).
+- [x] Warnings and 80% usage-threshold local alerts; manual refresh, optional at-most-15min Pulse polling when open.
+- [ ] Quiet hours and external delivery mechanisms (future).
+- [x] Explicit host permissions, public GitHub API without token, cookie-free Pulse reads, graceful cached fallback.
+- [ ] Formal browser privacy review and authenticated service token lifecycle, if ever introduced.
 - **Acceptance:** no privileged API token embedded in extension source, clear "last updated" stamps, rate-limited polling.
+
+## Current release state
+
+- V0.3 code: draft PR #3; not merged or installed via the updater.
+- V0.4/V0.5 code: stacked feature branch feature/desk-v0.5-productivity-operations; not merged or installed.
+- Automated source/behavior checks and real Windows Chrome permission, data migration, tab and UI tests are required for release.
+- The no-credential Pulse adapter and .ics Calendar import do not imply live authenticated backend/OAuth integrations.
 
 ## V1.0 — F.R.E.Y.A. intelligence (future)
 - [ ] Connect to a user-controlled F.R.E.Y.A. Core / Third Brain service through a documented, secure interface.
