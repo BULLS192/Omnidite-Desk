@@ -1,4 +1,4 @@
-# Omnidite Desk v0.2.1 — personal Chrome command center
+# Omnidite Desk v0.2.2 — personal Chrome command center
 
 **No web hosting, Vercel builds, backend, third-party script loaders, API keys, or Chrome Web Store publication required.** Uses Manifest V3 and Chrome's built-in New Tab override / Side Panel.
 
@@ -7,12 +7,17 @@
 - Multi-page workspaces: Overview, Projects, Personal; add, rename, delete, and move widgets between pages.
 - Drag from the **⠿** header handle to reorder. Drag the **bottom-right diagonal handle** to resize across a 12-column responsive grid (snaps to supported column widths) and change card height.
 - Midnight, Slate, and Light themes, customizable accent, search provider and dashboard name.
-- Ten local-first widget types: link launcher, tasks, notes, world clocks, focus timer, local agenda, countdown, habits, metric counter, inspirational quote.
+- Eleven widgets: link launcher, tasks, notes, world clocks, focus timer, local agenda, countdown, habits, metric counter, inspirational quote.
+- Searchable world clocks (up to 24), with analog and digital display, date and live UTC differences relative to your current computer timezone (automatically accounts for daylight-saving transitions).
+- Quick Launch and project shortcuts use Chrome's native website favicons and fall back to initials.
+- Focus sprint presets plus any custom duration from 1 to 240 minutes, with pause and reset to your chosen duration.
+- Live weather by city (up to 15): current conditions, next 24 hourly slots, and seven-day forecast, with 15-minute refresh, using Open-Meteo and GeoNames city search. Weather requires an internet connection and may be subject to provider fair-use/license terms.
+- Personal wallpapers: upload single/multiple images, select a folder (imports a local snapshot), choose one image or cycle every 5, 15, 30 or 60 minutes. Images are downsampled for performance and stored locally in IndexedDB, not in Chrome Sync, GitHub or JSON exports. To see new files added to a folder, re-import it.
 - Optional Chrome Sync for small dashboards, export/import JSON, v0.1 backup migration.
 - Chrome side panel and new-tab experience.
 - **Built-in GitHub updater** on the New Tab dashboard. The optional one-time Windows native helper lets the page check GitHub, pull approved fast-forward updates, and reload the unpacked extension without opening a terminal.
 
-**Important limitations:** Calendar/agenda events are local manual entries; not yet connected to Google Calendar. Metric counters are manually adjusted, not live Vercel/Supabase data. No OAuth/live APIs in this release. Resize snaps to grid, rather than allowing overlapping/free-pixel positioning. The version is designed for one Chrome profile per device.
+**Important limitations:** Calendar/agenda events are local manual entries; not yet connected to Google Calendar. Metric counters are manually adjusted, not live Vercel/Supabase data. Weather and city geocoding call only Open-Meteo endpoints; no account or API key is used. Local calendar remains manual. Resize snaps to grid, rather than allowing overlapping/free-pixel positioning. The version is designed for one Chrome profile per device.
 
 ## Install (Windows Chrome)
 
@@ -91,7 +96,7 @@ git pull --ff-only origin main
 
 ### Security/privacy
 
-Extension permissions are `storage`, `sidePanel` and (optionally used) `nativeMessaging`. `manifest.json` has no host permissions. No telemetry. Only valid `http(s)` URLs in the launcher. Widget strings are escaped before HTML rendering, and the extension does not execute remote scripts. Never commit exported backup files to GitHub; the repository is **public**.
+Extension permissions are `storage`, `sidePanel`, `nativeMessaging` and `favicon`. Host access is limited to Open-Meteo weather and geocoding endpoints. No general website browsing permission is requested. No telemetry. Only valid `http(s)` URLs in the launcher. Widget strings are escaped before HTML rendering, and the extension does not execute remote scripts. Never commit exported backup files to GitHub; the repository is **public**.
 
 ### Browser testing
 
