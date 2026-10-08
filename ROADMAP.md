@@ -33,7 +33,8 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Side-panel capture of current website after opt-in tabs permission.
 - [ ] Context menu, collections and dedicated research export.
 - [x] Local read-only .ics calendar snapshot import with supported timestamps and import replacement.
-- [ ] Optional Google Calendar OAuth read-only live connection (requires a dedicated registered OAuth client; NOT present in this release).
+- [x] Implement Chrome Identity read-only Google Calendar client and local-only cache on V0.5.4 feature branch.
+- [ ] Register real Google Cloud Chrome Extension OAuth client and finish on-device account authorization (release blocker).
 - [x] Local content calendar for Omnidite articles and social planning.
 - **Acceptance:** work offline except explicitly connected widgets, no unintended browser/tab reads, sane sync size limits, no loss of data.
 
@@ -51,11 +52,10 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 
 ## Current release state — October 8, 2026
 
-- V0.3 merged to `main` through PR #3; V0.4/V0.5 merged to `main` through PR #8.
-- Six Windows Chrome feature smoke checks were reported PASS by the user in a separate profile, and automated release CI passed.
-- Existing extension users can obtain V0.5.0 through the on-page GitHub updater; actual per-device updater completion is not reported until confirmed by the user.
-- Post-release checks outstanding: old-profile migration, native updater on the original Windows installation, optional Chrome Sync, connected folders, and Side Panel visual acceptance.
-- The no-credential Pulse adapter and .ics Calendar import do not imply live authenticated backend/OAuth integrations.
+- Stable `main`: V0.5.3, confirmed updating on the user's Chrome profile. Local Omnidite Pulse is connected and showing service usage data; real Startup-folder behavior is subject to next sign-in testing.
+- V0.5.4 is an **unreleased development PR** for read-only live Google Calendar. It uses Chrome Identity and requires one Google Cloud Chrome Extension OAuth client ID matching the existing stable Chrome extension ID.
+- The OAuth client ID is public, but **do not commit any client secret, access tokens, downloaded credentials JSON or private events**. Actual Google authorization has **not** yet been performed.
+- The original .ics snapshot import remains available; live fetched event details reside only in per-profile Chrome local storage, outside the existing Sync and backup state.
 
 ## V1.0 — F.R.E.Y.A. intelligence (future)
 - [ ] Connect to a user-controlled F.R.E.Y.A. Core / Third Brain service through a documented, secure interface.
