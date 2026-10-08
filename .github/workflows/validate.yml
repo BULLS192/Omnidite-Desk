@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '22'
       - name: Generate fake-data sample pages
-        run: node tools/generate-design-review.mjs && node tools/generate-functional-previews.mjs
+        run: node tools/generate-design-review.mjs && node tools/generate-functional-previews.mjs && node tools/generate-compact-preview.mjs
       - name: Capture desktop and Side Panel visual review
         shell: bash
         run: |
@@ -41,6 +41,10 @@ jobs:
           "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=2000 --window-size=1150,1200 --screenshot="$PWD/preview-google-calendar.png" http://127.0.0.1:8765/design-review-calendar.html
           test -s preview-widgets-five-across.png
           test -s preview-google-calendar.png
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=3000 --window-size=1600,1160 --screenshot="$PWD/preview-compact-packing.png" http://127.0.0.1:8765/design-review-compact.html
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=3000 --window-size=1600,1160 --screenshot="$PWD/preview-aligned-rows.png" http://127.0.0.1:8765/design-review-aligned.html
+          test -s preview-compact-packing.png
+          test -s preview-aligned-rows.png
           test -s preview-desktop.png
           test -s preview-sidepanel.png
       - name: Attach sample screenshots and offline HTML previews
@@ -50,6 +54,12 @@ jobs:
           path: |
             preview-desktop.png
             preview-sidepanel.png
+            preview-compact-packing.png
+            preview-aligned-rows.png
+            design-review-compact.html
+            design-review-aligned.html
+            desk-v056.css
+            desk-compact.js
             preview-widgets-five-across.png
             preview-google-calendar.png
             design-review-widgets.html
