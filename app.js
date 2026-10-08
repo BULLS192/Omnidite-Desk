@@ -644,6 +644,19 @@ async function initialize(){
   if(!stored&&old)await local.set(V2,state);
   if(syncEnabled){try{await pullSync(true,!stored&&!old);status('Chrome Sync on');}catch(e){status('Sync unavailable: '+e.message,true);}}
  }catch(e){status('Could not load saved data: '+e.message,true);}
+ // Seed the new weather module once for existing v0.2 workspaces; keep all user data.
+ try{
+  if(!(await local.get('odV022WeatherSeeded'))){
+   if(!state.pages.some(p=>p.modules.some(m=>m.type==='weather'))){
+    const home=state.pages.find(p=>p.id==='overview')||state.pages[0];
+    home.modules.push(mk('weather'));
+    state.updatedAt=Date.now();
+    await local.set(V2,state);
+    if(syncEnabled)scheduleSync();
+   }
+   await local.set('odV022WeatherSeeded',true);
+  }
+ }catch(e){console.warn('Weather module migration skipped:',e);}
  render();
  setupWallpapers();
  if(supportsExt&&chrome.storage?.onChanged){chrome.storage.onChanged.addListener((changes,area)=>{if(area==='sync'&&syncEnabled&&changes[SYNC_META]&&!applyingRemote){clearTimeout(saveTimer);pullSync().catch(e=>status('Sync read failed: '+e.message,true));} if(area==='local'&&changes[V2]&&!applyingRemote){const remote=changes[V2].newValue;if(remote&&remote.updatedAt>state.updatedAt){try{state=normalize(remote);render();}catch{}}}});}
