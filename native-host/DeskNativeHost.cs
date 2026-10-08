@@ -5,6 +5,8 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.Net;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
@@ -28,9 +30,10 @@ internal static class DeskNativeHost
             byte[] body = new byte[size];
             ReadExactly(input, body);
             var request = Encoding.UTF8.GetString(body);
-            var match = Regex.Match(request, @"^\s*\{\s*""action""\s*:\s*""(status|update)""\s*\}\s*$");
-            if (!match.Success) throw new InvalidOperationException("Only status and update actions are allowed.");
-            Send(Run(match.Groups[1].Value == "update"));
+            var match = Regex.Match(request, @"^\s*\{\s*""action""\s*:\s*""(status|update|pulseStatus|pulseStart|pulseStop|pulseRestart)""\s*\}\s*$");
+            if (!match.Success) throw new InvalidOperationException("Unrecognized native host action.");
+            string action = match.Groups[1].Value;
+            Send(action.StartsWith("pulse", StringComparison.Ordinal) ? RunPulse(action) : Run(action == "update"));
         }
         catch (Exception ex)
         {
@@ -91,6 +94,91 @@ internal static class DeskNativeHost
                 throw new InvalidOperationException("Git: " + Short(stderr.Result.Trim() == "" ? stdout.Result : stderr.Result));
             return stdout.Result.Trim();
         }
+    }
+
+    // The browser can only control one constant, current-user scheduled task.
+    // No path, task name, command, URL or arguments are accepted from the extension.
+    private const string PulseTaskName = "OmniditePulse";
+    private sealed class TaskResult
+    {
+        public bool Success;
+        public string Output;
+    }
+    private static TaskResult ScheduledTask(string verb, bool tolerateFailure = false)
+    {
+        string args = verb + " /TN \"" + PulseTaskName + "\"";
+        if (verb == "/Query") args += " /FO LIST";
+        var psi = new ProcessStartInfo("schtasks.exe", args)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        using (var p = Process.Start(psi))
+        {
+            var stdout = p.StandardOutput.ReadToEndAsync();
+            var stderr = p.StandardError.ReadToEndAsync();
+            if (!p.WaitForExit(12000))
+            {
+                try { p.Kill(); } catch { }
+                throw new TimeoutException("Windows Task Scheduler did not respond.");
+            }
+            Task.WaitAll(stdout, stderr);
+            var output = (stderr.Result.Trim() == "" ? stdout.Result : stderr.Result);
+            if (p.ExitCode != 0 && !tolerateFailure)
+                throw new InvalidOperationException("Pulse task control failed: " + Short(output));
+            return new TaskResult { Success = p.ExitCode == 0, Output = output };
+        }
+    }
+
+    private static bool PulseResponding()
+    {
+        // Local health check, never follows an extension-supplied URL.
+        try
+        {
+            var req = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:4173/api/health");
+            req.Method = "GET";
+            req.Timeout = 1800;
+            req.ReadWriteTimeout = 1800;
+            req.Proxy = null;
+            req.AllowAutoRedirect = false;
+            using (var res = (HttpWebResponse)req.GetResponse())
+            using (var stream = new StreamReader(res.GetResponseStream()))
+            {
+                if (res.StatusCode != HttpStatusCode.OK) return false;
+                string body = stream.ReadToEnd();
+                if (body.Length > 10000) return false;
+                var parsed = Json.DeserializeObject(body) as Dictionary<string, object>;
+                return parsed != null && parsed.ContainsKey("ok") && parsed["ok"] is bool && (bool)parsed["ok"];
+            }
+        }
+        catch { return false; }
+    }
+
+    private static object RunPulse(string action)
+    {
+        bool installed = ScheduledTask("/Query", true).Success;
+        if (!installed)
+            return new { ok = action == "pulseStatus", status = "not_installed", installed = false,
+                         running = PulseResponding(), message = "Install the OmniditePulse Windows task using Pulse's windows/Install-Background.bat." };
+        if (action == "pulseStart")
+            ScheduledTask("/Run");
+        else if (action == "pulseStop")
+            ScheduledTask("/End", true);  // If already stopped, do not fail.
+        else if (action == "pulseRestart")
+        {
+            ScheduledTask("/End", true);
+            System.Threading.Thread.Sleep(1500);
+            ScheduledTask("/Run");
+        }
+        bool running = PulseResponding();
+        string message;
+        if (action == "pulseStart") message = running ? "Pulse is responding." : "Windows accepted the Pulse start request. Check status shortly.";
+        else if (action == "pulseRestart") message = "Pulse restart requested. Check status shortly.";
+        else if (action == "pulseStop") message = running ? "Scheduled task stopped, but Pulse still responds. Close any manually started instance." : "Pulse task stopped.";
+        else message = running ? "Pulse is responding on your computer." : "Pulse is offline, or is still starting.";
+        return new { ok = true, status = running ? "online" : "offline", installed = true, running = running, message = message };
     }
 
     private static object Run(bool update)

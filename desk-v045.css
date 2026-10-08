@@ -45,3 +45,11 @@ body.side-mode .desk-ops-grid{grid-template-columns:1fr}
 body.side-mode .desk-ops-strip{grid-template-columns:1fr;gap:7px}
 :root[data-theme="light"] .desk-ops-tile{background:#e6f0fc;border-color:#c7d7e8;color:#244c78}
 :root[data-theme="light"] .desk-ops-tile>span,:root[data-theme="light"] .desk-ops-tile small{color:#557297}
+
+/* V0.5.2: read-only service-connection state plus explicit task controls. */
+.desk-pulse-live{font:inherit;font-size:10px;align-self:center;background:transparent;color:#acbbd3;border:1px solid #304666;border-radius:7px;padding:7px 9px;white-space:nowrap;cursor:pointer}
+.desk-pulse-live:hover{border-color:var(--accent,#4a8df5)}
+.desk-pulse-live[data-level="ok"]{color:#86e1bd;border-color:#307c63}
+.desk-pulse-live[data-level="warning"]{color:#f4cd82;border-color:#775b32}
+.desk-pulse-live[data-level="unknown"]{color:#9eb1c7}
+:root[data-theme="light"] .desk-pulse-live{color:#244c78}

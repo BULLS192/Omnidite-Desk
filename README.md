@@ -1,4 +1,22 @@
-# Omnidite Desk v0.5.1
+# Omnidite Desk v0.5.2
+
+## V0.5.2 — Pulse background startup and controls (Windows)
+
+**Goal:** no continuously open PowerShell window for live local Pulse. The Pulse repository now includes a one-time `windows/Install-Background.bat` setup. It creates a current-user Windows Task Scheduler entry named **OmniditePulse** and runs the Pulse Node server hidden when you sign into Windows, bound to `127.0.0.1:4173`. The local server does not run while the PC is sleeping or off.
+
+Desk V0.5.2 displays **Pulse: online/offline/setup required** in the dashboard and adds **Operations → Pulse background controls**. You can Check Status, Start, Stop, or Restart the fixed scheduled task after confirming the action. The Chrome native host accepts only six predefined actions (two Git updater actions and four Pulse task actions), never a command, task name, path, provider secret or URL from a page.
+
+**One-time installation after updating Desk:**
+
+1. Export a Desk JSON backup, then update through **Check updates → Update now** to V0.5.2.
+2. In `C:\omnidite-pulse`, stop any manually running `npm.cmd run dev` session, update that Git repository, and double-click **`windows\Install-Background.bat`**. The installer starts Pulse automatically unless another Pulse instance already holds port 4173.
+3. Run **`Setup-OneClickUpdates.bat`** once again in the *existing Desk Git clone*. This recompiles/registers the updated native helper (it is not automatically rebuilt by the on-page Git update).
+4. Open Desk's **Pulse background controls** to Check Status and try Restart. **Operations → Omnidite Pulse → Connect local Pulse** remains the way to grant Chrome permission for reading the local status feed. Enable the optional 15-minute feed auto-refresh if desired.
+5. Verify `http://127.0.0.1:4173/api/health` and the connection status. The background task uses the Pulse provider configuration already stored in `.env.local`.
+
+**Fallback:** `Start-Pulse.bat`, `Stop-Pulse.bat`, `Restart-Pulse.bat` and `Uninstall-Background.bat` in the Pulse repo's `windows` directory. Task Scheduler or organization policy may prevent installation. A manually launched Pulse process is not managed by these buttons.
+
+**Security:** No new Chrome permissions in V0.5.2. No privileged API keys are sent to Desk; the local endpoint stays loopback-only; only the user-confirmed native task actions can control the fixed Windows task. The native helper update must be re-registered on Windows. Windows startup and actual task lifetime must be accepted on a real PC before considering the behavior fully tested.
 
 ## V0.5.1 — Local Omnidite Pulse connection (development preview)
 
