@@ -109,7 +109,7 @@ function pulseSummary(){
 }
 function pulse(){
  view('Omnidite Pulse monitoring','A single read-only view for configured service status and usage thresholds.',
- '<div class="modal-actions">'+btn('⚡ Connect local Pulse','pulse-local')+btn('⚙ Configure feed','pulse-settings')+btn('↻ Refresh feed','pulse-refresh')+btn('Import status JSON','pulse-import')+'</div>'+
+ '<div class="modal-actions">'+btn('⚡ Connect local Pulse','pulse-local')+'<button type="button" class="smallbutton" data-v052="controls">⏻ Background controls</button>'+btn('⚙ Configure feed','pulse-settings')+btn('↻ Refresh feed','pulse-refresh')+btn('Import status JSON','pulse-import')+'</div>'
  '<p class="helper">Local connection requires Pulse running at http://localhost:4173 and a Chrome site-access permission once. You can also import JSON or configure an HTTPS Omnidite feed. Values without a current timestamp are not treated as live.</p>'+
  '<div class="desk-collection">'+pulseSummary()+'</div>');
 }
