@@ -61,7 +61,7 @@ assert.equal(state.captures.length,1);
 assert.equal(state.captures[0].url,'https://example.com/page');
 
 const file={size:300,text:async()=> 'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20261110T160000Z\nSUMMARY:Planning Call\nEND:VEVENT\nEND:VCALENDAR'};
-fire('change',{target:{id:'deskCalendarFile',files:[file],value:'calendar.ics'}});
+fire('change',{target:{id:'deskCalendarFile',dataset:{},files:[file],value:'calendar.ics'}});
 await new Promise(resolve=>setImmediate(resolve));
 assert.equal(state.calendarEvents.length,1);
 assert.equal(state.calendarEvents[0].title,'Planning Call');
