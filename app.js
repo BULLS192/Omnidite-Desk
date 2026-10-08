@@ -5,9 +5,10 @@ const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnab
 const SYNC_META='od_v2_meta', CHUNK='od_v2_chunk_';
 const TYPES=['links','tasks','notes','clock','weather','focus','agenda','countdown','habits','metric','quote'];
 const LIST_TYPES=new Set(['links','tasks','clock','weather','agenda','habits']);
-const layoutColumns=v=>Number.isInteger(v)&&v>=1&&v<=6?v:1;
+const defaultInnerColumns=type=>type==='links'||type==='weather'?2:1;
+const layoutColumns=(v,defaultValue=1)=>Number.isInteger(v)&&v>=1&&v<=6?v:defaultValue;
 const itemOrderButtons=(mid,i,total)=>'<span class="desk-item-order"><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="-1" aria-label="Move item earlier" '+(i===0?'disabled':'')+'>↑</button><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="1" aria-label="Move item later" '+(i===total-1?'disabled':'')+'>↓</button></span>';
-const widgetGrid=(m,cls)=>'class="'+cls+' desk-inner-grid" data-columns="'+layoutColumns(m.config.columns)+'"';
+const widgetGrid=(m,cls)=>'class="'+cls+' desk-inner-grid" data-columns="'+layoutColumns(m.config.columns,defaultInnerColumns(m.type))+'"';
 const META={
  links:['↗','Link launcher','Your project shortcuts'],tasks:['✓','Task list','Daily priorities'],notes:['▤','Notes','Keep ideas handy'],
  clock:['◷','World clocks','Analog and digital city clocks'],weather:['☁','Live weather','Current, hourly and 7-day forecasts'],focus:['◴','Focus timer','Custom-length deep work'],
@@ -42,7 +43,7 @@ function sanitizeModule(x,ids){
  const id=typeof x.id==='string'&&/^[\w-]{1,90}$/.test(x.id)&&!ids.has(x.id)?x.id:uid(); ids.add(id);
  const c=x.config&&typeof x.config==='object'&&!Array.isArray(x.config)?x.config:{};
  const out={id,type:x.type,title:cleanText(x.title||META[x.type][1],80),cols:Number.isInteger(x.cols)&&x.cols>=1&&x.cols<=12?x.cols:({small:4,wide:6,full:12}[x.width]||4),height:Number.isFinite(x.height)?Math.min(1000,Math.max(0,Math.round(x.height))):0,config:{}};
- if(LIST_TYPES.has(x.type))out.config.columns=layoutColumns(c.columns);
+ if(LIST_TYPES.has(x.type))out.config.columns=layoutColumns(c.columns,defaultInnerColumns(x.type));
  if(x.type==='links')out.config.links=(Array.isArray(c.links)?c.links:[]).slice(0,30).filter(l=>validUrl(String(l?.url||''))).map(l=>({label:cleanText(l.label||'Link',80),url:cleanText(l.url,1000)}));
  if(x.type==='tasks'||x.type==='habits')out.config[x.type==='tasks'?'tasks':'habits']=(Array.isArray(c.tasks||c.habits)?c.tasks||c.habits:[]).slice(0,80).filter(t=>t&&typeof t.text==='string').map(t=>({id:cleanText(t.id||uid(),90),text:cleanText(t.text,200),done:!!t.done,day:cleanText(t.day||'',12)}));
  if(x.type==='notes')out.config.text=cleanText(c.text,12000);
@@ -172,7 +173,7 @@ function editModule(id){const m=moduleFor(id);if(!m)return;
  show(`<form class="modal-pad" id="editForm" data-id="${esc(id)}">${header('Edit widget','Change its name, size, options, or workspace.')}<label class="label">Title</label><input class="modal-input" name="title" maxlength="80" required value="${esc(m.title)}">
  <label class="label">Workspace</label><select class="modal-input" name="page">${state.pages.map(p=>`<option value="${esc(p.id)}" ${p.modules.includes(m)?'selected':''}>${esc(p.title)}</option>`).join('')}</select>
  <label class="label">Width</label><select class="modal-input" name="cols">${Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${m.cols===n?'selected':''}>${n}/12 columns</option>`).join('')}</select>
- ${LIST_TYPES.has(m.type)?`<label class="label">Items per row</label><select class="modal-input" name="innerColumns">${Array.from({length:6},(_,i)=>i+1).map(n=>`<option value="${n}" ${layoutColumns(m.config.columns)===n?'selected':''}>${n} ${n===1?'item':'items'} per row</option>`).join('')}</select><p class="helper">Make the widget wider to fit more items; narrow panels stack them automatically.</p>`:''}
+ ${LIST_TYPES.has(m.type)?`<label class="label">Items per row</label><select class="modal-input" name="innerColumns">${Array.from({length:6},(_,i)=>i+1).map(n=>`<option value="${n}" ${layoutColumns(m.config.columns,defaultInnerColumns(m.type))===n?'selected':''}>${n} ${n===1?'item':'items'} per row</option>`).join('')}</select><p class="helper">Make the widget wider to fit more items; narrow panels stack them automatically.</p>`:''}
  ${m.type==='links'?`<label class="label">Links</label><div id="editLinks">${m.config.links.map(linkRow).join('')}</div><button type="button" class="smallbutton" data-modal="add-link">＋ Add link</button>`:''}
  ${m.type==='countdown'?`<label class="label">Deadline</label><input class="modal-input" type="date" name="target" value="${esc(m.config.target)}"><label class="label">Label</label><input class="modal-input" name="label" value="${esc(m.config.label)}">`:''}
  ${m.type==='metric'?`<label class="label">Unit</label><input class="modal-input" name="unit" value="${esc(m.config.unit)}"><label class="label">Increment step</label><input class="modal-input" type="number" step="any" name="step" value="${esc(m.config.step)}">`:''}
@@ -770,7 +771,7 @@ function content(m){const c=m.config;
  }
  return '';
 }
-function moduleHtml(m){return `<section class="module" style="--span:${m.cols};${m.height?`min-height:${m.height}px;`:''}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools">${LIST_TYPES.has(m.type)?`<button class="tiny desk-layout-cycle" type="button" data-action="cycle-columns" data-mid="${esc(m.id)}" title="Change items per row" aria-label="Change items per row">▦ ${layoutColumns(m.config.columns)}</button>`:''}<button class="tiny move-widget" data-action="move-up" data-mid="${esc(m.id)}" title="Move widget earlier" aria-label="Move widget earlier">↑</button><button class="tiny move-widget" data-action="move-down" data-mid="${esc(m.id)}" title="Move widget later" aria-label="Move widget later">↓</button><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget">⚙</button><span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
+function moduleHtml(m){return `<section class="module" style="--span:${m.cols};${m.height?`min-height:${m.height}px;`:''}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools">${LIST_TYPES.has(m.type)?`<button class="tiny desk-layout-cycle" type="button" data-action="cycle-columns" data-mid="${esc(m.id)}" title="Change items per row" aria-label="Change items per row">▦ ${layoutColumns(m.config.columns,defaultInnerColumns(m.type))}</button>`:''}<button class="tiny move-widget" data-action="move-up" data-mid="${esc(m.id)}" title="Move widget earlier" aria-label="Move widget earlier">↑</button><button class="tiny move-widget" data-action="move-down" data-mid="${esc(m.id)}" title="Move widget later" aria-label="Move widget later">↓</button><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget">⚙</button><span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
 
 // An explicit user click triggers Git via a *locally registered* native host.
 // The host accepts only "status" and "update" and hard-codes the official Git remote.
@@ -865,7 +866,7 @@ document.addEventListener('click',e=>{
  const b=e.target.closest('[data-action]');if(!b)return;const {action,mid,tid}=b.dataset,m=moduleFor(mid);
  if(action==='edit')return editModule(mid);if(!m)return;
   if(action==='move-up'||action==='move-down'){const arr=page().modules;const ix=arr.indexOf(m),to=ix+(action==='move-up'?-1:1);if(ix>=0&&to>=0&&to<arr.length){arr.splice(to,0,arr.splice(ix,1)[0]);change();}return;}
- if(action==='cycle-columns'&&LIST_TYPES.has(m.type)){m.config.columns=layoutColumns((m.config.columns||1)%6+1);change();return;}
+ if(action==='cycle-columns'&&LIST_TYPES.has(m.type)){m.config.columns=(layoutColumns(m.config.columns,defaultInnerColumns(m.type))%6)+1;change();return;}
   if(action==='item-move'){
     const collection=m.type==='clock'||m.type==='weather'?'cities':m.type==='agenda'?'events':m.type==='links'?'links':m.type;
     const arr=m.config?.[collection];if(!Array.isArray(arr))return;
