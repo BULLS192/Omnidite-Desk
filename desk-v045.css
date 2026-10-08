@@ -1,0 +1,32 @@
+/* V0.4/V0.5 extension utilities: reuses original Desk color language. */
+.desk-productivity .modal-actions,.desk-ops .modal-actions{gap:9px}
+.desk-productivity .desk-collection,.desk-ops .desk-collection{margin-top:18px}
+.desk-productivity input[type="checkbox"],.desk-ops input[type="checkbox"]{accent-color:var(--accent,#4a8df5)}
+.desk-productivity .sync-label{margin-top:16px;display:flex;gap:10px;align-items:center}
+.desk-productivity .v04-complete{text-decoration:line-through;color:#8693a8}
+.desk-productivity .desk-item .desk-item-main{flex:1;min-width:0}
+.desk-productivity .desk-item .smallbutton,.desk-ops .desk-item .smallbutton{white-space:nowrap}
+.desk-productivity .desk-result-list{max-height:min(52vh,480px)}
+.desk-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.desk-status-card{border:1px solid #314968;border-radius:11px;background:#16263c;padding:16px;margin-top:14px}
+.desk-status-card h3{margin:0 0 13px;font-size:15px}
+.desk-status-card p,.desk-status-card small{color:#99aec6;font-size:11px;line-height:1.6}
+.desk-status-card .smallbutton{margin-top:12px}
+.desk-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0}
+.desk-stats>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.desk-stats strong{font-size:20px;color:#cee3ff;font-variant-numeric:tabular-nums}
+.desk-stats small{font-size:10px;color:#9cb1c9}
+.desk-status{font-size:9px;font-weight:700;margin-left:5px;border-radius:4px;padding:3px 5px}
+.desk-status.ok{color:#82e1bb;background:#164936}
+.desk-status.warning{color:#f4cd7b;background:#5b401e}
+.desk-status.down{color:#ffa6b0;background:#54242f}
+.desk-status.unknown{color:#bdc7d4;background:#28384b}
+.desk-ops-badge{font-size:10px;color:#a5b8d2;align-self:center;margin-left:auto;padding:7px 9px;border:1px solid #2c4059;border-radius:7px}
+.desk-ops-badge[data-alert="yes"]{color:#f5cd82;border-color:#775b32}
+.desk-item-link{overflow-wrap:anywhere}
+.desk-ops .desk-item,.desk-productivity .desk-item{align-items:center}
+@media(max-width:650px){.desk-ops-grid{grid-template-columns:1fr}.desk-stats{gap:5px}.desk-status-card{padding:12px}.desk-ops-badge{margin-left:0}}
+body.side-mode .desk-ops-grid{grid-template-columns:1fr}
+:root[data-theme="light"] .desk-status-card{background:#e9f1fb;border-color:#c7d6e6}
+:root[data-theme="light"] .desk-status-card p,:root[data-theme="light"] .desk-status-card small{color:#506580}
+:root[data-theme="light"] .desk-stats strong{color:#1e4672}
