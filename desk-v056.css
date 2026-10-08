@@ -1,0 +1,73 @@
+/* Omnidite Desk v0.5.6: content-sized cards + compact packing.
+   CSS is opt-in through the grid mode; all original module internals remain functional. */
+.modules[data-layout="compact"]{
+  display:grid;
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  grid-auto-flow:row dense;
+  grid-auto-rows:8px;
+  gap:12px;
+  align-items:start;
+}
+.modules[data-layout="compact"]>.module{
+  min-height:0;
+  height:auto;
+  align-self:start;
+  margin:0;
+  overflow:hidden;
+}
+.modules[data-layout="compact"]>.module .module-body{
+  flex:0 0 auto;
+  min-height:0;
+  overflow:visible;
+  padding-bottom:25px;
+}
+.modules[data-layout="compact"]>.module[data-fixed-height]:not([data-fixed-height="0"]) .module-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  scrollbar-width:thin;
+}
+.modules[data-layout="rows"]{align-items:stretch;grid-auto-flow:row}
+.modules[data-layout="rows"]>.module{min-height:140px;max-height:1000px}
+.modules[data-layout="rows"]>.module[data-fixed-height]:not([data-fixed-height="0"]){
+  align-self:start;
+  min-height:0;
+}
+.modules[data-layout="rows"]>.module[data-fixed-height]:not([data-fixed-height="0"]) .module-body{
+  flex:1 1 auto;min-height:0;overflow:auto;scrollbar-width:thin;
+}
+.desk-layout-mode{
+  font-size:11px;
+  font-weight:700;
+  border:1px solid var(--desk-outline);
+  background:var(--desk-surface);
+  color:var(--desk-secondary);
+  padding:7px 11px;
+  border-radius:9px;
+  white-space:nowrap;
+}
+.desk-layout-mode[aria-pressed="true"]{
+  border-color:color-mix(in srgb,var(--accent) 38%,var(--desk-outline));
+  color:var(--desk-ink);
+  background:color-mix(in srgb,var(--accent) 10%,var(--desk-surface));
+}
+.desk-layout-mode:focus-visible,.desk-height-auto:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.desk-layout-mode:hover{border-color:var(--accent);color:var(--desk-ink)}
+.desk-height-auto{font-size:10px;white-space:nowrap;color:var(--desk-secondary)}
+.module .size-grip{
+  height:32px;
+  width:32px;
+  background:linear-gradient(135deg,transparent 57%,var(--desk-tertiary) 59%,transparent 62%,transparent 71%,var(--desk-tertiary) 74%,transparent 77%);
+  opacity:.65;
+}
+.module .size-grip:hover{opacity:1}
+.module:has(.size-grip):focus-within{border-color:var(--accent)}
+@media(max-width:760px){
+  .desk-layout-mode{padding:7px 8px;font-size:10px}
+  .sectionhead p{display:flex;align-items:center;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+}
+body.side-mode .modules[data-layout="compact"]>.module{grid-column:span 12}
+@media(prefers-reduced-motion:reduce){
+  .modules[data-layout="compact"]>.module{transition:none}
+}
