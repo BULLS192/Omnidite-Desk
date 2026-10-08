@@ -2,14 +2,15 @@
   "manifest_version": 3,
   "name": "Omnidite Desk — Personal Dashboard",
   "short_name": "Omnidite Desk",
-  "version": "0.5.3",
-  "description": "Desk with background Omnidite Pulse controls supporting restricted Windows startup fallback.",
+  "version": "0.5.4",
+  "description": "Omnidite Desk with read-only Google Calendar, local Pulse service monitoring and productivity workspaces.",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
     "sidePanel",
     "nativeMessaging",
-    "favicon"
+    "favicon",
+    "identity"
   ],
   "chrome_url_overrides": {
     "newtab": "index.html"
@@ -40,6 +41,13 @@
     "https://api.github.com/*",
     "https://*.omnidite.com/*",
     "http://localhost/*",
-    "http://127.0.0.1/*"
-  ]
+    "http://127.0.0.1/*",
+    "https://www.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/calendar.readonly"
+    ]
+  }
 }
