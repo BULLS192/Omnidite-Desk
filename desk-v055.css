@@ -310,3 +310,82 @@ body.side-mode .desk-ops-tile{min-height:97px;padding:11px}
 body.side-mode .desk-ops-tile strong{margin-top:1px;font-size:13px}
 body.side-mode .desk-update-bar{margin-top:11px;padding:8px 10px}
 body.side-mode .sectionhead{margin:22px 0 13px}
+
+
+/* V0.5.5 — Item-level layout engine, Apple-inspired clean surface system.
+   Explicit per-widget columns 1–6, with responsive limits for narrow panels. */
+.desk-inner-grid{display:grid;gap:12px;min-width:0;align-items:start}
+.desk-inner-grid[data-columns="1"]{grid-template-columns:minmax(0,1fr)}
+.desk-inner-grid[data-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.desk-inner-grid[data-columns="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.desk-inner-grid[data-columns="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+.desk-inner-grid[data-columns="5"]{grid-template-columns:repeat(5,minmax(0,1fr))}
+.desk-inner-grid[data-columns="6"]{grid-template-columns:repeat(6,minmax(0,1fr))}
+.desk-layout-cycle{font-variant-numeric:tabular-nums;white-space:nowrap;padding:5px 7px;font-size:11px}
+.desk-item-order{display:inline-flex;gap:2px;align-items:center;flex-shrink:0}
+.desk-order-button{border:1px solid var(--desk-outline);background:var(--desk-surface-soft);color:var(--desk-secondary);border-radius:7px;padding:4px 6px;line-height:1.1;font-size:11px;min-width:24px;min-height:24px}
+.desk-order-button:hover:not(:disabled){color:var(--desk-ink);border-color:var(--accent)}
+.desk-order-button:disabled{opacity:.25;cursor:default}
+.worldclocks.desk-inner-grid{margin-top:12px;gap:10px}
+.worldclocks.desk-inner-grid .clock-city{border:1px solid var(--desk-outline);border-radius:13px;background:var(--desk-surface-soft);padding:12px 10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0;margin:0}
+.worldclocks.desk-inner-grid .clock-city:last-child{border:1px solid var(--desk-outline)}
+.worldclocks.desk-inner-grid .clock-information{flex:1;min-width:0}
+.desk-clock-actions{width:100%;display:flex;align-items:center;justify-content:flex-end;gap:8px;min-height:22px}
+.desk-clock-actions .city-remove{position:static;align-self:auto;line-height:1.1;font-size:17px}
+.worldclocks.desk-inner-grid[data-columns="3"] .clock-city,
+.worldclocks.desk-inner-grid[data-columns="4"] .clock-city,
+.worldclocks.desk-inner-grid[data-columns="5"] .clock-city,
+.worldclocks.desk-inner-grid[data-columns="6"] .clock-city{flex-direction:column;text-align:center;justify-content:center;gap:7px}
+.worldclocks.desk-inner-grid[data-columns="3"] .clock-information,
+.worldclocks.desk-inner-grid[data-columns="4"] .clock-information,
+.worldclocks.desk-inner-grid[data-columns="5"] .clock-information,
+.worldclocks.desk-inner-grid[data-columns="6"] .clock-information{width:100%}
+.worldclocks.desk-inner-grid[data-columns="3"] .clock-city .clock-time,
+.worldclocks.desk-inner-grid[data-columns="4"] .clock-city .clock-time,
+.worldclocks.desk-inner-grid[data-columns="5"] .clock-city .clock-time,
+.worldclocks.desk-inner-grid[data-columns="6"] .clock-city .clock-time{font-size:clamp(12px,1.35vw,18px)}
+.worldclocks.desk-inner-grid[data-columns="3"] .analog-face,
+.worldclocks.desk-inner-grid[data-columns="4"] .analog-face,
+.worldclocks.desk-inner-grid[data-columns="5"] .analog-face,
+.worldclocks.desk-inner-grid[data-columns="6"] .analog-face{width:62px;height:62px;flex-basis:62px}
+.worldclocks.desk-inner-grid .clock-city-name{overflow-wrap:anywhere}
+.worldclocks.desk-inner-grid .clock-city-name span{white-space:normal}
+.worldclocks.desk-inner-grid .clock-date,.worldclocks.desk-inner-grid .clock-diff{overflow-wrap:anywhere}
+.weather-now-grid.desk-inner-grid{gap:10px}
+.weather-now-grid.desk-inner-grid .weather-now{min-width:0;padding:14px}
+.weather-now-grid.desk-inner-grid .weather-main{flex-wrap:wrap}
+.weather-now-grid.desk-inner-grid .weather-stats{min-width:0}
+.desk-weather-actions{margin:8px 0 0;display:flex;justify-content:flex-end}
+.desk-launch-item{display:flex;align-items:center;gap:5px;min-width:0}
+.desk-launch-item .launch{flex:1;min-width:0;min-height:54px;padding:9px}
+.desk-launch-item .desk-item-order{flex-direction:column}
+.desk-launch-item .desk-order-button{padding:3px 6px;min-height:23px}
+.linkgrid.desk-inner-grid{gap:9px}
+.desk-task-grid .taskrow{background:var(--desk-surface-soft);border:1px solid var(--desk-outline);border-radius:10px;margin:0;padding:11px 9px;min-width:0}
+.desk-task-grid .tasktext{min-width:0;flex:1}
+.agenda-items.desk-inner-grid .agenda-event{border:1px solid var(--desk-outline);background:var(--desk-surface-soft);border-radius:10px;padding:10px;margin:0;min-width:0;flex-wrap:wrap}
+.agenda-items.desk-inner-grid .agenda-event span{white-space:normal;overflow-wrap:anywhere}
+.focus-audio-controls{display:grid;gap:10px;margin:16px 0 0;padding-top:14px;border-top:1px solid var(--desk-outline)}
+.focus-audio-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.focus-audio-row label{font-size:11px;color:var(--desk-secondary);min-width:80px}
+.focus-audio-row select{flex:1;min-width:120px;width:auto}
+.focus-audio-row input[type="range"]{flex:1;min-width:70px;accent-color:var(--accent)}
+.focus-audio-note{font-size:10px;line-height:1.5;color:var(--desk-tertiary);margin:0}
+.focus-complete{font-size:12px;color:#89d9b9;font-weight:700;margin:9px 0}
+:root[data-theme="light"] .focus-complete{color:#177957}
+@media(max-width:1200px){
+ .desk-inner-grid[data-columns="4"],.desk-inner-grid[data-columns="5"],.desk-inner-grid[data-columns="6"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:900px){
+ .desk-inner-grid[data-columns="3"],.desk-inner-grid[data-columns="4"],.desk-inner-grid[data-columns="5"],.desk-inner-grid[data-columns="6"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:550px){
+ .desk-inner-grid[data-columns]{grid-template-columns:minmax(0,1fr)}
+ .worldclocks.desk-inner-grid .clock-city{flex-direction:row!important;text-align:left!important}
+ .worldclocks.desk-inner-grid .clock-information{width:auto!important}
+ .worldclocks.desk-inner-grid .clock-city .clock-time{font-size:19px!important}
+}
+body.side-mode .desk-inner-grid[data-columns]{grid-template-columns:minmax(0,1fr)}
+body.side-mode .worldclocks.desk-inner-grid .clock-city{flex-direction:row;text-align:left}
+body.side-mode .worldclocks.desk-inner-grid .clock-information{width:auto}
+body.side-mode .worldclocks.desk-inner-grid .clock-city .clock-time{font-size:19px}
