@@ -71,3 +71,14 @@ body.side-mode .modules[data-layout="compact"]>.module{grid-column:span 12}
 @media(prefers-reduced-motion:reduce){
   .modules[data-layout="compact"]>.module{transition:none}
 }
+
+/* Version visibility and layout toolbar in both desktop and Side Panel. */
+.desk-version-pill{
+ display:inline-flex;align-items:center;justify-content:center;
+ padding:5px 8px;border:1px solid var(--desk-outline);border-radius:7px;
+ font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;
+ color:var(--desk-secondary);white-space:nowrap;background:var(--desk-surface);
+}
+.sectionhead p{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px}
+body.side-mode .desk-version-pill{font-size:9px;padding:5px}
+@media(max-width:650px){.desk-version-pill{font-size:9px;padding:4px 6px}}
