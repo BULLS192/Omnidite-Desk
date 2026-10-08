@@ -1,5 +1,16 @@
 # Omnidite Desk v0.5.5 — Released
 
+## V0.5.6 — Compact stackable widgets and real height controls (preview)
+
+Fixes empty space under short cards (for example Quick Launch next to long World Clock/Weather widgets).
+
+- **Compact (default):** Each card fits its contents, rather than stretching to its tallest neighbor. Later cards pack into available space below shorter cards where their width fits. A ResizeObserver remeasures expanding live weather content. Compact may visually place later cards ahead of others without changing their saved widget order.
+- **Aligned rows:** Click `◫ Compact: On` in Your Modules to switch back to standard aligned rows. The toggle persists with your existing local dashboard state and only syncs when optional Chrome Sync is enabled.
+- **Adjust height:** Drag the bottom-right resize grip vertically and horizontally. Or go to widget **⚙ → Widget height** and enter **0 (Auto)** or **140–1000 pixels**. Fixed-height widgets scroll inside their cards if needed. Use `↕ Auto` in the card header to restore fit-to-content.
+- **Version:** The top bar and footer visibly show **V0.5.6**, replacing the old `DESIGN PREVIEW` label.
+- **Preserved:** Extension ID/key, Chrome permissions, Google OAuth and Calendar cache, local Pulse, widget IDs, backups and existing user data. Calculated display positions are not stored in Chrome Sync.
+- **Validation:** Automated size/row-span tests and fabricated-data screenshots are produced in CI. Real Chrome acceptance after update should include World Clock, Weather, Quick Launch, calendar, Pulse, Side Panel and drag-resize.
+
 ## V0.5.5 — Visual refinement (released on main in PR #13)
 
 V0.5.5 is merged into `main` and available through Desk's existing **Check updates → Update now** button. The original extension ID, account connections and saved workspaces remain intact. It provides:
