@@ -57,7 +57,7 @@
       '<label class="label" for="deskCommandInput">Search or type a command</label>' +
       '<input id="deskCommandInput" class="modal-input desk-command-input" autocomplete="off" placeholder="e.g. Atlas, capture, research…" aria-controls="deskCommandResults">' +
       '<div id="deskCommandResults" class="desk-result-list" role="listbox" aria-label="Commands"></div>' +
-      '<p class="helper">Ctrl + K to open · ↑ / ↓ to navigate · Enter to run · Esc to close</p>');
+      '<p class="helper">Press / (or Ctrl + K when available) · ↑ / ↓ to navigate · Enter to run · Esc to close</p>');
     selected = 0;
     renderCommands('');
     $('#deskCommandInput')?.focus();
@@ -264,7 +264,7 @@
     if (event.target.id === 'deskCaptureFilter') captureList(event.target.value);
   });
   document.addEventListener('keydown', event => {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {event.preventDefault();openCommand();return;}
+    if (((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') || (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))) {event.preventDefault();openCommand();return;}
     if (!modal.open || !$('#deskCommandInput')) return;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
