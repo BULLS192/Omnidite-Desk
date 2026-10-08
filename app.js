@@ -413,7 +413,11 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   return `<p class="module-sub">FOCUS SPRINT · CHOOSE YOUR DURATION</p><div class="focus-display" data-timer="${esc(m.id)}">--:--</div>
    <div class="focus-presets">${[15,25,45,60].map(v=>`<button type="button" class="${minutes===v?'selected':''}" data-focus-preset="${v}" data-focus-mid="${esc(m.id)}">${v} min</button>`).join('')}</div>
    <form class="focus-custom" data-focus-custom="${esc(m.id)}"><label for="focus-minutes-${esc(m.id)}">Custom minutes</label><input id="focus-minutes-${esc(m.id)}" name="minutes" aria-label="Custom focus minutes" type="number" min="1" max="240" step="1" value="${minutes}" required><button class="smallbutton">Set</button></form>
-   <div class="focus-controls"><button class="smallbutton" data-action="focus-toggle" data-mid="${esc(m.id)}">${c.until?'Pause':'Start'}</button><button class="smallbutton" data-action="focus-reset" data-mid="${esc(m.id)}">Reset</button></div>`;
+   <div class="focus-controls"><button class="smallbutton" data-action="focus-toggle" data-mid="${esc(m.id)}">${c.until?'Pause':'Start'}</button><button class="smallbutton" data-action="focus-reset" data-mid="${esc(m.id)}">Reset</button></div>
+   ${!c.until&&c.seconds===0?'<p class="focus-complete" role="status">✓ Focus session complete</p>':''}
+   <div class="focus-audio-controls"><div class="focus-audio-row"><label for="focus-sound-${esc(m.id)}">End sound</label><select class="modal-input" id="focus-sound-${esc(m.id)}" data-focus-sound="${esc(m.id)}">${[['chime','Gentle chime'],['soft','Soft piano-like tones'],['bell','Classic bell'],['digital','Digital beep'],['custom','My uploaded sound'],['none','Silent']].map(([v,label])=>`<option value="${v}" ${(c.sound||'chime')===v?'selected':''}>${label}</option>`).join('')}</select><button type="button" class="smallbutton" data-focus-preview="${esc(m.id)}">▷ Preview</button></div>
+   <div class="focus-audio-row"><label for="focus-volume-${esc(m.id)}">Volume</label><input id="focus-volume-${esc(m.id)}" data-focus-volume="${esc(m.id)}" type="range" min="0" max="100" value="${c.volume??70}" aria-label="Alarm volume"><button type="button" class="smallbutton" data-focus-upload="${esc(m.id)}">↑ Upload sound</button></div>
+   <input type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,.mp3,.wav,.ogg" data-focus-file="${esc(m.id)}" hidden><p class="focus-audio-note">Alarm works when Desk stays open. Uploaded audio is kept locally in this Chrome profile (maximum 1 MB), never in Chrome Sync.</p></div>`;
  }
  function setFocusDuration(mid,mins){
   const m=moduleFor(mid);if(!m||m.type!=='focus')return;
@@ -427,7 +431,22 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  document.addEventListener('click',e=>{
   const preset=e.target.closest('[data-focus-preset]');if(preset)setFocusDuration(preset.dataset.focusMid,preset.dataset.focusPreset);
  });
- document.addEventListener('error',e=>{
+ document.addEventListener('click',e=>{
+   const upload=e.target.closest('[data-focus-upload]'),preview=e.target.closest('[data-focus-preview]');
+   if(upload)document.querySelector('[data-focus-file="'+CSS.escape(upload.dataset.focusUpload)+'"]')?.click();
+   if(preview){const m=moduleFor(preview.dataset.focusPreview);if(m?.type==='focus')window.DeskFocusAudio?.play(m.config.sound||'chime',m.config.volume??70,m.id);}
+  });
+  document.addEventListener('change',async e=>{
+   const sound=e.target.closest('[data-focus-sound]'),volume=e.target.closest('[data-focus-volume]'),file=e.target.closest('[data-focus-file]');
+   if(sound){const m=moduleFor(sound.dataset.focusSound);if(m?.type==='focus'&&['chime','soft','bell','digital','custom','none'].includes(sound.value)){m.config.sound=sound.value;change();}}
+   if(volume){const m=moduleFor(volume.dataset.focusVolume);if(m?.type==='focus'){m.config.volume=Math.min(100,Math.max(0,Number(volume.value)||0));change(false);}}
+   if(file&&file.files?.[0]){
+    const m=moduleFor(file.dataset.focusFile);if(!m||m.type!=='focus')return;
+    try{await window.DeskFocusAudio?.upload(m.id,file.files[0]);m.config.sound='custom';change();}
+    catch(err){alert('Could not save alarm sound: '+err.message);}
+   }
+  });
+  document.addEventListener('error',e=>{
   if(e.target?.classList?.contains('site-favicon'))e.target.style.display='none';
  },true);
 
@@ -842,7 +861,9 @@ function render(){
 }
 function update(){const now=new Date();$('#localDate').textContent=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'}).format(now).toUpperCase();
  updateWorldClocks(now);
- document.querySelectorAll('[data-timer]').forEach(el=>{const c=moduleFor(el.dataset.timer)?.config;if(!c)return;const secs=c.until?Math.max(0,Math.ceil((c.until-Date.now())/1000)):c.seconds;el.textContent=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;});
+ document.querySelectorAll('[data-timer]').forEach(el=>{const mid=el.dataset.timer,c=moduleFor(mid)?.config;if(!c)return;
+   if(c.until&&c.until<=Date.now()){c.until=null;c.seconds=0;const mode=c.sound||'chime',volume=c.volume??70;change();window.DeskFocusAudio?.play(mode,volume,mid);return;}
+   const secs=c.until?Math.max(0,Math.ceil((c.until-Date.now())/1000)):c.seconds;el.textContent=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;});
  document.querySelectorAll('[data-countdown]').forEach(el=>{const c=moduleFor(el.dataset.countdown)?.config;if(!c)return;const target=new Date(c.target+'T00:00:00');el.textContent=Number.isNaN(target.getTime())?'—':Math.max(0,Math.ceil((target-Date.now())/86400000));});
 }
 function add(type){if(!TYPES.includes(type))return;const def={links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}};page().modules.push(mk(type,undefined,def[type]||{}));close();change();}
@@ -877,7 +898,7 @@ document.addEventListener('click',e=>{
   if(action==='delete-task'){m.config.tasks=m.config.tasks.filter(t=>t.id!==tid);change();}
  if(action==='delete-habit'){m.config.habits=m.config.habits.filter(t=>t.id!==tid);change();}
  if(action==='delete-event'){m.config.events=m.config.events.filter(t=>t.id!==tid);change();}
- if(action==='focus-toggle'){if(m.config.until){m.config.seconds=Math.max(0,Math.ceil((m.config.until-Date.now())/1000));m.config.until=null;}else{if(!m.config.seconds)m.config.seconds=m.config.duration||1500;m.config.until=Date.now()+m.config.seconds*1000;}change();}
+ if(action==='focus-toggle'){if(m.config.until){m.config.seconds=Math.max(0,Math.ceil((m.config.until-Date.now())/1000));m.config.until=null;}else{if(!m.config.seconds)m.config.seconds=m.config.duration||1500;window.DeskFocusAudio?.unlock();m.config.until=Date.now()+m.config.seconds*1000;}change();}
  if(action==='focus-reset'){m.config.seconds=m.config.duration||1500;m.config.until=null;change();}
  if(action==='metric-add'||action==='metric-sub'){m.config.value+=m.config.step*(action==='metric-add'?1:-1);change();}
 });
