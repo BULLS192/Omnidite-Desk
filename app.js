@@ -1,4 +1,4 @@
-/* Omnidite Desk v0.2.0 — vanilla JS, strict MV3 CSP, no analytics. */
+/* Omnidite Desk v0.2.1 — vanilla JS, strict MV3 CSP, no analytics. */
 (() => {
 'use strict';
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
@@ -141,6 +141,63 @@ function content(m){const c=m.config;
  return '';
 }
 function moduleHtml(m){return `<section class="module" style="--span:${m.cols};${m.height?`min-height:${m.height}px;`:''}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools"><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget">⚙</button><span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
+
+// An explicit user click triggers Git via a *locally registered* native host.
+// The host accepts only "status" and "update" and hard-codes the official Git remote.
+const NATIVE_UPDATER='com.omnidite.desk_updater';
+let updateBusy=false;
+function deskUpdateMessage(message){
+ const el=$('#deskUpdateStatus');if(el)el.textContent=message;
+}
+function deskUpdateControls(busy,install=false){
+ updateBusy=busy;
+ const check=$('#deskCheckButton'),button=$('#deskInstallButton');
+ if(check){check.disabled=busy;check.textContent=busy?'Checking…':'Check updates';}
+ if(button){button.disabled=busy;button.hidden=!install;button.textContent=busy?'Updating…':'Update now';}
+}
+function nativeUpdateRequest(action){
+ return new Promise((resolve,reject)=>{
+  if(!supportsExt||!chrome.runtime?.sendNativeMessage)return reject(new Error('Native messaging is only available in Chrome.'));
+  chrome.runtime.sendNativeMessage(NATIVE_UPDATER,{action},response=>{
+   const error=chrome.runtime.lastError;
+   if(error)return reject(new Error(error.message));
+   if(!response||typeof response!=='object')return reject(new Error('No response from local updater.'));
+   resolve(response);
+  });
+ });
+}
+async function runDeskUpdate(action){
+ if(updateBusy)return;
+ deskUpdateControls(true,action==='update');
+ $('#deskUpdateHelp').hidden=true;
+ deskUpdateMessage(action==='update'?'Installing GitHub update…':'Checking GitHub…');
+ try{
+  const result=await nativeUpdateRequest(action);
+  if(result.ok&&result.status==='updated'){
+   deskUpdateMessage('Update installed. Reloading extension…');
+   deskUpdateControls(true);
+   // Update code is already written to disk. Reload this *unpacked* extension.
+   setTimeout(()=>chrome.runtime.reload(),1100);
+   return;
+  }
+  if(!result.ok)throw new Error(result.message||'Update failed without modifying local files.');
+  if(result.status==='available'){
+   deskUpdateMessage(result.behind+' GitHub commit(s) available. Install when ready.');
+   deskUpdateControls(false,true);
+  }else{
+   deskUpdateMessage('✓ Desk is up to date.');
+   deskUpdateControls(false,false);
+  }
+ }catch(err){
+  const msg=String(err?.message||err);
+  deskUpdateMessage('Updater: '+msg.slice(0,135));
+  $('#deskUpdateHelp').hidden=!/host|native|not found|not registered|forbidden|messaging/i.test(msg);
+  deskUpdateControls(false,false);
+ }
+}
+$('#deskCheckButton')?.addEventListener('click',()=>runDeskUpdate('status'));
+$('#deskInstallButton')?.addEventListener('click',()=>runDeskUpdate('update'));
+
 function render(){
  document.documentElement.dataset.theme=state.theme;document.documentElement.style.setProperty('--accent',state.accent);
  document.title=state.brand+' — '+page().title;
