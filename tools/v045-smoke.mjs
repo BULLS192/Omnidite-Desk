@@ -80,9 +80,23 @@ assert.equal(state.pulseCache.providers[0].status,'warning');
 assert.ok(state.operationalAlerts.some(a=>a.source==='Vercel'));
 assert.ok(outputs.requests.some(x=>x.origins?.[0]==='https://pulse.omnidite.com/*'));
 
+click('v05','pulse-local');
+await new Promise(resolve=>setImmediate(resolve));
+assert.equal(state.pulseSettings.url,'http://127.0.0.1:4173/api/providers');
+assert.ok(outputs.requests.some(x=>x.origins?.[0]==='http://127.0.0.1/*'));
+assert.ok(outputs.fetches.some(x=>x==='http://127.0.0.1:4173/api/providers'));
+assert.equal(state.pulseCache.providers[0].name,'Vercel');
+
+form('v05PulseForm',{url:input('http://localhost:4174/api/providers'),auto:{checked:false}});
+assert.equal(state.pulseSettings.url,'http://127.0.0.1:4173/api/providers','Reject wrong local port');
+form('v05PulseForm',{url:input('http://localhost:4173/api/health'),auto:{checked:false}});
+assert.equal(state.pulseSettings.url,'http://127.0.0.1:4173/api/providers','Reject wrong local path');
+form('v05PulseForm',{url:input('http://192.168.1.30:4173/api/providers'),auto:{checked:false}});
+assert.equal(state.pulseSettings.url,'http://127.0.0.1:4173/api/providers','Reject LAN origin');
+
 const before=state.pulseSettings.url;
 form('v05PulseForm',{url:input('https://evil.example.com/feed'),auto:{checked:false}});
 assert.equal(state.pulseSettings.url,before,'Non-Omnidite domains rejected');
 assert.ok(outputs.save>=6);
 console.log('PASS: V0.4 tasks, content, consented tab sessions and capture, ICS import');
-console.log('PASS: V0.5 GitHub read-only monitoring, scoped Pulse host, status normalization, local alerts');
+console.log('PASS: V0.5.1 local Pulse one-click connection, optional loopback permission, unsafe host rejection');
