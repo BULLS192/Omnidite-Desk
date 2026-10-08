@@ -66,7 +66,8 @@ function view(){
  const selected=new Set(cache.selected);
  const settings=cache.calendars.map(c=>'<label class="desk-gcal-choice"><input type="checkbox" data-gcal-choice="'+esc(c.id)+'" '+(selected.has(c.id)?'checked':'')+'><span>'+esc(c.name)+(c.primary?' · Primary':'')+'</span></label>').join('');
  const now=Date.now(),limit=now+cache.rangeDays*86400000;
- const upcoming=cache.events.filter(e=>e.when<limit&&e.when>=now-86400000).sort((a,b)=>a.when-b.when);
+ const upcoming=cache.events.filter(e=>selected.has(e.calendar)&&e.when<limit&&e.when>=now-86400000).sort((a,b)=>a.when-b.when);
+ const offline=(api.getState().calendarEvents||[]).filter(e=>Number.isFinite(e.when)&&e.when>=now-86400000).sort((a,b)=>a.when-b.when).slice(0,15);
  const items=upcoming.map(e=>'<div class="desk-item"><div class="desk-item-main"><strong>'+esc(e.title)+'</strong><small>'+esc(dateLabel(e))+' · '+esc(cache.calendars.find(c=>c.id===e.calendar)?.name||'Calendar')+'</small></div>'+
  (e.url?'<a class="smallbutton" target="_blank" rel="noopener noreferrer" href="'+esc(e.url)+'">Open ↗</a>':'')+'</div>').join('');
  const status=!cache.connected?'Not connected':checked?'Recently updated':'Snapshot · refresh needed';
@@ -77,6 +78,8 @@ function view(){
  (cache.connected?'<h3 class="desk-small-heading">Calendars to include (up to '+MAX_CALENDARS+')</h3><p class="helper">Select calendars, then choose Apply selection to refresh the displayed events.</p>'+
  '<div class="desk-gcal-choices">'+settings+'</div><div class="modal-actions">'+action('Apply selection','apply',busy)+'</div>':'')+
  '<h3 class="desk-small-heading">Upcoming live events</h3><div class="desk-collection">'+(items||'<p class="empty-note">No upcoming events in the selected calendars or the account has not been connected yet.</p>')+'</div>'+
+ '<h3 class="desk-small-heading">Offline .ics import (separate snapshot)</h3><div class="desk-collection">'+
+ (offline.map(e=>'<div class="desk-item"><div class="desk-item-main"><strong>'+esc(safe(e.title,180))+'</strong><small>'+esc(fmt(e.when))+' · Imported .ics</small></div></div>').join('')||'<p class="empty-note">No imported .ics events.</p>')+'</div>'+
  '<div class="modal-actions">'+action('↑ Import .ics offline snapshot','offline')+'</div>'+intro());
 }
 async function save(){
@@ -143,7 +146,7 @@ async function getEvents(key,ids){
    fields:'items(id,summary,status,transparency,start(date,dateTime),htmlLink),nextPageToken'
   });
   const json=await googleGet(url,key);
-  if(!Array.isArray(json?.items))throw Error('Invalid events response.');
+  if(!json||typeof json!=='object'||(json.items!==undefined&&!Array.isArray(json.items)))throw Error('Invalid events response.');
   return parseEvents(json,id);
  }));
  return result.flat().sort((a,b)=>a.when-b.when).slice(0,MAX_EVENTS);
