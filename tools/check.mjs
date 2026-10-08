@@ -17,7 +17,7 @@ for(const p of ['Setup-OneClickUpdates.bat','native-host/install.ps1','native-ho
 if(!read('native-host/DeskNativeHost.cs').includes('merge --ff-only'))throw Error('Native helper must use fast-forward-only updates');
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-v03.js')||!read(p).includes('desk-v03.css'))throw Error(p+' missing V0.3 integration');
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('wallpaperFolder'))throw Error(p+' missing wallpaper picker');
-for(const token of ['renderWorldClocks','renderWeatherModule','renderFocusModule','wallpaperGallery','siteFavicon'])if(!read('app.js').includes(token))throw Error('Missing feature: '+token);
+for(const token of ['renderWorldClocks','renderWeatherModule','renderFocusModule','wallpaperGallery','siteFavicon','showDirectoryPicker','connectLiveFolder','handleStore','scanConnectedFolder'])if(!read('app.js').includes(token))throw Error('Missing feature: '+token);
 for(const token of ['openCommand','openProjects','openResearch','openLayouts','captureForm'])if(!read('desk-v03.js').includes(token))throw Error('Missing V0.3 feature: '+token);
 for(const token of ['defaultProjects','layoutSnapshots','DeskBridge'])if(!read('app.js').includes(token))throw Error('Missing V0.3 state integration: '+token);
-console.log('PASS: MV3 V0.3, limited permissions, stable ID, clocks, weather, wallpaper, updater, command palette, projects, research and layouts');
+console.log('PASS: MV3 V0.3, limited permissions, connected wallpapers, updater, command palette, projects, research and layouts');

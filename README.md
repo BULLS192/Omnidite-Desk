@@ -4,31 +4,52 @@
 
 ## What's new in V0.3
 
-- **Global command bar**: click Commands or press `Ctrl+K`. Search workspaces, tracked projects, link widgets, incomplete tasks, saved captures, and quick actions. Navigate with arrow keys and Enter.
-- **Projects hub**: maintain a personal directory of project names, optional URLs, and manual status labels; launch project links from the directory or command bar. Seeded suggestions include Omnidite, Providence, TTT-OS, Atlas, SGBuddy and F.R.E.Y.A. You can edit/delete each entry.
-- **Quick capture + research library**: manually save research titles, pasted webpage URLs, notes and project associations; browse, filter, edit or delete your captures. The app does not read arbitrary webpages automatically.
-- **Layout studio**: Compact/Balanced/Wide workspace presets; up to 12 named layout snapshots; drag or use widget up/down controls to reorder; resize in increments of 1 to 12 columns and vertically up to 1000px. Mobile and side-panel views remain single-column.
-- **Backward-compatible data**: original v0.2 state storage key, Chrome Sync opt-in, backups, native Git updater, themes, weather, wallpapers, task/notes/widgets remain. New project/capture/layout data is in the same local state and optional Chrome Sync/export backups. Wallpaper images remain device-local.
-- **Automated checks**: `node tools/check.mjs && node tools/v03-smoke.mjs` validates basic source integrity and interaction logic; final Windows Chrome tests are still necessary before release.
+- **Command bar**: button, `/` or Ctrl+K (where not intercepted by Chrome), searching workspaces, tracked projects, shortcuts, incomplete tasks, research and quick actions.
+- **Projects hub**: editable project names, optional URLs and manual status labels. Seeded with relevant Omnidite projects; no claim of live project status.
+- **Quick research capture**: manually save a link, title, note and associated project. Search, edit and delete items via Research library.
+- **Layout studio**: Compact, Balanced and Wide presets; up to 12 snapshots; drag or move tiles; all 12 desktop grid widths; single-column compact mode.
+- **Existing features preserved**: v0.2.3 live connected Google Drive/OneDrive local wallpaper folders, weather, clocks, widgets, storage/Chrome Sync, native updater and backups.
+- **Checks**: `node tools/check.mjs && node tools/v03-smoke.mjs`; verify Chrome New Tab, side panel, folder permissions and native updates on Windows before merging.
 
-**Recommended upgrade path:** Before adopting V0.3, export a backup in your current V0.2.2 Settings. Development happens on `feature/desk-v0.3-foundation`; your one-click updater follows **main**, so it will not expose the new version until the reviewed pull request is merged. Do not point your existing production clone at this feature branch unless intentionally testing it.
+Development is on `feature/desk-v0.3-foundation`. Export a backup before manually loading a test branch. Existing **Update now** follows `main` and will not install this branch until it is released.
 
-## What's in v0.2 (preserved)
+## What's in v0.2
 
 - Multi-page workspaces: Overview, Projects, Personal; add, rename, delete, and move widgets between pages.
-- Drag from the **⠿** header handle to reorder. Drag the **bottom-right diagonal handle** to resize across a 12-column responsive grid (now supports all twelve width increments) and change card height.
+- Drag from the **⠿** header handle to reorder. Drag the **bottom-right diagonal handle** to resize across a 12-column responsive grid (snaps to supported column widths) and change card height.
 - Midnight, Slate, and Light themes, customizable accent, search provider and dashboard name.
 - Eleven widgets: link launcher, tasks, notes, world clocks, focus timer, local agenda, countdown, habits, metric counter, inspirational quote.
 - Searchable world clocks (up to 24), with analog and digital display, date and live UTC differences relative to your current computer timezone (automatically accounts for daylight-saving transitions).
 - Quick Launch and project shortcuts use Chrome's native website favicons and fall back to initials.
 - Focus sprint presets plus any custom duration from 1 to 240 minutes, with pause and reset to your chosen duration.
 - Live weather by city (up to 15): current conditions, next 24 hourly slots, and seven-day forecast, with 15-minute refresh, using Open-Meteo and GeoNames city search. Weather requires an internet connection and may be subject to provider fair-use/license terms.
-- Personal wallpapers: upload single/multiple images, select a folder (imports a local snapshot), choose one image or cycle every 5, 15, 30 or 60 minutes. Images are downsampled for performance and stored locally in IndexedDB, not in Chrome Sync, GitHub or JSON exports. To see new files added to a folder, re-import it.
+- Personal wallpapers: upload images or import a one-time folder snapshot, or connect a **live, read-only synced folder** (Google Drive for desktop, OneDrive or local storage). Choose photos from the folder, optionally rotate every 5/15/30/60 minutes. Desk rescans the folder every 5 minutes while the dashboard is open, on tab return, and on manual refresh; the cloud sync client is responsible for fetching new files. Uploaded wallpapers are optimized and stored in IndexedDB, while live images are read from the selected folder and only the last active wallpaper is privately cached for offline fallback. No Drive OAuth, broad file system access, new Chrome permissions or API keys.
 - Optional Chrome Sync for small dashboards, export/import JSON, v0.1 backup migration.
 - Chrome side panel and new-tab experience.
 - **Built-in GitHub updater** on the New Tab dashboard. The optional one-time Windows native helper lets the page check GitHub, pull approved fast-forward updates, and reload the unpacked extension without opening a terminal.
 
 **Important limitations:** Calendar/agenda events are local manual entries; not yet connected to Google Calendar. Metric counters are manually adjusted, not live Vercel/Supabase data. Weather and city geocoding call only Open-Meteo endpoints; no account or API key is used. Local calendar remains manual. Resize snaps to grid, rather than allowing overlapping/free-pixel positioning. The version is designed for one Chrome profile per device.
+
+## Connected Google Drive, OneDrive or local wallpaper folder (v0.2.3)
+
+This release uses a **live local folder picker**, not a Google Drive cloud OAuth integration. It allows Desk to consume photos synchronized by Google Drive for desktop or OneDrive, without granting the extension access to unrelated account files.
+
+**Windows + Google Drive for desktop**
+
+1. Install and sign into [Google Drive for desktop](https://www.google.com/drive/download/).
+2. Put JPG, PNG, WebP, BMP, GIF or AVIF images in a dedicated folder in My Drive (e.g. `Desk Wallpapers`). For reliable offline access, mark the folder **Available offline**, or use Drive mirroring where supported.
+3. In Chrome, open Omnidite Desk → **Backgrounds** → **Connected folder · live** → **Connect live folder**.
+4. In the Windows folder picker, browse to the folder visible under Google Drive / Google Drive (G:) or your mirrored Drive location. Grant **read-only** access.
+5. Select an image or enable **Cycle selected source** to rotate through the folder images. You can switch to uploaded backgrounds or default at any time.
+6. Images added to or removed from that Drive folder become available after Drive for desktop sync completes and Desk's next scan (up to ~5 minutes while Desk is open). Use **Refresh** to scan immediately.
+
+**Notes**
+- The folder handle is stored in local IndexedDB, not Chrome Sync or GitHub. On another computer, repeat **Connect live folder** there.
+- Chrome may prompt to authorize folder access again after a restart. Use **Authorize folder** inside Desk. If permissions lapse, the last active background can display from a local optimized cache.
+- Only images immediately inside the folder are listed (not subfolders), up to 200 image filenames. The picker shows 12 thumbnails per page; rotation can cover all listed images. Files over 25 MB cannot be used as a background.
+- The extension is read-only: it does not modify, upload, delete or move any of your Google Drive images.
+- Synced cloud folders need their desktop sync app to be installed and working; Desk cannot browse Google Drive solely from a web link in this version.
+- Source changes and selected folder contents are device-specific and not part of JSON state exports or Chrome Sync.
 
 ## Install (Windows Chrome)
 
@@ -76,7 +97,7 @@ Chrome extensions cannot execute Git or write their own source code directly, so
 **Uninstall:** Remove the `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.omnidite.desk_updater` registry key and the locally compiled `native-host/OmniditeDeskHost.exe`. Removing the extension alone does not unregister the host.
 
 
-Repository: **https://github.com/BULLS192/Omnidite-Desk**. Stable released source is committed to `main`; V0.3 development is on a feature branch with a GitHub Actions **validation-only** workflow (no hosting or deployment).
+Repository: **https://github.com/BULLS192/Omnidite-Desk**. The full v0.2 source is already committed to `main` with a GitHub Actions **validation-only** workflow (no hosting or deployment).
 
 **Recommended: clone for continuous updates.** On your Windows PC, open PowerShell in the parent directory where you keep coding projects:
 
@@ -98,8 +119,8 @@ git pull --ff-only origin main
 
 - `index.html`, `sidepanel.html`: dashboard shells
 - `app.js`: widgets, page management, grid interactions, storage and sync
-- `desk-v03.js`, `desk-v03.css`: V0.3 command bar, research, project hub and layout studio
-- `tools/v03-smoke.mjs`: source-level interaction smoke tests
+- `desk-v03.js`, `desk-v03.css`: command bar, projects, research capture and layout studio
+- `tools/v03-smoke.mjs`: V0.3 feature smoke tests
 - `styles.css`: visual styles and responsive themes
 - `manifest.json`: manifest and shared **public key**; keep unchanged across machines
 - `background.js`: side-panel toggle
@@ -113,4 +134,4 @@ Extension permissions are `storage`, `sidePanel`, `nativeMessaging` and `favicon
 
 ### Browser testing
 
-Source-level and browser-interaction smoke checks were completed on the generated package. Run `node tools/check.mjs && node tools/v03-smoke.mjs` for static and behavior smoke tests. Windows native-host registration and Chrome reload must also be validated on the actual Windows machine. Real-world Chrome Sync between accounts/devices remains to be validated on your own signed-in installations.
+Source-level and browser-interaction smoke checks were completed on the generated package. Run `node tools/check.mjs && node tools/v03-smoke.mjs` for static and basic interaction checks. Windows native-host registration and Chrome reload must also be validated on the actual Windows machine. Real-world Chrome Sync between accounts/devices remains to be validated on your own signed-in installations.

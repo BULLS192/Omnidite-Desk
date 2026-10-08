@@ -370,80 +370,198 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  },true);
 
 
- const wallpaperKey='odWallpapersPrefs';
- let wallpaperPrefs={selected:null,rotate:false,interval:15},wallpaperUrl=null,wallpaperPreviews=[],wallpaperLastSwitch=Date.now();
+
+ const wallpaperKey='odWallpapersPrefs',folderStoreKey='connected-wallpaper-folder';
+ let wallpaperPrefs={selected:null,source:'gallery',folderFile:null,rotate:false,interval:15};
+ let wallpaperUrl=null,wallpaperPreviews=[],wallpaperLastSwitch=Date.now();
+ let folderHandle=null,folderFiles=[],folderStatus='',folderPage=0,lastFolderScan=0,wallpaperGeneration=0;
  function wallpaperDatabase(){
   return new Promise((resolve,reject)=>{
-   const request=indexedDB.open('omnidite-desk-wallpapers',1);
-   request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('images'))request.result.createObjectStore('images',{keyPath:'id'});};
+   const request=indexedDB.open('omnidite-desk-wallpapers',2);
+   request.onupgradeneeded=()=>{
+    if(!request.result.objectStoreNames.contains('images'))request.result.createObjectStore('images',{keyPath:'id'});
+    if(!request.result.objectStoreNames.contains('handles'))request.result.createObjectStore('handles',{keyPath:'id'});
+   };
    request.onsuccess=()=>resolve(request.result);
    request.onerror=()=>reject(request.error||Error('Wallpaper storage unavailable'));
   });
  }
- async function wallpaperStore(method,payload){
+ async function dbAction(table,method,payload){
   const db=await wallpaperDatabase();
   return new Promise((resolve,reject)=>{
-   const tx=db.transaction('images',method==='list'||method==='get'?'readonly':'readwrite');
-   const store=tx.objectStore('images'),request=method==='list'?store.getAll():method==='get'?store.get(payload):method==='delete'?store.delete(payload):store.put(payload);
-   request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+   const tx=db.transaction(table,method==='list'||method==='get'?'readonly':'readwrite');
+   const store=tx.objectStore(table);
+   const request=method==='list'?store.getAll():method==='get'?store.get(payload):method==='delete'?store.delete(payload):store.put(payload);
+   request.onsuccess=()=>resolve(request.result);
+   request.onerror=()=>reject(request.error||Error('Storage operation failed'));
    tx.oncomplete=()=>db.close();tx.onabort=()=>db.close();
   });
  }
+ const wallpaperStore=(method,payload)=>dbAction('images',method,payload);
+ const handleStore=(method,payload)=>dbAction('handles',method,payload);
  function clearWallpaperPreviews(){for(const url of wallpaperPreviews)URL.revokeObjectURL(url);wallpaperPreviews=[];}
  async function saveWallpaperPrefs(){await local.set(wallpaperKey,wallpaperPrefs);}
- async function applyWallpaper(){
-  if(wallpaperUrl){URL.revokeObjectURL(wallpaperUrl);wallpaperUrl=null;}
-  const id=wallpaperPrefs.selected;
-  if(!id){document.body.classList.remove('has-wallpaper');document.body.style.backgroundImage='';return;}
+ async function connectedFolderPermission(interactive=false){
+  if(!folderHandle)return false;
   try{
-   const item=await wallpaperStore('get',id);
-   if(!item){document.body.classList.remove('has-wallpaper');document.body.style.backgroundImage='';return;}
-   wallpaperUrl=URL.createObjectURL(item.blob);
-   document.body.style.backgroundImage=`linear-gradient(90deg,rgba(6,13,26,.82),rgba(6,13,26,.68)),url("${wallpaperUrl}")`;
-   document.body.classList.add('has-wallpaper');
-  }catch(e){console.warn('Wallpaper unavailable',e);}
+   const granted=await folderHandle.queryPermission({mode:'read'});
+   if(granted==='granted')return true;
+   if(interactive)return (await folderHandle.requestPermission({mode:'read'}))==='granted';
+  }catch(e){folderStatus='Unable to check folder permission: '+e.message;}
+  return false;
  }
- async function wallpaperGallery(){
+ async function scanConnectedFolder(){
+  lastFolderScan=Date.now();
+  if(!folderHandle){folderFiles=[];folderStatus='No live folder connected.';return false;}
+  if(!await connectedFolderPermission()){
+   folderFiles=[];
+   folderStatus='Permission needed. Click Reauthorize folder to restore read-only access.';
+   return false;
+  }
   try{
-   const list=await wallpaperStore('list');
-   clearWallpaperPreviews();
-   const cards=list.map(item=>{
-    const url=URL.createObjectURL(item.blob);wallpaperPreviews.push(url);
-    return `<div class="wallpaper-tile ${wallpaperPrefs.selected===item.id?'selected':''}">
-     <button type="button" data-wallpaper-action="select" data-wallpaper-id="${esc(item.id)}" title="Use this background"><img src="${esc(url)}" alt="${esc(item.name)}"><span>${esc(item.name)}</span></button>
-     <button type="button" class="wallpaper-delete" data-wallpaper-action="delete" data-wallpaper-id="${esc(item.id)}" title="Remove image">×</button></div>`;
-   }).join('');
-   show(`<div class="modal-pad">${header('Desk backgrounds','Choose your own image or import a folder of wallpapers.')}
-    <p class="helper">Stored only on this computer. Folder import makes a local copy; select the folder again to add new images.</p>
-    <div class="modal-actions"><button type="button" class="smallbutton" data-wallpaper-action="upload">＋ Upload images</button>
-    <button type="button" class="smallbutton" data-wallpaper-action="folder">▣ Import folder</button>
-    <button type="button" class="button ghost" data-wallpaper-action="clear">Default background</button></div>
-    <div class="wallpaper-options"><label class="sync-label"><input id="wallpaperRotation" type="checkbox" ${wallpaperPrefs.rotate?'checked':''}> Cycle backgrounds automatically</label>
-    <label>Change every <select id="wallpaperInterval" class="modal-input">${[5,15,30,60].map(v=>`<option value="${v}" ${wallpaperPrefs.interval===v?'selected':''}>${v} minutes</option>`).join('')}</select></label></div>
-    <div class="wallpaper-grid">${cards||'<p class="empty-note">No wallpapers yet. Upload images or import a folder to get started.</p>'}</div>
-    <p class="helper">${list.length} backgrounds saved locally · up to 60 images. Large images are optimized for the dashboard.</p></div>`);
-  }catch(e){show(`<div class="modal-pad">${header('Desk backgrounds','Image storage is unavailable.')}<p class="helper">${esc(e.message)}</p></div>`);}
+   const files=[];
+   let seen=0;
+   for await(const entry of folderHandle.values()){
+    if(++seen>4000)break;
+    if(entry.kind==='file'&&/\.(png|jpe?g|webp|bmp|gif|avif)$/i.test(entry.name))files.push(entry.name);
+   }
+   folderFiles=files.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).slice(0,200);
+   folderStatus=folderFiles.length?`${folderFiles.length} images available · last checked ${new Date().toLocaleTimeString()}`:
+    'No supported images found in this folder (top level only).';
+   return true;
+  }catch(e){
+   folderFiles=[];folderStatus='Folder temporarily unavailable. Check that Google Drive for desktop is running. '+e.message;
+   return false;
+  }
  }
  async function shrinkWallpaper(file){
   const image=await createImageBitmap(file);
   const ratio=Math.min(1,1920/Math.max(image.width,image.height));
   const canvas=document.createElement('canvas');
-  canvas.width=Math.max(1,Math.round(image.width*ratio));canvas.height=Math.max(1,Math.round(image.height*ratio));
-  canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);image.close();
+  canvas.width=Math.max(1,Math.round(image.width*ratio));
+  canvas.height=Math.max(1,Math.round(image.height*ratio));
+  canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+  image.close();
   return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error('Could not optimize image')),'image/jpeg',.82));
+ }
+ function installWallpaperBlob(blob,generation){
+  if(generation!==wallpaperGeneration)return;
+  const next=URL.createObjectURL(blob),previous=wallpaperUrl;
+  wallpaperUrl=next;
+  document.body.style.backgroundImage=`linear-gradient(90deg,rgba(6,13,26,.82),rgba(6,13,26,.68)),url("${next}")`;
+  document.body.classList.add('has-wallpaper');
+  if(previous)URL.revokeObjectURL(previous);
+ }
+ function removeWallpaperStyle(){
+  if(wallpaperUrl){URL.revokeObjectURL(wallpaperUrl);wallpaperUrl=null;}
+  document.body.classList.remove('has-wallpaper');document.body.style.backgroundImage='';
+ }
+ async function applyWallpaper(){
+  const generation=++wallpaperGeneration;
+  if(wallpaperPrefs.source==='folder'&&wallpaperPrefs.folderFile){
+   try{
+    if(!await connectedFolderPermission())throw Error('Read permission not granted');
+    const file=await(await folderHandle.getFileHandle(wallpaperPrefs.folderFile)).getFile();
+    if(file.size>25*1024*1024)throw Error('Image exceeds 25MB');
+    const blob=await shrinkWallpaper(file);
+    if(generation!==wallpaperGeneration)return;
+    installWallpaperBlob(blob,generation);
+    // Small private cache keeps the last selected cloud-synced background usable offline.
+    await wallpaperStore('put',{id:'__synced_folder_last',name:'Last synced folder wallpaper',blob,lastModified:file.lastModified});
+    return;
+   }catch(e){
+    folderStatus='Could not read selected folder image: '+e.message;
+    const fallback=await wallpaperStore('get','__synced_folder_last').catch(()=>null);
+    if(generation!==wallpaperGeneration)return;
+    if(fallback?.blob){installWallpaperBlob(fallback.blob,generation);return;}
+    removeWallpaperStyle();return;
+   }
+  }
+  const id=wallpaperPrefs.selected;
+  if(!id){removeWallpaperStyle();return;}
+  try{
+   const item=await wallpaperStore('get',id);
+   if(generation!==wallpaperGeneration)return;
+   if(item?.blob)installWallpaperBlob(item.blob,generation);
+   else removeWallpaperStyle();
+  }catch(e){console.warn('Wallpaper unavailable',e);}
+ }
+ async function connectedFolderTiles(){
+  if(!folderHandle||!folderFiles.length)return '';
+  const start=folderPage*12;
+  const current=folderFiles.slice(start,start+12);
+  const tiles=await Promise.all(current.map(async name=>{
+   let img='';
+   try{
+    const file=await(await folderHandle.getFileHandle(name)).getFile();
+    if(file.size<=25*1024*1024){
+     const url=URL.createObjectURL(file);wallpaperPreviews.push(url);
+     img=`<img loading="lazy" src="${esc(url)}" alt="${esc(name)}">`;
+    }
+   }catch{}
+   return `<div class="wallpaper-tile ${wallpaperPrefs.source==='folder'&&wallpaperPrefs.folderFile===name?'selected':''}">
+    <button type="button" data-wallpaper-action="select-folder" data-wallpaper-name="${esc(name)}" title="Use this synced background">
+    ${img||'<div class="wallpaper-placeholder">▧</div>'}<span>${esc(name)}</span></button></div>`;
+  }));
+  const pages=Math.ceil(folderFiles.length/12);
+  return `<div class="wallpaper-grid">${tiles.join('')}</div>${pages>1?`<div class="wallpaper-pages">
+   <button class="smallbutton" type="button" data-wallpaper-action="folder-prev" ${folderPage===0?'disabled':''}>← Previous</button>
+   <span>Page ${folderPage+1} of ${pages}</span>
+   <button class="smallbutton" type="button" data-wallpaper-action="folder-next" ${folderPage===pages-1?'disabled':''}>Next →</button></div>`:''}`;
+ }
+ async function wallpaperGallery(){
+  try{
+   const list=(await wallpaperStore('list')).filter(item=>item.id!=='__synced_folder_last');
+   clearWallpaperPreviews();
+   const cards=list.map(item=>{
+    const url=URL.createObjectURL(item.blob);wallpaperPreviews.push(url);
+    return `<div class="wallpaper-tile ${wallpaperPrefs.source==='gallery'&&wallpaperPrefs.selected===item.id?'selected':''}">
+     <button type="button" data-wallpaper-action="select" data-wallpaper-id="${esc(item.id)}" title="Use this background">
+     <img loading="lazy" src="${esc(url)}" alt="${esc(item.name)}"><span>${esc(item.name)}</span></button>
+     <button type="button" class="wallpaper-delete" data-wallpaper-action="delete" data-wallpaper-id="${esc(item.id)}" title="Remove image">×</button></div>`;
+   }).join('');
+   const linked=folderHandle&&folderHandle.name;
+   const permission=linked?await connectedFolderPermission():false;
+   const folderTiles=permission?await connectedFolderTiles():'';
+   const folderHeader=linked?`<strong>${esc(folderHandle.name)}</strong>
+     <small>${esc(folderStatus||'Ready to scan for images.')}</small>`:
+     `<strong>No synced folder selected</strong><small>Google Drive, OneDrive or any local picture folder.</small>`;
+   show(`<div class="modal-pad">${header('Desk backgrounds','Upload images or connect a live folder from your computer or cloud drive.')}
+    <div class="modal-actions"><button type="button" class="smallbutton" data-wallpaper-action="upload">＋ Upload images</button>
+    <button type="button" class="smallbutton" data-wallpaper-action="folder">▣ Import folder once</button>
+    <button type="button" class="button ghost" data-wallpaper-action="clear">Default background</button></div>
+    <div class="wallpaper-options"><label class="sync-label"><input id="wallpaperRotation" type="checkbox" ${wallpaperPrefs.rotate?'checked':''}> Cycle selected source</label>
+    <label>Change every <select id="wallpaperInterval" class="modal-input">${[5,15,30,60].map(v=>`<option value="${v}" ${wallpaperPrefs.interval===v?'selected':''}>${v} minutes</option>`).join('')}</select></label></div>
+    <div class="wallpaper-section-head"><strong>Uploaded backgrounds</strong><span>${list.length} locally saved images</span></div>
+    <div class="wallpaper-grid">${cards||'<p class="empty-note">No uploaded images yet.</p>'}</div>
+    <section class="synced-folder">
+     <div class="wallpaper-section-head"><strong>Connected folder · live</strong><span>Read-only</span></div>
+     <p class="helper">Use a folder in Google Drive for desktop, OneDrive or File Explorer. Desk rescans it every 5 minutes while open. Changes sync through your desktop cloud-drive app; no Google account permission is given to Desk.</p>
+     <div class="folder-connection">${folderHeader}</div>
+     <div class="folder-commands">
+      <button type="button" class="smallbutton" data-wallpaper-action="connect-folder">${linked?'Change folder':'Connect live folder'}</button>
+      ${linked?`<button type="button" class="smallbutton" data-wallpaper-action="refresh-folder">↻ Refresh</button>
+      ${!permission?'<button type="button" class="smallbutton" data-wallpaper-action="reauthorize-folder">Authorize folder</button>':''}
+      <button type="button" class="smallbutton" data-wallpaper-action="disconnect-folder">Disconnect</button>`:''}
+     </div>${folderTiles||`<p class="empty-note">${esc(linked?folderStatus:'Select a folder to choose and rotate its backgrounds.')}</p>`}
+     <p class="helper">Images are read directly from the selected folder; Desk caches only the active wallpaper for offline display. To access Google Drive files, first install Drive for desktop and let the chosen folder sync or make it available offline.</p>
+    </section></div>`);
+  }catch(e){show(`<div class="modal-pad">${header('Desk backgrounds','Wallpaper storage is unavailable.')}<p class="helper">${esc(e.message)}</p></div>`);}
  }
  async function importWallpapers(files){
   const selected=[...files].filter(f=>f.type.startsWith('image/')||/\.(png|jpe?g|webp|bmp|gif)$/i.test(f.name)).slice(0,60);
   if(!selected.length){alert('No supported image files found.');return;}
   try{
-   const existing=await wallpaperStore('list'),remaining=Math.max(0,60-existing.length);
+   const existing=(await wallpaperStore('list')).filter(item=>item.id!=='__synced_folder_last');
+   const remaining=Math.max(0,60-existing.length);
    if(!remaining){alert('60-image gallery is full. Delete images before importing more.');return;}
    let saved=0;
    for(const file of selected.slice(0,remaining)){
     if(file.size>25*1024*1024)continue;
     try{
-     const blob=await shrinkWallpaper(file);
-     const id=uid();await wallpaperStore('put',{id,name:cleanText(file.name,100),blob,added:Date.now()});saved++;
+     const blob=await shrinkWallpaper(file),id=uid();
+     await wallpaperStore('put',{id,name:cleanText(file.name,100),blob,added:Date.now()});
+     saved++;
      if(!wallpaperPrefs.selected)wallpaperPrefs.selected=id;
     }catch(e){console.warn('Skipped image:',file.name,e);}
    }
@@ -451,16 +569,61 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
    if(!saved)alert('No images could be imported. Try JPG, PNG or WebP files.');
   }catch(e){alert('Could not save wallpapers: '+e.message);}
  }
+ async function connectLiveFolder(){
+  if(typeof window.showDirectoryPicker!=='function'){
+   alert('The live folder picker is not supported in this Chrome version. Use Import folder once instead.');return;
+  }
+  // MUST be invoked synchronously from this click gesture (no awaits before call).
+  let handle;
+  try{handle=await window.showDirectoryPicker({id:'omnidite-wallpapers',mode:'read'});}
+  catch(e){if(e.name!=='AbortError')alert('Could not open folder: '+e.message);return;}
+  try{
+   folderHandle=handle;folderPage=0;await handleStore('put',{id:folderStoreKey,handle});
+   await scanConnectedFolder();
+   if(folderFiles.length){
+    wallpaperPrefs.source='folder';
+    wallpaperPrefs.folderFile=folderFiles[0];
+    wallpaperPrefs.rotate=false;
+    wallpaperLastSwitch=Date.now();
+    await saveWallpaperPrefs();await applyWallpaper();
+   }else if(wallpaperPrefs.source==='folder'){
+    wallpaperPrefs.source='gallery';wallpaperPrefs.folderFile=null;wallpaperPrefs.rotate=false;
+    await saveWallpaperPrefs();await applyWallpaper();
+   }
+   await wallpaperGallery();
+  }catch(e){alert('Could not connect folder: '+e.message);}
+ }
+ async function disconnectLiveFolder(){
+  folderHandle=null;folderFiles=[];folderPage=0;folderStatus='Folder disconnected.';
+  await handleStore('delete',folderStoreKey);
+  await wallpaperStore('delete','__synced_folder_last').catch(()=>{});
+  if(wallpaperPrefs.source==='folder'){wallpaperPrefs.source='gallery';wallpaperPrefs.rotate=false;}
+  wallpaperPrefs.folderFile=null;await saveWallpaperPrefs();await applyWallpaper();await wallpaperGallery();
+ }
  async function nextWallpaper(){
-  const list=await wallpaperStore('list');if(list.length<2)return;
-  const index=list.findIndex(item=>item.id===wallpaperPrefs.selected);
-  wallpaperPrefs.selected=list[(index+1)%list.length].id;wallpaperLastSwitch=Date.now();
-  await saveWallpaperPrefs();await applyWallpaper();
+  if(wallpaperPrefs.source==='folder'){
+   if(!folderHandle||folderFiles.length<2||!await connectedFolderPermission())return;
+   const index=folderFiles.indexOf(wallpaperPrefs.folderFile);
+   wallpaperPrefs.folderFile=folderFiles[(index+1)%folderFiles.length];
+  }else{
+   const list=(await wallpaperStore('list')).filter(item=>item.id!=='__synced_folder_last');
+   if(list.length<2)return;
+   const index=list.findIndex(item=>item.id===wallpaperPrefs.selected);
+   wallpaperPrefs.selected=list[(index+1)%list.length].id;
+  }
+  wallpaperLastSwitch=Date.now();await saveWallpaperPrefs();await applyWallpaper();
  }
  async function setupWallpapers(){
   try{
    const stored=await local.get(wallpaperKey);
-   if(stored&&typeof stored==='object')wallpaperPrefs={selected:typeof stored.selected==='string'?stored.selected:null,rotate:!!stored.rotate,interval:[5,15,30,60].includes(stored.interval)?stored.interval:15};
+   if(stored&&typeof stored==='object')wallpaperPrefs={
+    selected:typeof stored.selected==='string'?stored.selected:null,
+    source:stored.source==='folder'?'folder':'gallery',
+    folderFile:typeof stored.folderFile==='string'?stored.folderFile:null,
+    rotate:!!stored.rotate,interval:[5,15,30,60].includes(stored.interval)?stored.interval:15
+   };
+   folderHandle=(await handleStore('get',folderStoreKey))?.handle||null;
+   if(folderHandle)await scanConnectedFolder();
    await applyWallpaper();
   }catch(e){console.warn('Wallpaper initialization failed',e);}
  }
@@ -469,10 +632,38 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   const action=button.dataset.wallpaperAction,id=button.dataset.wallpaperId;
   if(action==='upload')return $('#wallpaperFile').click();
   if(action==='folder')return $('#wallpaperFolder').click();
-  if(action==='select'){wallpaperPrefs.selected=id;wallpaperPrefs.rotate=false;}
-  if(action==='clear'){wallpaperPrefs.selected=null;wallpaperPrefs.rotate=false;}
-  if(action==='delete'){await wallpaperStore('delete',id);if(wallpaperPrefs.selected===id)wallpaperPrefs.selected=null;}
-  await saveWallpaperPrefs();await applyWallpaper();await wallpaperGallery();
+  if(action==='connect-folder')return connectLiveFolder();
+  if(action==='reauthorize-folder'){
+   // Permission requests must be launched directly from this user click.
+   let allowed=false;
+   try{allowed=(await folderHandle.requestPermission({mode:'read'}))==='granted';}
+   catch(e){folderStatus='Folder authorization failed: '+e.message;}
+   if(allowed){await scanConnectedFolder();await applyWallpaper();}
+   return wallpaperGallery();
+  }
+  if(action==='refresh-folder'){
+   await scanConnectedFolder();
+   if(wallpaperPrefs.source==='folder')await applyWallpaper();
+   return wallpaperGallery();
+  }
+  if(action==='disconnect-folder')return disconnectLiveFolder();
+  if(action==='folder-next'||action==='folder-prev'){
+   const max=Math.max(0,Math.ceil(folderFiles.length/12)-1);
+   folderPage=Math.max(0,Math.min(max,folderPage+(action==='folder-next'?1:-1)));
+   return wallpaperGallery();
+  }
+  if(action==='select-folder'){
+   const name=button.dataset.wallpaperName;
+   if(!folderFiles.includes(name))return;
+   wallpaperPrefs.source='folder';wallpaperPrefs.folderFile=name;wallpaperPrefs.rotate=false;
+  }
+  if(action==='select'){wallpaperPrefs.selected=id;wallpaperPrefs.source='gallery';wallpaperPrefs.rotate=false;}
+  if(action==='clear'){wallpaperPrefs.selected=null;wallpaperPrefs.folderFile=null;wallpaperPrefs.source='gallery';wallpaperPrefs.rotate=false;}
+  if(action==='delete'){
+   await wallpaperStore('delete',id);
+   if(wallpaperPrefs.source==='gallery'&&wallpaperPrefs.selected===id)wallpaperPrefs.selected=null;
+  }
+  wallpaperLastSwitch=Date.now();await saveWallpaperPrefs();await applyWallpaper();await wallpaperGallery();
  });
  modal.addEventListener('change',async e=>{
   if(e.target.id==='wallpaperRotation'){wallpaperPrefs.rotate=e.target.checked;wallpaperLastSwitch=Date.now();await saveWallpaperPrefs();}
@@ -481,7 +672,26 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  for(const picker of ['wallpaperFile','wallpaperFolder']){
   document.getElementById(picker)?.addEventListener('change',async e=>{if(e.target.files?.length)await importWallpapers(e.target.files);e.target.value='';});
  }
- setInterval(()=>{if(wallpaperPrefs.rotate&&Date.now()-wallpaperLastSwitch>=wallpaperPrefs.interval*60000)nextWallpaper().catch(console.warn);},60000);
+ let periodicWallpaperCheck=false;
+ async function refreshLiveFolderIfNeeded(force=false){
+  if(!folderHandle||periodicWallpaperCheck||!force&&Date.now()-lastFolderScan<5*60000)return;
+  periodicWallpaperCheck=true;
+  try{
+   const old=folderFiles.join('\n'),hasAccess=await scanConnectedFolder();
+   if(hasAccess&&wallpaperPrefs.source==='folder'){
+    if(folderFiles.join('\n')!==old&&wallpaperPrefs.rotate){wallpaperLastSwitch=Date.now();}
+    await applyWallpaper(); // Picks up files updated by Google Drive for desktop.
+   }
+  }catch(e){console.warn('Live folder check failed',e);}
+  finally{periodicWallpaperCheck=false;}
+ }
+ setInterval(()=>{
+  if(wallpaperPrefs.rotate&&Date.now()-wallpaperLastSwitch>=wallpaperPrefs.interval*60000)nextWallpaper().catch(console.warn);
+  if(document.visibilityState==='visible')refreshLiveFolderIfNeeded().catch(console.warn);
+ },60000);
+ document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible')refreshLiveFolderIfNeeded().catch(console.warn);
+ });
 
 function content(m){const c=m.config;
  switch(m.type){
