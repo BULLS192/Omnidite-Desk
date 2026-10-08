@@ -1,8 +1,8 @@
-# Omnidite Desk v0.5.5 — functional design preview (V0.5.4 stable)
+# Omnidite Desk v0.5.5 — Released
 
-## V0.5.5 — Visual refinement preview (not yet released)
+## V0.5.5 — Visual refinement (released on main in PR #13)
 
-The `design/desk-v055-visual-refresh` branch is a **visual review candidate**, deliberately isolated from installed V0.5.4 on `main`. It provides:
+V0.5.5 is merged into `main` and available through Desk's existing **Check updates → Update now** button. The original extension ID, account connections and saved workspaces remain intact. It provides:
 
 - Cleaner hero, search-first layout, and four at-a-glance cards: next Google Calendar event, GitHub, Pulse and local alerts.
 - Calendar glance reads **only existing local Google event cache**; it makes no Google API calls and never handles OAuth tokens. Selecting the tile opens the existing Google Calendar screen.
@@ -11,9 +11,9 @@ The `design/desk-v055-visual-refresh` branch is a **visual review candidate**, d
 - Updated widget design, restrained navy/cobalt panels, spacing, typography, refined hexagonal O treatment, responsive Side Panel, and consistent Midnight/Slate/Light/wallpaper support. Reduced-motion preferences are respected.
 - **No changes** to Chrome extension ID, Google OAuth client, manifest permissions beyond version, Pulse, persistence, widget storage, or native updater.
 
-Acceptance gate: static and feature CI, **manual wide New Tab + narrow Side Panel visual review**, current wallpaper and light/dark review, and explicit approval before merging into `main`. As a design preview it should not be installed via Desk's normal one-click updater yet.
+Production GitHub Actions static/feature checks and native Windows helper compilation passed. User approved the design before PR #13 was merged. Real-device acceptance of the expanded widgets, audio and calendar views is still advisable after updating.
 
-## V0.5.5 — Apple-inspired layout and calendar functionality (design preview, not released)
+## V0.5.5 — Apple-inspired layout and calendar functionality
 
 **Functional additions on PR #13:**
 
@@ -22,7 +22,7 @@ Acceptance gate: static and feature CI, **manual wide New Tab + narrow Side Pane
 - Google Calendar has a real **Month / Week / Day**, previous/next/Today navigation, date selection, per-day agenda, and upcoming events. Configuration/import moves into collapsible detail panels. Same existing read-only Google OAuth scope and locally stored event cache. The Calendar API looks back 35 days and ahead 120 days (up to 500 events total); this is a finite offline snapshot, not unlimited history or exhaustive recurring-event pagination.
 - Focus Timer: **Gentle chime, Soft piano-like tones, Classic bell, Digital beep, Silent**, volume, Preview, and optional uploaded MP3/WAV/OGG up to 1 MB. Uploaded audio remains in Chrome-local storage keyed per widget, outside Chrome Sync and JSON backups. WebAudio alarm playback happens while Desk is open; Chrome may suppress sound in suspended/background views. Not a guaranteed OS-level background alarm.
 - Apple-inspired design: calmer surfaces, compact navigation, consistent cards, status and Side Panel, built on V0.5.4 Google Calendar and Pulse. No additional extension permissions or external audio/CDN calls.
-- **User acceptance required** before release: drag/resize widgets and adjust inner columns, reorder city/task/link items, verify Google Month/Week/Day against real events, preview/play timer sound, upload a sample sound, test local cache persistence and Google/Pulse after extension reload. All screenshots use deliberately fabricated example events and weather.
+- **After-install verification:** resize widgets and adjust inner columns; reorder city/task/link items; verify Google Month/Week/Day against real events; preview/play timer sounds; test custom audio and local state persistence. Screenshots use fabricated example events and weather.
 
 **Not implemented yet:** World stock markets. Future scope: user-chosen exchanges and time zones (SGX, NYSE, Nasdaq, LSE, HKEX, SSE), open/closed session clocks, indices/watchlists, source freshness, licensing and rate limits. No investment/trading permissions in this visual pass.
 
@@ -41,7 +41,7 @@ Omnidite Desk now has an opt-in, read-only Google Calendar viewer in **Productiv
 
 **Implementation details and limits:** Chrome Identity `getAuthToken` holds access tokens. Manifest OAuth scope is only `https://www.googleapis.com/auth/calendar.readonly`, and optional host access is only `https://www.googleapis.com/*`. No backend, Pulse integration or credentials in URLs. Calendar event data lives under its own **Chrome local storage** key rather than Desk's synced/backed-up application state; it contains only calendar names, event titles, start times and Google Calendar links. Requests omit attendees, descriptions and locations. Refresh occurs only when opened and stale or when explicitly clicked, never via hidden background polling. API errors preserve the previous cached snapshot. **Disconnect** clears the local cache and removes the last Chrome Identity token from the cache; permissions already granted on the Google Account must be revoked separately in Google Account settings if complete revocation is desired.
 
-Current stage: Chrome OAuth client ID configured; source and mocked Google API/OAuth checks run in CI. **Not yet verified against the user's live Google account** until on-device consent and real Google Calendar API testing are completed. Chrome's identity API typically authenticates the Google account attached to the Chrome profile; this iteration supports many calendars within that account, not arbitrary multiple Google accounts simultaneously.
+Current stage: Chrome OAuth client ID configured; mocked Google OAuth/API checks pass in CI, and the user confirmed successful Google Calendar synchronization in their installed V0.5.4. Chrome's identity API typically authenticates the Google account attached to the Chrome profile; this iteration supports many calendars within that account, not arbitrary multiple Google accounts simultaneously.
 
 ## V0.5.3 — Startup fallback for restricted Windows PCs
 
