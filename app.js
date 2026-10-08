@@ -1,4 +1,4 @@
-/* Omnidite Desk v0.3.0 — vanilla JS, strict MV3 CSP, no analytics. */
+/* Omnidite Desk v0.5.0 — vanilla JS, strict MV3 CSP, no analytics. */
 (() => {
 'use strict';
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
@@ -18,7 +18,7 @@ const validUrl=s=>{try {const u=new URL(s); return ['http:','https:'].includes(u
 const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4,height:0,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},clock:{cities:defaultClockCities()},weather:{cities:defaultWeatherCities(),view:'now',selected:'sg'},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}}[type]||{}),...config}});
 const defaultPage=(id,title,modules)=>({id,title,modules});
 const defaultProjects=()=>[['Omnidite','https://omnidite.com'],['Providence','https://providence.omnidite.com'],['TTT-OS','https://ttt-os.vercel.app'],['Atlas',''],['SGBuddy',''],['F.R.E.Y.A.','']].map(([name,url])=>({id:uid(),name,url,status:'Tracked'}));
-const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),projects:defaultProjects(),captures:[],layoutSnapshots:[],pages:[
+const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),projects:defaultProjects(),captures:[],layoutSnapshots:[],workSessions:[],advancedTasks:[],contentItems:[],calendarEvents:[],githubRepos:['BULLS192/Omnidite-Desk'],githubSelected:'BULLS192/Omnidite-Desk',githubCache:null,pulseSettings:{url:'',auto:false},pulseCache:null,operationalAlerts:[],pages:[
  defaultPage('overview','Overview',[
   mk('links','My projects',{links:[{label:'Omnidite',url:'https://omnidite.com'},{label:'Providence',url:'https://providence.omnidite.com'},{label:'TTT-OS',url:'https://ttt-os.vercel.app'},{label:'GitHub',url:'https://github.com/BULLS192/Omnidite-Desk'}]}),
   mk('links','Quick launch',{links:[{label:'Vercel',url:'https://vercel.com/dashboard'},{label:'Supabase',url:'https://supabase.com/dashboard'},{label:'ChatGPT',url:'https://chatgpt.com'},{label:'Google Drive',url:'https://drive.google.com'}]}),
@@ -49,6 +49,61 @@ function sanitizeModule(x,ids){
  if(x.type==='metric')out.config={value:Number.isFinite(Number(c.value))?Math.min(1e9,Math.max(-1e9,Number(c.value))):0,unit:cleanText(c.unit||'',40),step:Number.isFinite(Number(c.step))?Math.min(1e6,Math.max(.01,Number(c.step))):1};
  return out;
 }
+
+ function normalizeOperations(obj) {
+  const chars=(s,n)=>String(s??'').slice(0,n);
+  const http=v=>validUrl(v)?chars(v,1000):'';
+  const tasks=(Array.isArray(obj.advancedTasks)?obj.advancedTasks:[]).slice(0,70).filter(v=>v&&typeof v.title==='string').map(v=>({
+   id:chars(v.id||uid(),90),title:chars(v.title,180),project:chars(v.project,80),
+   priority:['high','medium','low'].includes(v.priority)?v.priority:'medium',
+   due:/^\d{4}-\d{2}-\d{2}$/.test(v.due||'')?v.due:'',done:!!v.done
+  }));
+  const contentItems=(Array.isArray(obj.contentItems)?obj.contentItems:[]).slice(0,45).filter(v=>v&&typeof v.title==='string').map(v=>({
+   id:chars(v.id||uid(),90),title:chars(v.title,180),channel:chars(v.channel||'Article / Blog',60),
+   stage:chars(v.stage||'Idea',40),date:/^\d{4}-\d{2}-\d{2}$/.test(v.date||'')?v.date:'',
+   project:chars(v.project,80)
+  }));
+  const workSessions=(Array.isArray(obj.workSessions)?obj.workSessions:[]).slice(0,8).filter(v=>v&&Array.isArray(v.tabs)).map(v=>({
+   id:chars(v.id||uid(),90),name:chars(v.name||'Work session',70),
+   createdAt:Number.isFinite(v.createdAt)?v.createdAt:Date.now(),
+   tabs:v.tabs.slice(0,15).filter(t=>t&&validUrl(t.url)).map(t=>({title:chars(t.title,100),url:chars(t.url,350)}))
+  }));
+  const calendarEvents=(Array.isArray(obj.calendarEvents)?obj.calendarEvents:[]).slice(0,100).filter(v=>v&&Number.isFinite(v.when)&&typeof v.title==='string').map(v=>({
+   id:chars(v.id||uid(),90),title:chars(v.title,180),when:v.when
+  }));
+  const githubRepos=(Array.isArray(obj.githubRepos)?obj.githubRepos:['BULLS192/Omnidite-Desk']).slice(0,8).filter(r=>/^[a-zA-Z0-9_.-]{1,80}\/[a-zA-Z0-9_.-]{1,100}$/.test(r));
+  const vGithubCache=obj.githubCache&&typeof obj.githubCache==='object'?obj.githubCache:null;
+  const githubCache=vGithubCache?{
+   repo:chars(vGithubCache.repo,181),checkedAt:Number.isFinite(vGithubCache.checkedAt)?vGithubCache.checkedAt:0,
+   openIssues:Math.max(0,Number(vGithubCache.openIssues)||0),openPrs:Math.max(0,Number(vGithubCache.openPrs)||0),
+   failedWorkflows:Math.max(0,Number(vGithubCache.failedWorkflows)||0),lastWorkflow:chars(vGithubCache.lastWorkflow,140),
+   url:http(vGithubCache.url)
+  }:null;
+  const pulseSettings={
+   url:typeof obj.pulseSettings?.url==='string'&&/^https:\/\/[a-z0-9.-]*omnidite\.com(?:[:/]|$)/i.test(obj.pulseSettings.url)?chars(obj.pulseSettings.url,1000):'',
+   auto:!!obj.pulseSettings?.auto
+  };
+  const vPulse=obj.pulseCache&&typeof obj.pulseCache==='object'?obj.pulseCache:null;
+  const pulseCache=vPulse?{
+   checkedAt:Number.isFinite(vPulse.checkedAt)?vPulse.checkedAt:0,source:chars(vPulse.source,140),capturedAt:chars(vPulse.capturedAt,100),
+   providers:(Array.isArray(vPulse.providers)?vPulse.providers:[]).slice(0,18).map(p=>({
+    name:chars(p.name,80),status:['ok','warning','down','unknown'].includes(p.status)?p.status:'unknown',
+    metrics:(Array.isArray(p.metrics)?p.metrics:[]).slice(0,8).map(m=>({
+     label:chars(m.label,80),value:typeof m.value==='number'&&Number.isFinite(m.value)?m.value:chars(m.value,40),
+     limit:typeof m.limit==='number'&&Number.isFinite(m.limit)?m.limit:null,unit:chars(m.unit,12)
+    }))
+   }))
+  }:null;
+  const operationalAlerts=(Array.isArray(obj.operationalAlerts)?obj.operationalAlerts:[]).slice(0,16).filter(x=>x&&typeof x.message==='string').map(x=>({
+   id:chars(x.id||uid(),90),source:chars(x.source,80),message:chars(x.message,190),
+   severity:['ok','warning','down','unknown'].includes(x.severity)?x.severity:'unknown',
+   createdAt:Number.isFinite(x.createdAt)?x.createdAt:0,signature:chars(x.signature,250)
+  }));
+  return {workSessions,advancedTasks:tasks,contentItems,calendarEvents,githubRepos,
+   githubSelected:githubRepos.includes(obj.githubSelected)?obj.githubSelected:(githubRepos[0]||''),
+   githubCache,pulseSettings,pulseCache,operationalAlerts};
+ }
+
 function normalize(obj){
  if(!obj||typeof obj!=='object') throw Error('Invalid dashboard data.');
  if(Array.isArray(obj.modules)&&!Array.isArray(obj.pages))obj={...obj,version:2,theme:'midnight',accent:'#4a8df5',activePage:'overview',pages:[{id:'overview',title:'Overview',modules:obj.modules}]};
@@ -62,7 +117,7 @@ function normalize(obj){
  const projects=(Array.isArray(obj.projects)?obj.projects:defaultProjects()).slice(0,60).filter(x=>x&&typeof x.name==='string').map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,80),url:validUrl(x.url)?cleanText(x.url,1000):'',status:cleanText(x.status||'Tracked',40)}));
   const captures=(Array.isArray(obj.captures)?obj.captures:[]).slice(0,40).filter(x=>x&&typeof x.title==='string').map(x=>({id:cleanText(x.id||uid(),90),title:cleanText(x.title,140),url:validUrl(x.url)?cleanText(x.url,1000):'',note:cleanText(x.note||'',1100),project:cleanText(x.project||'',90),createdAt:Number.isFinite(x.createdAt)?x.createdAt:Date.now()}));
   const layoutSnapshots=(Array.isArray(obj.layoutSnapshots)?obj.layoutSnapshots:[]).slice(0,12).filter(x=>x&&typeof x.name==='string'&&Array.isArray(x.widgets)).map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,70),pageId:cleanText(x.pageId||'',90),widgets:x.widgets.slice(0,80).filter(w=>w&&typeof w.id==='string').map(w=>({id:cleanText(w.id,90),cols:Number.isInteger(w.cols)?Math.max(1,Math.min(12,w.cols)):4,height:Number.isFinite(w.height)?Math.max(0,Math.min(1000,w.height)):0}))}));
-  return {projects,captures,layoutSnapshots,version:2,brand:cleanText(obj.brand||'Omnidite Desk',55),searchEngine:['google','duckduckgo','bing'].includes(obj.searchEngine)?obj.searchEngine:'google',theme:['midnight','slate','light'].includes(obj.theme)?obj.theme:'midnight',accent:/^#[0-9a-fA-F]{6}$/.test(obj.accent||'')?obj.accent:'#4a8df5',activePage:pages.some(p=>p.id===obj.activePage)?obj.activePage:pages[0].id,updatedAt:Number.isFinite(obj.updatedAt)?obj.updatedAt:Date.now(),pages};
+  return {...normalizeOperations(obj),projects,captures,layoutSnapshots,version:2,brand:cleanText(obj.brand||'Omnidite Desk',55),searchEngine:['google','duckduckgo','bing'].includes(obj.searchEngine)?obj.searchEngine:'google',theme:['midnight','slate','light'].includes(obj.theme)?obj.theme:'midnight',accent:/^#[0-9a-fA-F]{6}$/.test(obj.accent||'')?obj.accent:'#4a8df5',activePage:pages.some(p=>p.id===obj.activePage)?obj.activePage:pages[0].id,updatedAt:Number.isFinite(obj.updatedAt)?obj.updatedAt:Date.now(),pages};
 }
 function status(message,error=false){lastSync=message;const e=$('#syncStatus');if(e){e.textContent=message;e.classList.toggle('error',error);}}
 async function persist(sync=true){state.updatedAt=Date.now();try{await local.set(V2,state);}catch(e){status('Local save failed: '+e.message,true);return;} if(sync&&syncEnabled)scheduleSync();}
