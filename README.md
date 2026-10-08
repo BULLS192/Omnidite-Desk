@@ -1,6 +1,17 @@
-# Omnidite Desk v0.2.3 — personal Chrome command center
+# Omnidite Desk v0.3.0 — personal Chrome command center
 
 **No web hosting, Vercel builds, backend, third-party script loaders, API keys, or Chrome Web Store publication required.** Uses Manifest V3 and Chrome's built-in New Tab override / Side Panel.
+
+## What's new in V0.3
+
+- **Command bar**: button, `/` or Ctrl+K (where not intercepted by Chrome), searching workspaces, tracked projects, shortcuts, incomplete tasks, research and quick actions.
+- **Projects hub**: editable project names, optional URLs and manual status labels. Seeded with relevant Omnidite projects; no claim of live project status.
+- **Quick research capture**: manually save a link, title, note and associated project. Search, edit and delete items via Research library.
+- **Layout studio**: Compact, Balanced and Wide presets; up to 12 snapshots; drag or move tiles; all 12 desktop grid widths; single-column compact mode.
+- **Existing features preserved**: v0.2.3 live connected Google Drive/OneDrive local wallpaper folders, weather, clocks, widgets, storage/Chrome Sync, native updater and backups.
+- **Checks**: `node tools/check.mjs && node tools/v03-smoke.mjs`; verify Chrome New Tab, side panel, folder permissions and native updates on Windows before merging.
+
+Development is on `feature/desk-v0.3-foundation`. Export a backup before manually loading a test branch. Existing **Update now** follows `main` and will not install this branch until it is released.
 
 ## What's in v0.2
 
@@ -108,6 +119,8 @@ git pull --ff-only origin main
 
 - `index.html`, `sidepanel.html`: dashboard shells
 - `app.js`: widgets, page management, grid interactions, storage and sync
+- `desk-v03.js`, `desk-v03.css`: command bar, projects, research capture and layout studio
+- `tools/v03-smoke.mjs`: V0.3 feature smoke tests
 - `styles.css`: visual styles and responsive themes
 - `manifest.json`: manifest and shared **public key**; keep unchanged across machines
 - `background.js`: side-panel toggle
@@ -121,4 +134,4 @@ Extension permissions are `storage`, `sidePanel`, `nativeMessaging` and `favicon
 
 ### Browser testing
 
-Source-level and browser-interaction smoke checks were completed on the generated package. Run `node tools/check.mjs` for static manifest/files check. Windows native-host registration and Chrome reload must also be validated on the actual Windows machine. Real-world Chrome Sync between accounts/devices remains to be validated on your own signed-in installations.
+Source-level and browser-interaction smoke checks were completed on the generated package. Run `node tools/check.mjs && node tools/v03-smoke.mjs` for static and basic interaction checks. Windows native-host registration and Chrome reload must also be validated on the actual Windows machine. Real-world Chrome Sync between accounts/devices remains to be validated on your own signed-in installations.

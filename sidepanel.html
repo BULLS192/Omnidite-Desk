@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="dark light">
   <title>Omnidite Desk</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="desk-v03.css">
 </head>
 <body class="side-mode">
   <div class="shell">
@@ -16,6 +17,12 @@
       <button class="nav-link" data-global="add"><span>⊞</span> Add a module <span class="nav-kbd">+</span></button>
       <button class="nav-link" data-global="customize"><span>⚙</span> Customize</button>
       <button class="nav-link" data-global="backgrounds"><span>▧</span> Backgrounds</button>
+      <div class="nav-heading">DESK COMMANDS</div>
+      <button class="nav-link" data-v03="command"><span>⌕</span> Command bar <span class="nav-kbd">Ctrl K</span></button>
+      <button class="nav-link" data-v03="projects"><span>◇</span> Projects hub</button>
+      <button class="nav-link" data-v03="capture"><span>✎</span> Quick capture</button>
+      <button class="nav-link" data-v03="research"><span>▤</span> Research library</button>
+      <button class="nav-link" data-v03="layouts"><span>⊞</span> Layout studio</button>
       <div class="sidebar-bottom"><span class="live-dot"></span> LOCAL-FIRST · PRIVATE<br><span class="fineprint">No cloud account required</span></div>
     </aside>
     <main class="main">
@@ -23,12 +30,14 @@
         <div class="crumb">WORKSPACE <span>/</span> <span id="crumbPage">OVERVIEW</span></div>
         <div class="top-actions">
           <span id="localDate" class="top-date"></span>
+          <button type="button" class="button ghost desk-top-command" data-v03="command">⌕ <span>Commands</span></button>
+          <button type="button" class="button ghost desk-top-capture" data-v03="capture">＋ <span>Capture</span></button>
           <button class="button ghost" data-global="customize" aria-label="Customize dashboard">⚙ <span>Settings</span></button>
           <button class="button primary" data-global="add"><span>＋</span> Add module</button>
         </div>
       </header>
       <div class="content">
-        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.2.3</div>
+        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.3.0</div>
         <section id="deskUpdateBar" class="desk-update-bar" aria-label="Software updates">
           <span class="update-indicator" aria-hidden="true">↻</span>
           <div class="update-description"><strong>OMNIDITE DESK UPDATES</strong><span id="deskUpdateStatus" role="status" aria-live="polite">Check GitHub for new Desk features.</span></div>
@@ -46,9 +55,16 @@
           <span class="search-shortcut">↵</span>
           <button type="submit">Search <span>↗</span></button>
         </form>
-        <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
+        <nav class="desk-quick-actions" aria-label="Omnidite Desk tools">
+          <button type="button" class="smallbutton" data-v03="command">⌕ Commands</button>
+          <button type="button" class="smallbutton" data-v03="projects">◇ Projects</button>
+          <button type="button" class="smallbutton" data-v03="capture">✎ Capture</button>
+          <button type="button" class="smallbutton" data-v03="research">▤ Research</button>
+          <button type="button" class="smallbutton" data-v03="layouts">⊞ Layouts</button>
+        </nav>
+        <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <button class="page-edit" data-v03="layouts">Layouts</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
         <div id="grid" class="modules" aria-live="polite"></div>
-        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.2.3</span></div>
+        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.3.0</span></div>
       </div>
     </main>
   </div>
@@ -57,5 +73,6 @@
   <input id="wallpaperFile" type="file" accept="image/*" multiple hidden>
   <input id="wallpaperFolder" type="file" accept="image/*" webkitdirectory multiple hidden>
   <script src="app.js" defer></script>
+  <script src="desk-v03.js" defer></script>
 </body>
 </html>
