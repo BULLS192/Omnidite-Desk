@@ -72,7 +72,7 @@ function view(){
  (e.url?'<a class="smallbutton" target="_blank" rel="noopener noreferrer" href="'+esc(e.url)+'">Open ↗</a>':'')+'</div>').join('');
  const status=!cache.connected?'Not connected':checked?'Recently updated':'Snapshot · refresh needed';
  panel('<div class="desk-status-card"><h3>'+esc(status)+(busy?' · Working…':'')+'</h3><p class="helper">Last fetched: '+esc(timeSince(cache.updatedAt))+(lastMessage?' · '+esc(lastMessage):'')+'</p>'+
- '<div class="modal-actions">'+(!cache.connected?action('Connect Google account','connect',busy):action('↻ Refresh events','refresh',busy))+action('↗ Google Calendar','open')+
+ '<div class="modal-actions">'+(!cache.connected?action('Connect Google account','connect',busy):action('↻ Refresh events','refresh',busy)+action('Reauthorize account','connect',busy))+action('↗ Google Calendar','open')+
  (cache.connected?action('Disconnect & clear local events','disconnect',busy):action('Import .ics instead','offline'))+'</div></div>'+
  '<div class="desk-gcal-toolbar"><label class="label" for="gcalRange">Show next</label><select id="gcalRange" class="modal-input">'+[7,14,30].map(n=>'<option value="'+n+'" '+(cache.rangeDays===n?'selected':'')+'>'+n+' days</option>').join('')+'</select></div>'+
  (cache.connected?'<h3 class="desk-small-heading">Calendars to include (up to '+MAX_CALENDARS+')</h3><p class="helper">Select calendars, then choose Apply selection to refresh the displayed events.</p>'+
@@ -115,7 +115,7 @@ async function googleGet(url,key,allowRetry=true){
    await chrome.identity.removeCachedAuthToken({token:key});
    return googleGet(url,await token(false),false);
   }
-  if(!response.ok){if(response.status===401)throw Error('Google authorization expired. Click Connect again.');if(response.status===403)throw Error('Google Calendar permission denied or Calendar API is not enabled.');throw Error('Google Calendar API HTTP '+response.status);}
+  if(!response.ok){if(response.status===401)throw Error('Google authorization expired. Click Reauthorize account to sign in again.');if(response.status===403)throw Error('Google Calendar permission denied or Calendar API is not enabled.');throw Error('Google Calendar API HTTP '+response.status);}
   const body=await response.text();
   if(body.length>300000)throw Error('Google Calendar response is too large.');
   return JSON.parse(body);
@@ -209,7 +209,7 @@ document.addEventListener('click',e=>{
  if(a==='open')window.open('https://calendar.google.com/calendar/u/0/r','_blank','noopener,noreferrer');
  if(a==='cloud')window.open('https://console.cloud.google.com/apis/credentials','_blank','noopener,noreferrer');
  if(a==='setup-check')view();
- if(a==='copy-id'&&chrome?.runtime?.id)navigator.clipboard?.writeText(chrome.runtime.id).catch(()=>{});
+ if(a==='copy-id'&&chrome?.runtime?.id&&navigator?.clipboard?.writeText)navigator.clipboard.writeText(chrome.runtime.id).catch(()=>{});
 });
 document.addEventListener('change',e=>{
  if(e.target.id==='gcalRange'){
