@@ -76,5 +76,6 @@ document.addEventListener('click',e=>{
 const init=()=>{paint();if(isLocal())refresh(false);};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
 else init();
+setInterval(paint,10000);
 setInterval(()=>{paint();if(isLocal()&&!busy)refresh(false);},120000);
 })();
