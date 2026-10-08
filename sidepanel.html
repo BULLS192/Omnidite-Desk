@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Omnidite Desk</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="side-mode">
+  <div class="shell">
+    <aside class="sidebar" aria-label="Workspace navigation">
+      <div class="logo"><span class="logo-symbol">O</span><span class="logo-name">OMNIDITE<span> / DESK</span></span></div>
+      <div class="sidebar-sub">YOUR PERSONAL WORKSPACE</div>
+      <div class="nav-heading">WORKSPACES</div><div id="pageNav" class="page-nav"></div><button class="nav-link add-page" data-global="new-page"><span>＋</span> New workspace</button><div class="nav-heading modules-label">DESK TOOLS</div>
+      <button class="nav-link" data-global="add"><span>⊞</span> Add a module <span class="nav-kbd">+</span></button>
+      <button class="nav-link" data-global="customize"><span>⚙</span> Customize</button>
+      <div class="sidebar-bottom"><span class="live-dot"></span> LOCAL-FIRST · PRIVATE<br><span class="fineprint">No cloud account required</span></div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="crumb">WORKSPACE <span>/</span> <span id="crumbPage">OVERVIEW</span></div>
+        <div class="top-actions">
+          <span id="localDate" class="top-date"></span>
+          <button class="button ghost" data-global="customize" aria-label="Customize dashboard">⚙ <span>Settings</span></button>
+          <button class="button primary" data-global="add"><span>＋</span> Add module</button>
+        </div>
+      </header>
+      <div class="content">
+        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.2</div>
+        <div class="mobile-pages" id="mobilePages"></div><div class="hero-row">
+          <div><h1 id="welcomeHeading">Your space to think, build,<br>and move faster<span class="highlight">.</span></h1><p class="lede">Everything important. Exactly where you want it.</p></div>
+          <div class="hero-decoration" aria-hidden="true"><span class="orb orb-one"></span><span class="orb orb-two"></span></div>
+        </div>
+        <form class="searchbar" id="searchForm" autocomplete="off">
+          <span class="search-glyph">⌕</span>
+          <input id="searchInput" type="search" aria-label="Search the web" placeholder="Search the web, or type a URL…">
+          <span class="search-shortcut">↵</span>
+          <button type="submit">Search <span>↗</span></button>
+        </form>
+        <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
+        <div id="grid" class="modules" aria-live="polite"></div>
+        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.2</span></div>
+      </div>
+    </main>
+  </div>
+  <dialog id="modal" aria-labelledby="modalTitle"><div id="modalInner"></div></dialog>
+  <input id="importFile" type="file" accept="application/json,.json" hidden>
+  <script src="app.js" defer></script>
+</body>
+</html>
