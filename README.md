@@ -1,4 +1,4 @@
-# Omnidite Desk v0.2.2 — personal Chrome command center
+# Omnidite Desk v0.2.3 — personal Chrome command center
 
 **No web hosting, Vercel builds, backend, third-party script loaders, API keys, or Chrome Web Store publication required.** Uses Manifest V3 and Chrome's built-in New Tab override / Side Panel.
 
@@ -12,12 +12,33 @@
 - Quick Launch and project shortcuts use Chrome's native website favicons and fall back to initials.
 - Focus sprint presets plus any custom duration from 1 to 240 minutes, with pause and reset to your chosen duration.
 - Live weather by city (up to 15): current conditions, next 24 hourly slots, and seven-day forecast, with 15-minute refresh, using Open-Meteo and GeoNames city search. Weather requires an internet connection and may be subject to provider fair-use/license terms.
-- Personal wallpapers: upload single/multiple images, select a folder (imports a local snapshot), choose one image or cycle every 5, 15, 30 or 60 minutes. Images are downsampled for performance and stored locally in IndexedDB, not in Chrome Sync, GitHub or JSON exports. To see new files added to a folder, re-import it.
+- Personal wallpapers: upload images or import a one-time folder snapshot, or connect a **live, read-only synced folder** (Google Drive for desktop, OneDrive or local storage). Choose photos from the folder, optionally rotate every 5/15/30/60 minutes. Desk rescans the folder every 5 minutes while the dashboard is open, on tab return, and on manual refresh; the cloud sync client is responsible for fetching new files. Uploaded wallpapers are optimized and stored in IndexedDB, while live images are read from the selected folder and only the last active wallpaper is privately cached for offline fallback. No Drive OAuth, broad file system access, new Chrome permissions or API keys.
 - Optional Chrome Sync for small dashboards, export/import JSON, v0.1 backup migration.
 - Chrome side panel and new-tab experience.
 - **Built-in GitHub updater** on the New Tab dashboard. The optional one-time Windows native helper lets the page check GitHub, pull approved fast-forward updates, and reload the unpacked extension without opening a terminal.
 
 **Important limitations:** Calendar/agenda events are local manual entries; not yet connected to Google Calendar. Metric counters are manually adjusted, not live Vercel/Supabase data. Weather and city geocoding call only Open-Meteo endpoints; no account or API key is used. Local calendar remains manual. Resize snaps to grid, rather than allowing overlapping/free-pixel positioning. The version is designed for one Chrome profile per device.
+
+## Connected Google Drive, OneDrive or local wallpaper folder (v0.2.3)
+
+This release uses a **live local folder picker**, not a Google Drive cloud OAuth integration. It allows Desk to consume photos synchronized by Google Drive for desktop or OneDrive, without granting the extension access to unrelated account files.
+
+**Windows + Google Drive for desktop**
+
+1. Install and sign into [Google Drive for desktop](https://www.google.com/drive/download/).
+2. Put JPG, PNG, WebP, BMP, GIF or AVIF images in a dedicated folder in My Drive (e.g. `Desk Wallpapers`). For reliable offline access, mark the folder **Available offline**, or use Drive mirroring where supported.
+3. In Chrome, open Omnidite Desk → **Backgrounds** → **Connected folder · live** → **Connect live folder**.
+4. In the Windows folder picker, browse to the folder visible under Google Drive / Google Drive (G:) or your mirrored Drive location. Grant **read-only** access.
+5. Select an image or enable **Cycle selected source** to rotate through the folder images. You can switch to uploaded backgrounds or default at any time.
+6. Images added to or removed from that Drive folder become available after Drive for desktop sync completes and Desk's next scan (up to ~5 minutes while Desk is open). Use **Refresh** to scan immediately.
+
+**Notes**
+- The folder handle is stored in local IndexedDB, not Chrome Sync or GitHub. On another computer, repeat **Connect live folder** there.
+- Chrome may prompt to authorize folder access again after a restart. Use **Authorize folder** inside Desk. If permissions lapse, the last active background can display from a local optimized cache.
+- Only images immediately inside the folder are listed (not subfolders), up to 200 image filenames. The picker shows 12 thumbnails per page; rotation can cover all listed images. Files over 25 MB cannot be used as a background.
+- The extension is read-only: it does not modify, upload, delete or move any of your Google Drive images.
+- Synced cloud folders need their desktop sync app to be installed and working; Desk cannot browse Google Drive solely from a web link in this version.
+- Source changes and selected folder contents are device-specific and not part of JSON state exports or Chrome Sync.
 
 ## Install (Windows Chrome)
 
