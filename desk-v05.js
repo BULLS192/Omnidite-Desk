@@ -156,7 +156,7 @@ function overview(){
  btn('Open Pulse','pulse')+'</div></div><h3 class="desk-small-heading">Recent alerts</h3><div class="desk-collection">'+
  (S().operationalAlerts||[]).map(a=>'<div class="desk-item"><div class="desk-item-main"><strong>'+esc(a.source)+' · '+esc(a.severity)+'</strong><small>'+esc(a.message)+'</small><small>'+esc(formatWhen(a.createdAt))+'</small></div></div>').join('')+
  ((S().operationalAlerts||[]).length?'':'<p class="empty-note">No saved operational alerts. Desk never assumes systems are healthy until checked.</p>')+'</div>'+
- '<p class="helper">Alerts are local to Desk; background push notifications are not enabled. Open the GitHub or Pulse panels to refresh data.</p>');
+ '<div class="modal-actions">'+btn('Clear local alert history','clear-alerts')+'</div><p class="helper">Alerts are local to Desk; background push notifications are not enabled. Open the GitHub or Pulse panels to refresh data.</p>');
 }
 function updateBadge(){
  const el=$('#deskV05Badge');if(!el)return;
@@ -166,11 +166,16 @@ function updateBadge(){
  const stale=!c?.checkedAt||Date.now()-c.checkedAt>3600000||(Number.isFinite(captured)&&Date.now()-captured>3600000);
  el.textContent=isSnapshot?'Systems: snapshot':stale?'Systems: not live':alertCount?'Systems: '+alertCount+' alert'+(alertCount===1?'':'s'):'Systems: checked';
  el.dataset.alert=alertCount?'yes':'no';
+ const g=$('#deskV05GitHub'),p=$('#deskV05Pulse'),a=$('#deskV05Alerts');
+ if(g)g.textContent=S().githubCache?.repo?((Date.now()-S().githubCache.checkedAt>3600000?'Stale · ':'')+S().githubCache.repo):'Not checked';
+ if(p)p.textContent=isSnapshot?'Snapshot imported':!c?.providers?.length?'Not connected':stale?'Status may be stale':c.providers.length+' services checked';
+ if(a)a.textContent=alertCount?alertCount+' saved warning'+(alertCount===1?'':'s'):'No saved alerts';
 }
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-v05]');if(!b)return;
  const a=b.dataset.v05;
  if(a==='close')api.close();
+ if(a==='clear-alerts'&&confirm('Clear locally saved operational alert history?')){S().operationalAlerts=[];api.save();overview();updateBadge();}
  if(a==='overview')overview();if(a==='github')github();if(a==='repo-form')repoForm();
  if(a==='github-select'){S().githubSelected=b.dataset.repo;api.save();github();}
  if(a==='github-delete'&&confirm('Remove monitored repository?')){S().githubRepos=S().githubRepos.filter(x=>x!==b.dataset.repo);if(S().githubSelected===b.dataset.repo)S().githubSelected=S().githubRepos[0]||'';api.save();github();}
