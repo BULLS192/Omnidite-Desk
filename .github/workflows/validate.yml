@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '22'
       - name: Generate fake-data sample pages
-        run: node tools/generate-design-review.mjs && node tools/generate-functional-previews.mjs && node tools/generate-compact-preview.mjs
+        run: node tools/generate-design-review.mjs && node tools/generate-functional-previews.mjs && node tools/generate-compact-preview.mjs && node tools/generate-grid-preview.mjs
       - name: Capture desktop and Side Panel visual review
         shell: bash
         run: |
@@ -45,15 +45,25 @@ jobs:
           "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=3000 --window-size=1600,1160 --screenshot="$PWD/preview-aligned-rows.png" http://127.0.0.1:8765/design-review-aligned.html
           test -s preview-compact-packing.png
           test -s preview-aligned-rows.png
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=3000 --window-size=1600,1170 --screenshot="$PWD/preview-snap-6-columns.png" http://127.0.0.1:8765/design-review-snap.html
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=3000 --window-size=1600,1170 --screenshot="$PWD/preview-free-resize.png" http://127.0.0.1:8765/design-review-free.html
+          test -s preview-snap-6-columns.png
+          test -s preview-free-resize.png
           test -s preview-desktop.png
           test -s preview-sidepanel.png
       - name: Attach sample screenshots and offline HTML previews
         uses: actions/upload-artifact@v4
         with:
-          name: Desk-V055-sample-design-preview
+          name: Desk-V057-layout-review
           path: |
             preview-desktop.png
             preview-sidepanel.png
+            preview-snap-6-columns.png
+            preview-free-resize.png
+            design-review-snap.html
+            design-review-free.html
+            desk-v057.css
+            desk-grid.js
             preview-compact-packing.png
             preview-aligned-rows.png
             design-review-compact.html
