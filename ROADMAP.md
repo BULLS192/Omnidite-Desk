@@ -35,6 +35,15 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Automated checks and browser screenshot comparison passed; PR #14 merged.
 - [ ] Complete on-device Chrome verification of height resizing and compact stacking after update.
 
+## V0.5.7 — Snap-to-grid sizing (development preview)
+
+- [x] Separate Free resize vs Snap to grid mode, preserving both sets of dimensions.
+- [x] Configurable 4/6/8/12 desktop grid columns and row cell heights with 12px spacing.
+- [x] Per-widget 1×4, 2×2, 2×3, 4×4, and 6×3 presets plus custom cell dimensions.
+- [x] Cell-snapped drag resizing, responsive clamping for Side Panel/mobile widths.
+- [x] Include snap settings and footprints in saved Layout Studio snapshots.
+- [ ] Inspect actual Chrome screenshot and user acceptance before releasing to main.
+
 ## Future — World stock markets (deferred)
 
 - [ ] Choose market data feeds and review licensing/realtime vs delayed status.
