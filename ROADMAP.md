@@ -12,7 +12,7 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - **Ship one phase at a time**. Developer branch → tests → manual Chrome verification → review → merge to main; the existing updater follows main.
 - Use optional Chrome Sync only for small personal data. Live wallpapers remain locally accessible; export/import JSON is the disaster recovery mechanism.
 
-## V0.3 — Foundation (implemented in draft PR #3, not released)
+## V0.3 — Foundation (released on main in PR #3)
 - [x] Command palette across workspaces, launch URLs, tasks, research, and tools (button, slash shortcut; Ctrl+K where Chrome allows it).
 - [x] Editable project directory with optional URL and manual label.
 - [x] Quick manual research capture and searchable saved-item library.
@@ -20,10 +20,12 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Per-workspace saved layout snapshots with safe restore.
 - [x] Retain existing v0.2.3 live synced wallpaper directories, Chrome Sync, local state, Windows updater and prior widgets.
 - [x] Add CI source/static and feature-level smoke checks.
-- [ ] Pass Windows Chrome visual and interaction acceptance tests in both New Tab and Side Panel.
-- [ ] Test state persistence, JSON backup/import, old v0.2.3 upgrade, Chrome Sync and native updater before release.
+- [x] User reported Windows Chrome smoke checks covering the dashboard, command bar, project hub, research, and persisted layouts.
+- [ ] Complete a dedicated Side Panel visual walkthrough if not already covered by the test report.
+- [x] Verify state persistence after refresh in an isolated Chrome test profile.
+- [ ] Confirm production-profile upgrade, backup/import, connected wallpaper folder permissions, Chrome Sync and native updater after rollout.
 
-## V0.4 — Productivity (implementation on V0.5 branch; Chrome acceptance pending)
+## V0.4 — Productivity (released on main in PR #8; integrations still limited)
 - [x] Named tab-session saving/restoration; explicit optional Chrome tabs permission and open-tab confirmation.
 - [x] Project-linked planner tasks with priority, due date and completion, separate from existing widget tasks (preserved).
 - [x] Local search across workspaces, task planner, projects, content, captures, sessions and links.
@@ -35,7 +37,7 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Local content calendar for Omnidite articles and social planning.
 - **Acceptance:** work offline except explicitly connected widgets, no unintended browser/tab reads, sane sync size limits, no loss of data.
 
-## V0.5 — Connected Operations (implementation on V0.5 branch; external feed acceptance pending)
+## V0.5 — Connected Operations (released on main in PR #8; external feed still needs configuration)
 - [x] Public GitHub repository read-only activity with opt-in API permissions, cached PR/issues/workflows and manual refresh.
 - [ ] Individual issue/commit details and authenticated private repository support (not included).
 - [x] Opt-in HTTPS omnidite.com Pulse JSON adapter + JSON snapshot import; no administrator tokens in extension.
@@ -47,11 +49,12 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [ ] Formal browser privacy review and authenticated service token lifecycle, if ever introduced.
 - **Acceptance:** no privileged API token embedded in extension source, clear "last updated" stamps, rate-limited polling.
 
-## Current release state
+## Current release state — October 8, 2026
 
-- V0.3 code: draft PR #3; not merged or installed via the updater.
-- V0.4/V0.5 code: stacked feature branch feature/desk-v0.5-productivity-operations; not merged or installed.
-- Automated source/behavior checks and real Windows Chrome permission, data migration, tab and UI tests are required for release.
+- V0.3 merged to `main` through PR #3; V0.4/V0.5 merged to `main` through PR #8.
+- Six Windows Chrome feature smoke checks were reported PASS by the user in a separate profile, and automated release CI passed.
+- Existing extension users can obtain V0.5.0 through the on-page GitHub updater; actual per-device updater completion is not reported until confirmed by the user.
+- Post-release checks outstanding: old-profile migration, native updater on the original Windows installation, optional Chrome Sync, connected folders, and Side Panel visual acceptance.
 - The no-credential Pulse adapter and .ics Calendar import do not imply live authenticated backend/OAuth integrations.
 
 ## V1.0 — F.R.E.Y.A. intelligence (future)
