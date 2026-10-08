@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="desk-v03.css">
   <link rel="stylesheet" href="desk-v045.css">
   <link rel="stylesheet" href="desk-v055.css">
+  <link rel="stylesheet" href="desk-v056.css">
 </head>
 <body class="side-mode">
   <div class="shell">
@@ -42,6 +43,7 @@
       <header class="topbar">
         <div class="crumb">WORKSPACE <span>/</span> <span id="crumbPage">OVERVIEW</span></div>
         <div class="top-actions">
+          <span class="desk-version-pill" title="Installed Omnidite Desk version">v0.5.6</span>
           <span id="localDate" class="top-date"></span>
           <button type="button" class="button ghost desk-top-command" data-v03="command">⌕ <span>Commands</span></button>
           <button type="button" class="button ghost desk-top-capture" data-v03="capture">＋ <span>Capture</span></button>
@@ -95,9 +97,9 @@
         </section>
         <p id="deskUpdateHelp" class="update-help" hidden>One-time setup required: from your Omnidite-Desk folder run <strong>Setup-OneClickUpdates.bat</strong>, then reload this extension. If you have not received these files yet, run <strong>Update-Desk.bat</strong> once first.</p>
 
-        <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <button class="page-edit" data-v03="layouts">Layouts</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
+        <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <button class="page-edit" data-v03="layouts">Layouts</button> <button id="deskLayoutMode" type="button" class="desk-layout-mode" data-global="toggle-layout" aria-pressed="true" title="Toggle compact widget stacking">◫ Compact: On</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
         <div id="grid" class="modules" aria-live="polite"></div>
-        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.5.5 DESIGN PREVIEW</span></div>
+        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK · V0.5.6</span></div>
       </div>
     </main>
   </div>
@@ -115,5 +117,6 @@
   <script src="desk-google-calendar.js" defer></script>
   <script src="desk-focus-audio.js" defer></script>
   <script src="desk-v055.js" defer></script>
+  <script src="desk-compact.js" defer></script>
 </body>
 </html>
