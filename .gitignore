@@ -7,3 +7,6 @@ node_modules/
 Thumbs.db
 __pycache__/
 *.log
+# Locally compiled Chrome native helper; never publish compiled binaries/config.
+native-host/OmniditeDeskHost.exe
+native-host/com.omnidite.desk_updater.json
