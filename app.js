@@ -237,6 +237,99 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   }
  });
 
+
+ const weatherCache=new Map(),weatherInFlight=new Map();
+ function weatherCondition(code,day=true){
+  if(code===0)return [day?'☀️':'🌙','Clear'];
+  if([1,2].includes(code))return ['🌤️','Partly cloudy'];
+  if(code===3)return ['☁️','Overcast'];
+  if([45,48].includes(code))return ['🌫️','Fog'];
+  if([51,53,55,56,57].includes(code))return ['🌦️','Drizzle'];
+  if([61,63,65,66,67,80,81,82].includes(code))return ['🌧️','Rain'];
+  if([71,73,75,77,85,86].includes(code))return ['❄️','Snow'];
+  if([95,96,99].includes(code))return ['⛈️','Thunderstorm'];
+  return ['🌡️','Conditions'];
+ }
+ function temperature(n){return Number.isFinite(n)?Math.round(n)+'°C':'—';}
+ function renderWeatherModule(m){
+  const c=m.config,cs=c.cities||[];
+  return `<p class="module-sub">LIVE CONDITIONS · UPDATED ABOUT EVERY 15 MINUTES · OPEN-METEO</p>
+   <div class="weather-city-bar">${cs.map(city=>`<button class="weather-city-pill ${c.selected===city.id?'selected':''}" type="button" data-weather-select="${esc(city.id)}" data-weather-mid="${esc(m.id)}">${esc(city.name)}</button>`).join('')}</div>
+   <div class="weather-tabs">${[['now','Now'],['hourly','Hourly'],['daily','7 days']].map(([v,label])=>`<button type="button" class="${c.view===v?'selected':''}" data-weather-view="${v}" data-weather-mid="${esc(m.id)}">${label}</button>`).join('')}</div>
+   <div class="weather-content" data-weather-content="${esc(m.id)}"><p class="empty-note">Loading live forecasts…</p></div>
+   <div class="weather-city-management">${cityPicker(m)}<div class="weather-remove-list">${cs.map(city=>`<span>${esc(city.name)} <button type="button" data-city-remove="${esc(city.id)}" data-city-mid="${esc(m.id)}" aria-label="Remove ${esc(city.name)}">×</button></span>`).join('')}</div></div>`;
+ }
+ function weatherRequest(city){
+  const key=city.latitude.toFixed(4)+','+city.longitude.toFixed(4);
+  const old=weatherCache.get(key);
+  if(old&&Date.now()-old.at<15*60*1000)return Promise.resolve(old.data);
+  if(weatherInFlight.has(key))return weatherInFlight.get(key);
+  const url=new URL('https://api.open-meteo.com/v1/forecast');
+  url.searchParams.set('latitude',city.latitude);
+  url.searchParams.set('longitude',city.longitude);
+  url.searchParams.set('timezone',city.timezone);
+  url.searchParams.set('forecast_days','7');
+  url.searchParams.set('current','temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m');
+  url.searchParams.set('hourly','temperature_2m,precipitation_probability,weather_code');
+  url.searchParams.set('daily','weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max');
+  const work=fetch(url.toString(),{signal:AbortSignal.timeout(15000)}).then(async r=>{
+   if(!r.ok)throw Error('Weather service HTTP '+r.status);
+   const data=await r.json();
+   if(!data.current||!data.hourly||!data.daily)throw Error('Incomplete forecast');
+   weatherCache.set(key,{at:Date.now(),data});return data;
+  }).catch(e=>{if(old)return old.data;throw e;}).finally(()=>weatherInFlight.delete(key));
+  weatherInFlight.set(key,work);return work;
+ }
+ function weatherTile(city,data){
+  const w=data.current||{},[symbol,label]=weatherCondition(w.weather_code,!!w.is_day);
+  return `<div class="weather-now"><div class="weather-main"><div class="weather-symbol">${symbol}</div><div><strong>${esc(city.name)}</strong><div class="weather-reading">${temperature(w.temperature_2m)}</div><div class="weather-desc">${label}</div></div></div>
+   <div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div></div>`;
+ }
+ function weatherForecast(data,view){
+  if(view==='hourly'){
+   const h=data.hourly||{},current=(data.current?.time||'').slice(0,13);
+   const rows=(h.time||[]).map((t,i)=>({t,i})).filter(x=>x.t.slice(0,13)>=current).slice(0,24);
+   return `<div class="forecast-list">${rows.map(({t,i})=>{
+    const [sym,label]=weatherCondition(h.weather_code?.[i]);const hour=t.slice(11,16);
+    return `<div class="forecast-row"><span>${esc(t.slice(5,10))} ${esc(hour)}</span><span title="${esc(label)}">${sym}</span><strong>${temperature(h.temperature_2m?.[i])}</strong><small>☂ ${Number.isFinite(h.precipitation_probability?.[i])?h.precipitation_probability[i]+'%':'—'}</small></div>`;
+   }).join('')}</div>`;
+  }
+  const d=data.daily||{};
+  return `<div class="forecast-list">${(d.time||[]).slice(0,7).map((date,i)=>{
+   const [sym,label]=weatherCondition(d.weather_code?.[i]);
+   const readable=new Date(date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+   return `<div class="forecast-row"><span>${esc(readable)}</span><span title="${esc(label)}">${sym}</span><strong>${temperature(d.temperature_2m_max?.[i])} / ${temperature(d.temperature_2m_min?.[i])}</strong><small>☂ ${Number.isFinite(d.precipitation_probability_max?.[i])?d.precipitation_probability_max[i]+'%':'—'}</small></div>`;
+  }).join('')}</div>`;
+ }
+ async function refreshWeather(){
+  for(const m of page().modules.filter(x=>x.type==='weather')){
+   const panel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);if(!panel)continue;
+   const cities=m.config.cities||[];
+   if(!cities.length){panel.innerHTML='<p class="empty-note">Search for cities below to start tracking live weather.</p>';continue;}
+   const selected=cities.find(x=>x.id===m.config.selected)||cities[0];
+   const view=m.config.view||'now';
+   try{
+    if(view==='now'){
+     const all=await Promise.allSettled(cities.map(weatherRequest));
+     const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
+     if(!current||!livePanel||current.config.view!==view)return;
+     livePanel.innerHTML=`<div class="weather-now-grid">${all.map((res,i)=>res.status==='fulfilled'?weatherTile(cities[i],res.value):`<div class="weather-error">${esc(cities[i].name)}: weather unavailable</div>`).join('')}</div>`;
+    }else{
+     const data=await weatherRequest(selected);
+     const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
+     if(!current||!livePanel||current.config.view!==view||(current.config.selected||cities[0].id)!==selected.id)return;
+     livePanel.innerHTML=`<div class="weather-forecast-head"><strong>${esc(selected.name)}</strong><span>${view==='hourly'?'Next 24 hours':'Next 7 days'}</span></div>`+weatherForecast(data,view);
+    }
+   }catch(e){const currentPanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);if(currentPanel)currentPanel.innerHTML='<p class="weather-error">Weather unavailable. Check your connection and try again.</p>';}
+  }
+ }
+ document.addEventListener('click',e=>{
+  const tab=e.target.closest('[data-weather-view]'),city=e.target.closest('[data-weather-select]');
+  if(tab){const m=moduleFor(tab.dataset.weatherMid);if(m){m.config.view=tab.dataset.weatherView;change();}}
+  if(city){const m=moduleFor(city.dataset.weatherMid);if(m){m.config.selected=city.dataset.weatherSelect;change();}}
+ });
+ setInterval(()=>{if(page().modules.some(m=>m.type==='weather'))refreshWeather();},15*60*1000);
+
 function content(m){const c=m.config;
  switch(m.type){
  case 'links':return renderLinkModule(m);
