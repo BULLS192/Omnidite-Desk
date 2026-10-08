@@ -4,6 +4,14 @@
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
 const SYNC_META='od_v2_meta', CHUNK='od_v2_chunk_';
 const TYPES=['links','tasks','notes','clock','weather','focus','agenda','countdown','habits','metric','quote'];
+const gridSettings=raw=>{
+ const x=raw&&typeof raw==='object'?raw:{};
+ return {columns:[4,6,8,12].includes(x.columns)?x.columns:6,cellHeight:Number.isInteger(x.cellHeight)&&x.cellHeight>=72&&x.cellHeight<=180?x.cellHeight:104};
+};
+const gridSize=(w,h,cols=6)=>({
+ w:Number.isInteger(w)&&w>=1&&w<=12?w:Math.max(1,Math.round(cols/2)),
+ h:Number.isInteger(h)&&h>=1&&h<=12?h:3
+});
 const LIST_TYPES=new Set(['links','tasks','clock','weather','agenda','habits']);
 const defaultInnerColumns=type=>type==='links'||type==='weather'?2:1;
 const layoutColumns=(v,defaultValue=1)=>Number.isInteger(v)&&v>=1&&v<=6?v:defaultValue;
@@ -20,10 +28,10 @@ const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36)
 const clone=v=>JSON.parse(JSON.stringify(v));
 const $=(s,x=document)=>x.querySelector(s);
 const validUrl=s=>{try {const u=new URL(s); return ['http:','https:'].includes(u.protocol)&&!!u.hostname;}catch{return false;}};
-const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4,height:0,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},clock:{cities:defaultClockCities()},weather:{cities:defaultWeatherCities(),view:'now',selected:'sg'},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}}[type]||{}),...config}});
+const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4,height:0,gridW:Math.max(1,Math.round((['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4)/2)),gridH:type==='clock'||type==='weather'?4:type==='links'||type==='quote'||type==='countdown'?2:3,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},clock:{cities:defaultClockCities()},weather:{cities:defaultWeatherCities(),view:'now',selected:'sg'},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}}[type]||{}),...config}});
 const defaultPage=(id,title,modules)=>({id,title,modules});
 const defaultProjects=()=>[['Omnidite','https://omnidite.com'],['Providence','https://providence.omnidite.com'],['TTT-OS','https://ttt-os.vercel.app'],['Atlas',''],['SGBuddy',''],['F.R.E.Y.A.','']].map(([name,url])=>({id:uid(),name,url,status:'Tracked'}));
-const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',layoutMode:'compact',accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),projects:defaultProjects(),captures:[],layoutSnapshots:[],workSessions:[],advancedTasks:[],contentItems:[],calendarEvents:[],githubRepos:['BULLS192/Omnidite-Desk'],githubSelected:'BULLS192/Omnidite-Desk',githubCache:null,pulseSettings:{url:'',auto:false},pulseCache:null,operationalAlerts:[],pages:[
+const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',layoutMode:'compact',sizingMode:'free',gridSettings:{columns:6,cellHeight:104},accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),projects:defaultProjects(),captures:[],layoutSnapshots:[],workSessions:[],advancedTasks:[],contentItems:[],calendarEvents:[],githubRepos:['BULLS192/Omnidite-Desk'],githubSelected:'BULLS192/Omnidite-Desk',githubCache:null,pulseSettings:{url:'',auto:false},pulseCache:null,operationalAlerts:[],pages:[
  defaultPage('overview','Overview',[
   mk('links','My projects',{links:[{label:'Omnidite',url:'https://omnidite.com'},{label:'Providence',url:'https://providence.omnidite.com'},{label:'TTT-OS',url:'https://ttt-os.vercel.app'},{label:'GitHub',url:'https://github.com/BULLS192/Omnidite-Desk'}]}),
   mk('links','Quick launch',{links:[{label:'Vercel',url:'https://vercel.com/dashboard'},{label:'Supabase',url:'https://supabase.com/dashboard'},{label:'ChatGPT',url:'https://chatgpt.com'},{label:'Google Drive',url:'https://drive.google.com'}]}),
@@ -42,7 +50,7 @@ function sanitizeModule(x,ids){
  if(!x||!TYPES.includes(x.type)) return null;
  const id=typeof x.id==='string'&&/^[\w-]{1,90}$/.test(x.id)&&!ids.has(x.id)?x.id:uid(); ids.add(id);
  const c=x.config&&typeof x.config==='object'&&!Array.isArray(x.config)?x.config:{};
- const out={id,type:x.type,title:cleanText(x.title||META[x.type][1],80),cols:Number.isInteger(x.cols)&&x.cols>=1&&x.cols<=12?x.cols:({small:4,wide:6,full:12}[x.width]||4),height:Number.isFinite(x.height)?Math.min(1000,Math.max(0,Math.round(x.height))):0,config:{}};
+ const out={id,type:x.type,title:cleanText(x.title||META[x.type][1],80),cols:Number.isInteger(x.cols)&&x.cols>=1&&x.cols<=12?x.cols:({small:4,wide:6,full:12}[x.width]||4),height:Number.isFinite(x.height)?Math.min(1000,Math.max(0,Math.round(x.height))):0,gridW:gridSize(x.gridW,x.gridH,Math.max(1,Math.round((Number.isInteger(x.cols)?x.cols:4)/2))).w,gridH:gridSize(x.gridW,x.gridH).h,config:{}};
  if(LIST_TYPES.has(x.type))out.config.columns=layoutColumns(c.columns,defaultInnerColumns(x.type));
  if(x.type==='links')out.config.links=(Array.isArray(c.links)?c.links:[]).slice(0,30).filter(l=>validUrl(String(l?.url||''))).map(l=>({label:cleanText(l.label||'Link',80),url:cleanText(l.url,1000)}));
  if(x.type==='tasks'||x.type==='habits')out.config[x.type==='tasks'?'tasks':'habits']=(Array.isArray(c.tasks||c.habits)?c.tasks||c.habits:[]).slice(0,80).filter(t=>t&&typeof t.text==='string').map(t=>({id:cleanText(t.id||uid(),90),text:cleanText(t.text,200),done:!!t.done,day:cleanText(t.day||'',12)}));
@@ -123,7 +131,7 @@ function normalize(obj){
  const projects=(Array.isArray(obj.projects)?obj.projects:defaultProjects()).slice(0,60).filter(x=>x&&typeof x.name==='string').map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,80),url:validUrl(x.url)?cleanText(x.url,1000):'',status:cleanText(x.status||'Tracked',40)}));
   const captures=(Array.isArray(obj.captures)?obj.captures:[]).slice(0,40).filter(x=>x&&typeof x.title==='string').map(x=>({id:cleanText(x.id||uid(),90),title:cleanText(x.title,140),url:validUrl(x.url)?cleanText(x.url,1000):'',note:cleanText(x.note||'',1100),project:cleanText(x.project||'',90),createdAt:Number.isFinite(x.createdAt)?x.createdAt:Date.now()}));
   const layoutSnapshots=(Array.isArray(obj.layoutSnapshots)?obj.layoutSnapshots:[]).slice(0,12).filter(x=>x&&typeof x.name==='string'&&Array.isArray(x.widgets)).map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,70),pageId:cleanText(x.pageId||'',90),widgets:x.widgets.slice(0,80).filter(w=>w&&typeof w.id==='string').map(w=>({id:cleanText(w.id,90),cols:Number.isInteger(w.cols)?Math.max(1,Math.min(12,w.cols)):4,height:Number.isFinite(w.height)?Math.max(0,Math.min(1000,w.height)):0}))}));
-  return {...normalizeOperations(obj),projects,captures,layoutSnapshots,version:2,brand:cleanText(obj.brand||'Omnidite Desk',55),searchEngine:['google','duckduckgo','bing'].includes(obj.searchEngine)?obj.searchEngine:'google',theme:['midnight','slate','light'].includes(obj.theme)?obj.theme:'midnight',layoutMode:obj.layoutMode==='rows'?'rows':'compact',accent:/^#[0-9a-fA-F]{6}$/.test(obj.accent||'')?obj.accent:'#4a8df5',activePage:pages.some(p=>p.id===obj.activePage)?obj.activePage:pages[0].id,updatedAt:Number.isFinite(obj.updatedAt)?obj.updatedAt:Date.now(),pages};
+  return {...normalizeOperations(obj),projects,captures,layoutSnapshots,version:2,brand:cleanText(obj.brand||'Omnidite Desk',55),searchEngine:['google','duckduckgo','bing'].includes(obj.searchEngine)?obj.searchEngine:'google',theme:['midnight','slate','light'].includes(obj.theme)?obj.theme:'midnight',layoutMode:obj.layoutMode==='rows'?'rows':'compact',sizingMode:obj.sizingMode==='snap'?'snap':'free',gridSettings:gridSettings(obj.gridSettings),accent:/^#[0-9a-fA-F]{6}$/.test(obj.accent||'')?obj.accent:'#4a8df5',activePage:pages.some(p=>p.id===obj.activePage)?obj.activePage:pages[0].id,updatedAt:Number.isFinite(obj.updatedAt)?obj.updatedAt:Date.now(),pages};
 }
 function status(message,error=false){lastSync=message;const e=$('#syncStatus');if(e){e.textContent=message;e.classList.toggle('error',error);}}
 async function persist(sync=true){state.updatedAt=Date.now();try{await local.set(V2,state);}catch(e){status('Local save failed: '+e.message,true);return;} if(sync&&syncEnabled)scheduleSync();}
@@ -173,12 +181,25 @@ function editModule(id){const m=moduleFor(id);if(!m)return;
  show(`<form class="modal-pad" id="editForm" data-id="${esc(id)}">${header('Edit widget','Change its name, size, options, or workspace.')}<label class="label">Title</label><input class="modal-input" name="title" maxlength="80" required value="${esc(m.title)}">
  <label class="label">Workspace</label><select class="modal-input" name="page">${state.pages.map(p=>`<option value="${esc(p.id)}" ${p.modules.includes(m)?'selected':''}>${esc(p.title)}</option>`).join('')}</select>
  <label class="label">Widget width</label><select class="modal-input" name="cols">${Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${m.cols===n?'selected':''}>${n}/12 columns</option>`).join('')}</select>
+ <div class="desk-snap-editor"><label class="label">Snap-to-grid footprint (width × height)</label>
+ <p class="helper">These cell sizes are saved separately from your free-resize dimensions.</p>
+ <div class="desk-grid-presets">${[['1x4','Tall 1×4'],['2x2','Small 2×2'],['2x3','Medium 2×3'],['4x4','Large 4×4'],['6x3','Wide 6×3']].map(([key,label])=>`<button type="button" class="smallbutton" data-modal="grid-preset" data-preset="${key}">${label}</button>`).join('')}</div>
+ <div class="desk-grid-dimensions"><label>Cells wide<input type="number" name="gridW" class="modal-input" min="1" max="12" step="1" value="${m.gridW||2}"></label>
+ <label>Cells high<input type="number" name="gridH" class="modal-input" min="1" max="12" step="1" value="${m.gridH||3}"></label></div></div>
  <label class="label">Widget height (pixels)</label><input type="number" name="height" class="modal-input" min="0" max="1000" step="10" value="${m.height||0}" aria-describedby="desk-height-hint"><p id="desk-height-hint" class="helper">0 = automatically fit contents. Enter 140–1000 for a fixed-height card with internal scrolling. You can also drag the bottom-right corner.</p>
  ${LIST_TYPES.has(m.type)?`<label class="label">Items per row</label><select class="modal-input" name="innerColumns">${Array.from({length:6},(_,i)=>i+1).map(n=>`<option value="${n}" ${layoutColumns(m.config.columns,defaultInnerColumns(m.type))===n?'selected':''}>${n} ${n===1?'item':'items'} per row</option>`).join('')}</select><p class="helper">Make the widget wider to fit more items; narrow panels stack them automatically.</p>`:''}
  ${m.type==='links'?`<label class="label">Links</label><div id="editLinks">${m.config.links.map(linkRow).join('')}</div><button type="button" class="smallbutton" data-modal="add-link">＋ Add link</button>`:''}
  ${m.type==='countdown'?`<label class="label">Deadline</label><input class="modal-input" type="date" name="target" value="${esc(m.config.target)}"><label class="label">Label</label><input class="modal-input" name="label" value="${esc(m.config.label)}">`:''}
  ${m.type==='metric'?`<label class="label">Unit</label><input class="modal-input" name="unit" value="${esc(m.config.unit)}"><label class="label">Increment step</label><input class="modal-input" type="number" step="any" name="step" value="${esc(m.config.step)}">`:''}
  <div class="modal-actions"><button type="submit" class="button primary">Save widget</button><button type="button" class="button ghost danger" data-modal="delete-widget" data-id="${esc(id)}">Delete widget</button></div></form>`);
+}
+function showGridSettings(){
+ const settings=gridSettings(state.gridSettings);
+ show(`<form class="modal-pad" id="gridSettingsForm">${header('Grid settings','Choose how large each grid cell is on your desktop. Smaller views automatically use fewer columns.')}
+ <label class="label">Desktop grid columns</label><select class="modal-input" name="columns">${[4,6,8,12].map(c=>`<option value="${c}" ${settings.columns===c?'selected':''}>${c} columns</option>`).join('')}</select>
+ <label class="label">Cell height</label><select class="modal-input" name="cellHeight">${[80,96,104,120,144,160].map(h=>`<option value="${h}" ${settings.cellHeight===h?'selected':''}>${h} px</option>`).join('')}</select>
+ <p class="helper">A 2×2 widget spans two columns and two height units. Cells are separated by 12px. Medium-width windows show up to four columns; Side Panel and small screens show up to two. Oversized widgets fit the available width without changing their saved footprint.</p>
+ <div class="modal-actions"><button type="submit" class="button primary">Apply grid</button><button type="button" data-modal="close" class="button ghost">Cancel</button></div></form>`);
 }
 function settings(){show(`<div class="modal-pad">${header('Desk settings','Personalize the dashboard and control data sync.')}<form id="settingsForm">
  <label class="label">Dashboard name</label><input class="modal-input" name="brand" maxlength="55" value="${esc(state.brand)}" required>
@@ -791,7 +812,7 @@ function content(m){const c=m.config;
  }
  return '';
 }
-function moduleHtml(m){return `<section class="module" style="--span:${m.cols}" data-fixed-height="${m.height||0}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools">${LIST_TYPES.has(m.type)?`<button class="tiny desk-layout-cycle" type="button" data-action="cycle-columns" data-mid="${esc(m.id)}" title="Change items per row" aria-label="Change items per row">▦ ${layoutColumns(m.config.columns,defaultInnerColumns(m.type))}</button>`:''}<button class="tiny move-widget" data-action="move-up" data-mid="${esc(m.id)}" title="Move widget earlier" aria-label="Move widget earlier">↑</button><button class="tiny move-widget" data-action="move-down" data-mid="${esc(m.id)}" title="Move widget later" aria-label="Move widget later">↓</button><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget width and height">⚙</button>${m.height?`<button class="tiny desk-height-auto" data-action="height-auto" data-mid="${esc(m.id)}" title="Reset height to automatic">↕ Auto</button>`:''}<span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
+function moduleHtml(m){return `<section class="module" style="--span:${m.cols};--grid-w:${m.gridW||2};--grid-h:${m.gridH||3};--effective-span:${m.gridW||2}" data-grid-w="${m.gridW||2}" data-grid-h="${m.gridH||3}" data-fixed-height="${m.height||0}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools">${LIST_TYPES.has(m.type)?`<button class="tiny desk-layout-cycle" type="button" data-action="cycle-columns" data-mid="${esc(m.id)}" title="Change items per row" aria-label="Change items per row">▦ ${layoutColumns(m.config.columns,defaultInnerColumns(m.type))}</button>`:''}<button class="tiny move-widget" data-action="move-up" data-mid="${esc(m.id)}" title="Move widget earlier" aria-label="Move widget earlier">↑</button><button class="tiny move-widget" data-action="move-down" data-mid="${esc(m.id)}" title="Move widget later" aria-label="Move widget later">↓</button><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget width and height">⚙</button>${m.height?`<button class="tiny desk-height-auto" data-action="height-auto" data-mid="${esc(m.id)}" title="Reset height to automatic">↕ Auto</button>`:''}<span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
 
 // An explicit user click triggers Git via a *locally registered* native host.
 // The host accepts only "status" and "update" and hard-codes the official Git remote.
@@ -857,10 +878,19 @@ function render(){
  $('#pageNav').innerHTML=nav;$('#mobilePages').innerHTML=`${state.pages.map(p=>`<button class="page-pill ${p.id===state.activePage?'selected':''}" data-page="${esc(p.id)}">${esc(p.title)}</button>`).join('')}<button class="page-pill" data-global="new-page">＋</button>`;
  $('#moduleCount').textContent=page().modules.length;
  $('#grid').dataset.layout=state.layoutMode==='rows'?'rows':'compact';
-  const layoutButton=$('#deskLayoutMode');
+  $('#grid').dataset.sizing=state.sizingMode==='snap'?'snap':'free';
+  const cell=gridSettings(state.gridSettings);
+  $('#grid').dataset.gridColumns=String(cell.columns);
+  $('#grid').dataset.gridCellHeight=String(cell.cellHeight);
+  $('#grid').style.setProperty('--snap-cell-height',cell.cellHeight+'px');
+  const snapButton=$('#deskSnapMode');
+   if(snapButton){const snapped=state.sizingMode==='snap';snapButton.textContent=snapped?'▦ Snap to grid':'⌗ Free resize';snapButton.setAttribute('aria-pressed',String(snapped));}
+   const gridButton=$('#deskGridSettings');
+   if(gridButton)gridButton.hidden=state.sizingMode!=='snap';
+   const layoutButton=$('#deskLayoutMode');
   if(layoutButton){const compact=state.layoutMode!=='rows';layoutButton.textContent=compact?'◫ Compact: On':'▤ Aligned rows';layoutButton.setAttribute('aria-pressed',String(compact));layoutButton.title=compact?'Shorter widgets pack independently; click for aligned rows':'Click to pack widgets into empty space';}
   $('#grid').innerHTML=page().modules.map(moduleHtml).join('')||'<div class="empty-grid"><h2>No widgets yet</h2><p>Build your workspace with the widget library.</p><button class="button primary" data-global="add">＋ Add module</button></div>';
-  requestAnimationFrame(()=>window.DeskCompactLayout?.observe());
+  requestAnimationFrame(()=>{window.DeskCompactLayout?.observe();window.DeskSnapGrid?.observe();});
   refreshWeather();
  update();
 }
@@ -920,7 +950,7 @@ document.addEventListener('pointerup',()=>{if(!resize)return;resize=null;documen
 document.addEventListener('pointercancel',()=>{if(resize){resize=null;document.body.classList.remove('resizing');change(false);window.DeskCompactLayout?.observe();}});
 document.addEventListener('click',e=>{
  const pg=e.target.closest('[data-page]');if(pg){state.activePage=pg.dataset.page;change();return;}
- const gl=e.target.closest('[data-global]');if(gl){const a=gl.dataset.global;if(a==='add')gallery();if(a==='customize')settings();if(a==='backgrounds')wallpaperGallery();if(a==='new-page')pageDialog(false);if(a==='edit-page')pageDialog(true);if(a==='toggle-layout'){state.layoutMode=state.layoutMode==='rows'?'compact':'rows';change();}return;}
+ const gl=e.target.closest('[data-global]');if(gl){const a=gl.dataset.global;if(a==='add')gallery();if(a==='customize')settings();if(a==='backgrounds')wallpaperGallery();if(a==='new-page')pageDialog(false);if(a==='edit-page')pageDialog(true);if(a==='toggle-layout'){state.layoutMode=state.layoutMode==='rows'?'compact':'rows';change();}if(a==='toggle-snap'){state.sizingMode=state.sizingMode==='snap'?'free':'snap';change();}if(a==='grid-settings')showGridSettings();return;}
  const b=e.target.closest('[data-action]');if(!b)return;const {action,mid,tid}=b.dataset,m=moduleFor(mid);
  if(action==='edit')return editModule(mid);if(!m)return;
   if(action==='height-auto'){m.height=0;change();return;}
@@ -959,6 +989,7 @@ modal.addEventListener('click',async e=>{
  if(a==='close')return close();if(a==='add')return add(b.dataset.type);
  if(a==='add-link')return $('#editLinks').insertAdjacentHTML('beforeend',linkRow());
  if(a==='remove-row'){b.closest('.editlink')?.remove();return;}
+  if(a==='grid-preset'){const p=/^(\d+)x(\d+)$/.exec(b.dataset.preset||'');const form=b.closest('#editForm');if(p&&form){form.elements.gridW.value=p[1];form.elements.gridH.value=p[2];}return;}
  if(a==='delete-widget'){if(confirm('Delete this widget and its content?')){removeWidget(b.dataset.id);close();}return;}
  if(a==='delete-page'){if(state.pages.length<=1)return;if(confirm('Delete this workspace and ALL its widgets?')){state.pages=state.pages.filter(p=>p.id!==state.activePage);state.activePage=state.pages[0].id;close();change();}return;}
  if(a==='backgrounds')return wallpaperGallery();if(a==='export')return exportBackup();if(a==='import')return $('#importFile').click();
@@ -970,13 +1001,20 @@ modal.addEventListener('change',async e=>{if(e.target.id==='syncToggle'){
  if(syncEnabled){try{await pullSync(true,!(await local.get(V2)));scheduleSync();status('Sync enabled. Changes will upload.');}catch(x){status(x.message,true);}}
  else{clearTimeout(syncTimer);status('Chrome Sync disabled (local-only).');}settings();
 }});
-modal.addEventListener('submit',e=>{const f=e.target;if(!['editForm','settingsForm','pageForm'].includes(f.id))return;e.preventDefault();
- if(f.id==='settingsForm'){state.brand=cleanText(f.elements.brand.value.trim()||'Omnidite Desk',55);state.searchEngine=f.elements.searchEngine.value;state.theme=f.elements.theme.value;state.accent=f.elements.accent.value;}
+modal.addEventListener('submit',e=>{const f=e.target;if(!['editForm','settingsForm','pageForm','gridSettingsForm'].includes(f.id))return;e.preventDefault();
+ if(f.id==='gridSettingsForm'){
+   state.gridSettings=gridSettings({columns:Number(f.elements.columns.value),cellHeight:Number(f.elements.cellHeight.value)});
+   close();change();return;
+  }
+  if(f.id==='settingsForm'){state.brand=cleanText(f.elements.brand.value.trim()||'Omnidite Desk',55);state.searchEngine=f.elements.searchEngine.value;state.theme=f.elements.theme.value;state.accent=f.elements.accent.value;}
  if(f.id==='editForm'){
   const m=moduleFor(f.dataset.id);if(!m)return;m.title=cleanText(f.elements.title.value.trim()||META[m.type][1],80);m.cols=Number(f.elements.cols.value);
    const chosenHeight=Number(f.elements.height?.value||0);
    if(!Number.isFinite(chosenHeight)||chosenHeight<0||chosenHeight>1000||(chosenHeight>0&&chosenHeight<140)){alert('Use Auto (0) or a fixed height between 140 and 1000 pixels.');return;}
    m.height=chosenHeight?Math.round(chosenHeight):0;
+   const gridW=Number(f.elements.gridW.value),gridH=Number(f.elements.gridH.value);
+   if(!Number.isInteger(gridW)||gridW<1||gridW>12||!Number.isInteger(gridH)||gridH<1||gridH>12){alert('Choose 1–12 grid cells for both width and height.');return;}
+   m.gridW=gridW;m.gridH=gridH;
    if(LIST_TYPES.has(m.type))m.config.columns=layoutColumns(Number(f.elements.innerColumns?.value));
   const dest=state.pages.find(p=>p.id===f.elements.page.value);const src=state.pages.find(p=>p.modules.includes(m));if(dest&&src!==dest){src.modules=src.modules.filter(x=>x.id!==m.id);dest.modules.push(m);}
   if(m.type==='links'){const links=[...f.querySelectorAll('.editlink')].map(r=>({label:$('.link-label',r).value.trim(),url:$('.link-url',r).value.trim()})).filter(x=>x.label||x.url);if(links.some(l=>!l.label||!validUrl(l.url))){alert('Every shortcut needs a label and a valid http/https URL.');return;}m.config.links=links.slice(0,30);}
