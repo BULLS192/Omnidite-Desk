@@ -944,9 +944,19 @@ document.addEventListener('dragleave',e=>{const m=e.target.closest('[data-module
 document.addEventListener('drop',e=>{const dest=e.target.closest('[data-module]');document.querySelectorAll('.drop-target').forEach(x=>x.classList.remove('drop-target'));if(!dest||!dragged||dest.dataset.module===dragged)return;e.preventDefault();const arr=page().modules;const i=arr.findIndex(x=>x.id===dragged),j=arr.findIndex(x=>x.id===dest.dataset.module);if(i<0||j<0)return;arr.splice(j,0,arr.splice(i,1)[0]);change();});
 document.addEventListener('dragend',()=>{dragged=null;document.querySelectorAll('.dragging,.drop-target').forEach(x=>x.classList.remove('dragging','drop-target'));});
 let resize=null;
-document.addEventListener('pointerdown',e=>{const h=e.target.closest('[data-resize]');if(!h||e.button!==0)return;e.preventDefault();const m=moduleFor(h.dataset.resize);if(!m)return;const rect=h.closest('.module').getBoundingClientRect(),grid=$('#grid').getBoundingClientRect();resize={id:m.id,x:e.clientX,y:e.clientY,cols:m.cols,height:rect.height,step:(grid.width+12)/12,pointer:e.pointerId};h.setPointerCapture(e.pointerId);document.body.classList.add('resizing');});
-document.addEventListener('pointermove',e=>{if(!resize)return;const m=moduleFor(resize.id),el=document.querySelector(`[data-module="${CSS.escape(resize.id)}"]`);if(!m||!el)return;const diff=e.clientX-resize.x;const goal=resize.cols+Math.round(diff/Math.max(1,resize.step));m.cols=Math.max(1,Math.min(12,goal));m.height=Math.min(1000,Math.max(140,Math.round(resize.height+(e.clientY-resize.y))));el.style.setProperty('--span',m.cols);el.dataset.fixedHeight=String(m.height);el.style.height=m.height+'px';window.DeskCompactLayout?.schedule();});
-document.addEventListener('pointerup',()=>{if(!resize)return;resize=null;document.body.classList.remove('resizing');change(false);window.DeskCompactLayout?.observe();});
+document.addEventListener('pointerdown',e=>{const h=e.target.closest('[data-resize]');if(!h||e.button!==0)return;e.preventDefault();const m=moduleFor(h.dataset.resize);if(!m)return;const rect=h.closest('.module').getBoundingClientRect(),grid=$('#grid').getBoundingClientRect();resize={id:m.id,x:e.clientX,y:e.clientY,cols:m.cols,height:rect.height,gridW:m.gridW||2,gridH:m.gridH||3,step:(grid.width+12)/12,pointer:e.pointerId,snap:state.sizingMode==='snap'};h.setPointerCapture(e.pointerId);document.body.classList.add('resizing');});
+document.addEventListener('pointermove',e=>{if(!resize)return;const m=moduleFor(resize.id),el=document.querySelector(`[data-module="${CSS.escape(resize.id)}"]`);if(!m||!el)return;if(resize.snap){
+  const snap=window.DeskSnapGrid;
+  if(!snap)return;
+  const grid=$('#grid'),settings=gridSettings(state.gridSettings),bounds=grid.getBoundingClientRect();
+  const next=snap.snapDimensions(e.clientX-resize.x,e.clientY-resize.y,resize.gridW,resize.gridH,bounds.width,settings.columns,settings.cellHeight,document.body.classList.contains('side-mode'));
+  m.gridW=next.w;m.gridH=next.h;
+  el.dataset.gridW=String(next.w);el.dataset.gridH=String(next.h);
+  el.style.setProperty('--grid-w',String(next.w));el.style.setProperty('--grid-h',String(next.h));
+  el.style.setProperty('--effective-span',String(next.w));snap.apply();return;
+ }
+ const diff=e.clientX-resize.x;const goal=resize.cols+Math.round(diff/Math.max(1,resize.step));m.cols=Math.max(1,Math.min(12,goal));m.height=Math.min(1000,Math.max(140,Math.round(resize.height+(e.clientY-resize.y))));el.style.setProperty('--span',m.cols);el.dataset.fixedHeight=String(m.height);el.style.height=m.height+'px';window.DeskCompactLayout?.schedule();});
+document.addEventListener('pointerup',()=>{if(!resize)return;resize=null;document.body.classList.remove('resizing');change(false);window.DeskCompactLayout?.observe();window.DeskSnapGrid?.apply();});
 document.addEventListener('pointercancel',()=>{if(resize){resize=null;document.body.classList.remove('resizing');change(false);window.DeskCompactLayout?.observe();}});
 document.addEventListener('click',e=>{
  const pg=e.target.closest('[data-page]');if(pg){state.activePage=pg.dataset.page;change();return;}
