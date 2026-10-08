@@ -25,6 +25,15 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [ ] Post-update verification on user's Windows Chrome: wide New Tab, narrow Side Panel, wallpapers and Light theme.
 - [x] User approved aesthetic direction; PR #13 merged into `main` and production CI passed.
 
+## V0.5.6 — Compact stackable widgets (development preview)
+
+- [x] Auto-height cards instead of stretching short widgets to the tallest in a row.
+- [x] Compact dense grid packing with aligned-row fallback.
+- [x] Functional two-dimensional resizing, editable auto/fixed heights and scrollable fixed card contents.
+- [x] Responsive dynamic reflow for weather changes and widget resizing.
+- [x] Visible current version in top bar and footer.
+- [ ] Visual review and real Chrome acceptance before merging.
+
 ## Future — World stock markets (deferred)
 
 - [ ] Choose market data feeds and review licensing/realtime vs delayed status.
