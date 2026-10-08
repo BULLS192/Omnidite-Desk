@@ -76,11 +76,11 @@ function sanitizeModule(x,ids){
   const githubCache=vGithubCache?{
    repo:chars(vGithubCache.repo,181),checkedAt:Number.isFinite(vGithubCache.checkedAt)?vGithubCache.checkedAt:0,
    openIssues:Math.max(0,Number(vGithubCache.openIssues)||0),openPrs:Math.max(0,Number(vGithubCache.openPrs)||0),
-   failedWorkflows:Math.max(0,Number(vGithubCache.failedWorkflows)||0),lastWorkflow:chars(vGithubCache.lastWorkflow,140),
+   failedWorkflows:Math.max(0,Number(vGithubCache.failedWorkflows)||0),lastWorkflow:chars(vGithubCache.lastWorkflow,140),lastCommit:chars(vGithubCache.lastCommit,120),
    url:http(vGithubCache.url)
   }:null;
   const pulseSettings={
-   url:typeof obj.pulseSettings?.url==='string'&&/^https:\/\/[a-z0-9.-]*omnidite\.com(?:[:/]|$)/i.test(obj.pulseSettings.url)?chars(obj.pulseSettings.url,1000):'',
+   url:(()=>{try{const u=new URL(obj.pulseSettings?.url||'');return u.protocol==='https:'&&(u.hostname==='omnidite.com'||u.hostname.endsWith('.omnidite.com'))&&!u.username&&!u.password?chars(u.href,1000):'';}catch{return '';}})(),
    auto:!!obj.pulseSettings?.auto
   };
   const vPulse=obj.pulseCache&&typeof obj.pulseCache==='object'?obj.pulseCache:null;
