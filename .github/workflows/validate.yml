@@ -15,6 +15,44 @@ jobs:
         run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check desk-google-calendar.js && node --check desk-v055.js && node --check background.js
       - name: Manifest and assets checks
         run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs && node tools/google-calendar-smoke.mjs && node tools/v055-visual-smoke.mjs
+  design-screenshots:
+    if: github.event_name == 'pull_request' && github.head_ref == 'design/desk-v055-visual-refresh'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate fake-data sample pages
+        run: node tools/generate-design-review.mjs
+      - name: Capture desktop and Side Panel visual review
+        shell: bash
+        run: |
+          set -euo pipefail
+          BROWSER=$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$BROWSER" ]; then echo "No Chrome/Chromium browser available"; exit 1; fi
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/desk-preview-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          sleep 1
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=2000 --window-size=1600,1050 --screenshot="$PWD/preview-desktop.png" http://127.0.0.1:8765/design-review-desktop.html
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=2000 --window-size=440,1000 --screenshot="$PWD/preview-sidepanel.png" http://127.0.0.1:8765/design-review-sidepanel.html
+          test -s preview-desktop.png
+          test -s preview-sidepanel.png
+      - name: Attach sample screenshots and offline HTML previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: Desk-V055-sample-design-preview
+          path: |
+            preview-desktop.png
+            preview-sidepanel.png
+            design-review-desktop.html
+            design-review-sidepanel.html
+            styles.css
+            desk-v03.css
+            desk-v045.css
+            desk-v055.css
+          retention-days: 14
   native-host-build:
     runs-on: windows-latest
     steps:
