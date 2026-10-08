@@ -12,11 +12,11 @@ jobs:
         with:
           node-version: '22'
       - name: Syntax validation
-        run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check desk-google-calendar.js && node --check desk-v055.js && node --check desk-focus-audio.js && node --check background.js
+        run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check desk-google-calendar.js && node --check desk-v055.js && node --check desk-focus-audio.js && node --check desk-compact.js && node --check background.js
       - name: Manifest and assets checks
-        run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs && node tools/google-calendar-smoke.mjs && node tools/v055-visual-smoke.mjs && node tools/v055-widget-smoke.mjs && node tools/v055-focus-smoke.mjs
+        run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs && node tools/google-calendar-smoke.mjs && node tools/v055-visual-smoke.mjs && node tools/v055-widget-smoke.mjs && node tools/v055-focus-smoke.mjs && node tools/v056-layout-smoke.mjs
   design-screenshots:
-    if: github.event_name == 'pull_request' && github.head_ref == 'design/desk-v055-visual-refresh'
+    if: github.event_name == 'pull_request' && (github.head_ref == 'design/desk-v055-visual-refresh' || github.head_ref == 'feature/desk-v056-compact-masonry')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
