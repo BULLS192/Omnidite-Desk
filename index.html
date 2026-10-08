@@ -82,6 +82,11 @@
           <button type="button" class="smallbutton" data-v05="overview">▥ Operations</button>
           <span id="deskV05Badge" class="desk-ops-badge" aria-live="polite">Systems: not live</span>
         </div>
+        <section class="desk-ops-strip" aria-label="Operational status overview">
+          <button type="button" class="desk-ops-tile" data-v05="github"><span>GITHUB</span><strong id="deskV05GitHub">Not checked</strong><small>Read-only repository activity</small></button>
+          <button type="button" class="desk-ops-tile" data-v05="pulse"><span>OMNIDITE PULSE</span><strong id="deskV05Pulse">Not connected</strong><small>Hosting and service health</small></button>
+          <button type="button" class="desk-ops-tile" data-v05="overview"><span>LOCAL ALERTS</span><strong id="deskV05Alerts">No saved alerts</strong><small>Review warnings and thresholds</small></button>
+        </section>
         <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <button class="page-edit" data-v03="layouts">Layouts</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
         <div id="grid" class="modules" aria-live="polite"></div>
         <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.5.0</span></div>
