@@ -24,7 +24,8 @@ function alertRecord(source,message,severity){
 }
 async function askHost(origin){
  if(!isActive())throw Error('Monitoring is available only in the installed Chrome extension.');
- const granted=await chrome.permissions.contains({origins:[origin]})||await chrome.permissions.request({origins:[origin]});
+ // Invoke permission request directly from the user's refresh click; no prompt if already granted.
+ const granted=await chrome.permissions.request({origins:[origin]});
  if(!granted)throw Error('Permission for the selected monitoring host was declined.');
 }
 async function getJson(url){
@@ -54,9 +55,9 @@ function github(){
 function githubSummary(){
  const c=S().githubCache;if(!c?.repo)return '';
  return '<div class="desk-status-card"><h3>'+esc(c.repo)+'</h3><p class="helper">Last checked: '+esc(formatWhen(c.checkedAt))+' · Source: Public GitHub REST API</p>'+
- '<div class="desk-stats"><div><strong>'+esc(c.openIssues)+'</strong><small>Open issues</small></div><div><strong>'+esc(c.openPrs)+'</strong><small>Open PRs</small></div><div><strong>'+esc(c.failedWorkflows)+'</strong><small>Failed / cancelled recent workflows</small></div></div>'+
+ '<div class="desk-stats"><div><strong>~'+esc(c.openIssues)+'</strong><small>Open issues (estimate)</small></div><div><strong>'+esc(c.openPrs)+'</strong><small>Open PRs (first 30)</small></div><div><strong>'+esc(c.failedWorkflows)+'</strong><small>Failed / cancelled recent workflows</small></div></div>'+
  (c.url?'<a href="'+esc(c.url)+'" target="_blank" rel="noopener noreferrer" class="desk-item-link">Open repository ↗</a>':'')+
- (c.lastWorkflow?'<p class="helper">Latest workflow: '+esc(c.lastWorkflow)+'</p>':'')+'</div>';
+ (c.lastWorkflow?'<p class="helper">Latest workflow: '+esc(c.lastWorkflow)+'</p>':'')+(c.lastCommit?'<p class="helper">Latest commit: '+esc(c.lastCommit)+'</p>':'')+'</div>';
 }
 async function refreshGithub(){
  const repo=S().githubSelected||S().githubRepos?.[0];
@@ -66,21 +67,23 @@ async function refreshGithub(){
  try{
   await askHost(GITHUB);
   const path='https://api.github.com/repos/'+repo;
-  const [base,prs,workflows]=await Promise.all([
+  const [base,prs,workflows,commits]=await Promise.all([
    getJson(path),
    getJson(path+'/pulls?state=open&per_page=30'),
-   getJson(path+'/actions/runs?per_page=15')
+   getJson(path+'/actions/runs?per_page=15'),
+   getJson(path+'/commits?per_page=1').catch(()=>[])
   ]);
   if(!base||!Array.isArray(prs)||!Array.isArray(workflows.workflow_runs))throw Error('GitHub returned unexpected data');
   const recent=workflows.workflow_runs;
   const failed=recent.filter(w=>['failure','timed_out','cancelled'].includes(w.conclusion)).length;
-  const latest=recent[0];
+  const latest=recent[0],commit=Array.isArray(commits)?commits[0]:null;
   S().githubCache={
    repo,checkedAt:Date.now(),
    openIssues:Math.max(0,Math.min(1000000,Number(base.open_issues_count||0)-prs.length)),
    openPrs:prs.length,
    failedWorkflows:failed,
    lastWorkflow:String(latest?.name||'No workflows').slice(0,100)+(latest?.conclusion?' · '+String(latest.conclusion).slice(0,30):''),
+   lastCommit:String(commit?.commit?.message||'No recent commits').split('\n')[0].slice(0,120),
    url:isHttps(base.html_url)?base.html_url:''
   };
   if(failed>0)alertRecord('GitHub '+repo,failed+' of the latest '+recent.length+' workflow runs failed, cancelled or timed out','warning');
@@ -98,7 +101,7 @@ function pulseSettings(){
 function pulseSummary(){
  const cache=S().pulseCache||{};
  if(!cache.providers?.length)return '<p class="empty-note">No monitoring feed connected or imported yet.</p>';
- return '<p class="helper">Last checked: '+esc(formatWhen(cache.checkedAt))+' · '+esc(cache.source||'Read-only feed')+'</p>'+
+ return '<p class="helper">Last checked: '+esc(formatWhen(cache.checkedAt))+' · '+esc(cache.source||'Read-only feed')+(cache.capturedAt?' · Source captured: '+esc(cache.capturedAt):' · Source capture time unknown')+'</p>'+
  cache.providers.map(p=>'<div class="desk-item"><div class="desk-item-main"><strong>'+esc(p.name)+' <span class="desk-status '+esc(p.status)+'">'+esc(p.status.toUpperCase())+'</span></strong>'+
  (p.metrics||[]).map(m=>'<small>'+esc(m.label)+': '+esc(m.value)+esc(m.unit||'')+(Number.isFinite(m.limit)?' / '+esc(m.limit)+esc(m.unit||''):'')+'</small>').join('')+'</div></div>').join('');
 }
@@ -157,8 +160,11 @@ function overview(){
 }
 function updateBadge(){
  const el=$('#deskV05Badge');if(!el)return;
- const c=S().pulseCache,alertCount=(S().operationalAlerts||[]).length,stale=!c?.checkedAt||Date.now()-c.checkedAt>3600000;
- el.textContent=stale?'Systems: not live':alertCount?'Systems: '+alertCount+' alert'+(alertCount===1?'':'s'):'Systems: checked';
+ const c=S().pulseCache,alertCount=(S().operationalAlerts||[]).length;
+ const captured=Date.parse(c?.capturedAt||'');
+ const isSnapshot=c?.source==='Imported JSON snapshot';
+ const stale=!c?.checkedAt||Date.now()-c.checkedAt>3600000||(Number.isFinite(captured)&&Date.now()-captured>3600000);
+ el.textContent=isSnapshot?'Systems: snapshot':stale?'Systems: not live':alertCount?'Systems: '+alertCount+' alert'+(alertCount===1?'':'s'):'Systems: checked';
  el.dataset.alert=alertCount?'yes':'no';
 }
 document.addEventListener('click',e=>{
