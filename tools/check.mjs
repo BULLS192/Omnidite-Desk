@@ -4,7 +4,7 @@ const manifest=JSON.parse(read('manifest.json'));
 const files=['index.html','sidepanel.html','app.js','styles.css','background.js','icons/icon16.png','icons/icon48.png','icons/icon128.png'];
 for(const f of files) if(!fs.existsSync(new URL('../'+f,import.meta.url)))throw Error(`Missing file: ${f}`);
 if(manifest.manifest_version!==3||manifest.version!=='0.2.2')throw Error('Unexpected extension version');
-if(JSON.stringify(manifest.permissions)!=='["storage","sidePanel","nativeMessaging"]')throw Error('Unexpected permissions');
+if(JSON.stringify(manifest.permissions)!=='["storage","sidePanel","nativeMessaging","favicon"]')throw Error('Unexpected permissions');
 const expectedHosts=['https://geocoding-api.open-meteo.com/*','https://api.open-meteo.com/*'];
 if(JSON.stringify(manifest.host_permissions)!==JSON.stringify(expectedHosts))throw Error('Unexpected weather API hosts');
 if(!manifest.key||manifest.key.length<150)throw Error('Stable public key missing');
