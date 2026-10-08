@@ -34,3 +34,14 @@ body.side-mode .desk-ops-grid{grid-template-columns:1fr}
 /* Multiple new tools must remain scrollable on short desktop screens. */
 .sidebar{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 .sidebar-bottom{margin-top:auto;padding-top:18px;flex-shrink:0}
+
+.desk-ops-strip{margin-top:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.desk-ops-tile{border:1px solid #2e4562;background:#13253b;border-radius:11px;display:flex;flex-direction:column;text-align:left;padding:13px 15px;gap:6px;min-width:0;color:#c9dcf5}
+.desk-ops-tile:hover{border-color:var(--accent,#4a8df5);background:#1b3351}
+.desk-ops-tile>span{font-size:9px;letter-spacing:1.3px;color:#7297c5;font-weight:800}
+.desk-ops-tile strong{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.desk-ops-tile small{font-size:10px;color:#869ebc}
+@media(max-width:650px){.desk-ops-strip{grid-template-columns:1fr;gap:8px}.desk-ops-tile{padding:11px}}
+body.side-mode .desk-ops-strip{grid-template-columns:1fr;gap:7px}
+:root[data-theme="light"] .desk-ops-tile{background:#e6f0fc;border-color:#c7d7e8;color:#244c78}
+:root[data-theme="light"] .desk-ops-tile>span,:root[data-theme="light"] .desk-ops-tile small{color:#557297}
