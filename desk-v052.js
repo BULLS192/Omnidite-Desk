@@ -29,11 +29,11 @@ function paint(){
 function controlModal(message=''){
  const status=last.status==='error'?'Native helper needs setup':!last.installed?'Auto-start not installed':last.running?'Running locally':'Not responding';
  const controls='<div class="modal-actions">'+actionButton('▶ Start','start',busy||!last.installed)+actionButton('■ Stop','stop',busy||!last.installed)+actionButton('↻ Restart','restart',busy||!last.installed)+actionButton('Check status','status',busy)+'</div>';
- api.show('<div class="modal-pad desk-ops"><div class="modal-top"><div><span class="eyebrow">OMNIDITE / BACKGROUND SERVICE</span><h2 id="modalTitle">Pulse background controls</h2><p>Manage the fixed OmniditePulse Windows task only.</p></div><button type="button" class="modal-close" data-v052="close">✕</button></div>'+
+ api.show('<div class="modal-pad desk-ops"><div class="modal-top"><div><span class="eyebrow">OMNIDITE / BACKGROUND SERVICE</span><h2 id="modalTitle">Pulse background controls</h2><p>Manage the installed OmniditePulse task or current-user Startup shortcut only.</p></div><button type="button" class="modal-close" data-v052="close">✕</button></div>'+
  '<div class="desk-status-card"><h3>Local Pulse: '+esc(status)+'</h3><p>'+esc(message||last.message||'Checking Windows task status…')+'</p></div>'+
  controls+
- '<p class="helper">One-time Windows setup: update C:\\omnidite-pulse, then run <strong>windows\\Install-Background.bat</strong>. In your Omnidite Desk installation folder, run <strong>Setup-OneClickUpdates.bat</strong> once more to install the updated native helper. Neither action needs administrator access on a typical personal Windows PC.</p>'+
- '<p class="helper">Start/Stop/Restart control the Windows scheduled task, not unrelated Node or manually started PowerShell processes. Pulse reads your local provider credentials. The task runs while you are signed in and the PC is awake.</p>'+
+ '<p class="helper">One-time Windows setup: update C:\\omnidite-pulse, then run <strong>windows\\Install-Background.bat</strong>. In your Omnidite Desk installation folder, run <strong>Setup-OneClickUpdates.bat</strong> once more to install the updated native helper. If Task Scheduler is denied, the Pulse installer now uses your per-user Startup folder instead.</p>'+
+ '<p class="helper">Start/Stop/Restart control only the Pulse scheduled task or its verified managed Node process. They never stop unrelated Node applications or a manually launched Pulse instance. Pulse reads your local provider credentials. The task runs while you are signed in and the PC is awake.</p>'+
  '<p class="helper">Local Pulse API: <a href="http://127.0.0.1:4173/api/health" target="_blank" rel="noopener noreferrer">Check connectivity ↗</a></p></div>');
 }
 async function refresh(show=false){
@@ -53,7 +53,7 @@ async function run(action){
  if(busy)return;
  if(!['start','stop','restart'].includes(action))return;
  if(['stop','restart'].includes(action)&&!confirm(action==='stop'?'Stop the Pulse background task?':'Restart the Pulse background task?'))return;
- busy=true;controlModal('Sending '+action+' command to Windows Task Scheduler…');
+ busy=true;controlModal('Sending '+action+' command to the local Pulse service…');
  try{
   const result=await send('pulse'+action[0].toUpperCase()+action.slice(1));
   last={installed:!!result.installed,running:!!result.running,status:String(result.status||'unknown'),message:String(result.message||'')};
