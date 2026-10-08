@@ -127,6 +127,116 @@ function settings(){show(`<div class="modal-pad">${header('Desk settings','Perso
  <div class="modal-actions"><button type="button" class="button ghost" data-modal="export">↓ Export JSON</button><button type="button" class="button ghost" data-modal="import">↑ Import JSON</button><button type="button" class="button ghost danger" data-modal="reset">Reset</button></div></div>`);}
 function pageDialog(edit=false){const p=page();show(`<form id="pageForm" class="modal-pad" data-edit="${edit?'yes':'no'}">${header(edit?'Edit workspace':'New workspace',edit?'Rename this page or remove it.':'Create another dashboard page for a different focus.')}<label class="label">Workspace title</label><input name="title" class="modal-input" required maxlength="45" value="${edit?esc(p.title):''}" placeholder="e.g. Operations"><div class="modal-actions"><button class="button primary" type="submit">${edit?'Save name':'Create workspace'}</button>${edit&&state.pages.length>1?'<button type="button" class="button ghost danger" data-modal="delete-page">Delete workspace</button>':''}</div></form>`);}
 const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],['It always seems impossible until it’s done.','Nelson Mandela'],['Simplicity is the ultimate sophistication.','Often attributed to Leonardo da Vinci'],['The best way out is always through.','Robert Frost']];
+
+ const citySearchResults=new Map();
+ function defaultClockCities(){return [
+  {id:'sg',name:'Singapore',country:'Singapore',timezone:'Asia/Singapore',latitude:1.3521,longitude:103.8198},
+  {id:'hou',name:'Houston',country:'United States',timezone:'America/Chicago',latitude:29.7604,longitude:-95.3698},
+  {id:'utc',name:'UTC',country:'Reference',timezone:'UTC',latitude:0,longitude:0}
+ ];}
+ function defaultWeatherCities(){return [
+  {id:'sg',name:'Singapore',country:'Singapore',timezone:'Asia/Singapore',latitude:1.3521,longitude:103.8198},
+  {id:'hou',name:'Houston',country:'United States',timezone:'America/Chicago',latitude:29.7604,longitude:-95.3698}
+ ];}
+ function sanitizeCities(value,kind){
+  const raw=Array.isArray(value)?value:(kind==='clock'?defaultClockCities():defaultWeatherCities());
+  return raw.slice(0,kind==='clock'?24:15).filter(c=>c&&typeof c==='object').map(c=>{
+   const timezone=String(c.timezone||'UTC');
+   try{new Intl.DateTimeFormat('en-US',{timeZone:timezone});}catch{return null;}
+   const latitude=Number(c.latitude),longitude=Number(c.longitude);
+   if(!Number.isFinite(latitude)||Math.abs(latitude)>90||!Number.isFinite(longitude)||Math.abs(longitude)>180)return null;
+   return {id:cleanText(String(c.id||uid()),90),name:cleanText(c.name||'City',80),
+    country:cleanText(c.country||'',80),timezone:cleanText(timezone,90),latitude,longitude};
+  }).filter(Boolean);
+ }
+ function cityPicker(m){
+  return `<form class="city-search" data-city-search="${esc(m.id)}">
+   <input name="city" type="search" minlength="2" maxlength="100" placeholder="Search for a city…" aria-label="City name" required>
+   <button class="smallbutton" type="submit">Find city</button></form>
+   <div class="city-results" data-city-results="${esc(m.id)}" role="status" aria-live="polite"></div>`;
+ }
+ function timeOffset(date,zone){
+  try{const label=new Intl.DateTimeFormat('en-US',{timeZone:zone,timeZoneName:'shortOffset'}).formatToParts(date).find(x=>x.type==='timeZoneName')?.value||'GMT';
+   const match=label.match(/^(?:GMT|UTC)([+-])(\d{1,2})(?::(\d{2}))?$/);
+   if(!match)return 0;
+   return (match[1]==='-'?-1:1)*(Number(match[2])*60+Number(match[3]||0));
+  }catch{return 0;}
+ }
+ function offsetLabel(date,zone){
+  const mins=timeOffset(date,zone)+date.getTimezoneOffset();
+  const abs=Math.abs(mins);const hours=Math.floor(abs/60),minutes=abs%60;
+  return (mins>=0?'+':'−')+hours+(minutes?':'+String(minutes).padStart(2,'0'):'')+'h from you';
+ }
+ function renderWorldClocks(m){
+  const cities=m.config.cities||[];
+  return `<p class="module-sub">ANALOG + DIGITAL · ${cities.length} CITIES · RELATIVE TO YOUR DEVICE TIME</p>
+   <div class="worldclocks">${cities.map(c=>`<div class="clock-city" data-clock-city="${esc(c.timezone)}">
+    <div class="analog-face" aria-hidden="true"><span class="analog-tick tick-12"></span><span class="analog-tick tick-3"></span><span class="analog-tick tick-6"></span><span class="analog-tick tick-9"></span>
+     <i class="hand hour-hand"></i><i class="hand minute-hand"></i><i class="hand second-hand"></i><b class="clock-pin"></b></div>
+    <div class="clock-information"><div class="clock-city-name">${esc(c.name)} <span>${esc(c.country)}</span></div>
+    <div class="clock-time" data-clock-time="${esc(c.timezone)}">--:--:--</div>
+    <div class="clock-date" data-clock-date="${esc(c.timezone)}">—</div>
+    <div class="clock-diff" data-clock-offset="${esc(c.timezone)}">—</div></div>
+    <button class="city-remove" title="Remove city" aria-label="Remove ${esc(c.name)}" data-city-remove="${esc(c.id)}" data-city-mid="${esc(m.id)}">×</button>
+    </div>`).join('')||'<p class="empty-note">Search for a city below to add your first clock.</p>'}</div>${cityPicker(m)}`;
+ }
+ function updateWorldClocks(now){
+  const localOffset=now.getTimezoneOffset();
+  document.querySelectorAll('[data-clock-city]').forEach(el=>{
+   const zone=el.dataset.clockCity;
+   try{
+    const parts=new Intl.DateTimeFormat('en-GB',{timeZone:zone,hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now);
+    const n=t=>Number(parts.find(x=>x.type===t)?.value||0);
+    const h=n('hour'),m=n('minute'),s=n('second');
+    const tm=el.querySelector('[data-clock-time]'),dt=el.querySelector('[data-clock-date]'),off=el.querySelector('[data-clock-offset]');
+    if(tm)tm.textContent=parts.filter(p=>['hour','minute','second','literal'].includes(p.type)).map(p=>p.value).join('');
+    if(dt)dt.textContent=new Intl.DateTimeFormat('en-US',{timeZone:zone,weekday:'short',year:'numeric',month:'short',day:'numeric'}).format(now);
+    if(off)off.textContent=offsetLabel(now,zone);
+    for(const [selector,degrees] of [['.hour-hand',(h%12+m/60)*30],['.minute-hand',(m+s/60)*6],['.second-hand',s*6]]){
+     const hand=el.querySelector(selector);if(hand)hand.style.transform=`translate(-50%,-100%) rotate(${degrees}deg)`;
+    }
+   }catch{const tm=el.querySelector('[data-clock-time]');if(tm)tm.textContent='Time unavailable';}
+  });
+ }
+ async function findCities(mid,query){
+  const resultEl=document.querySelector(`[data-city-results="${CSS.escape(mid)}"]`);if(!resultEl)return;
+  resultEl.textContent='Searching cities…';
+  try{
+   const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(query)+'&count=8&language=en&format=json';
+   const response=await fetch(url,{signal:AbortSignal.timeout(12000)});if(!response.ok)throw Error('City search unavailable');
+   const data=await response.json();
+   const list=(data.results||[]).filter(c=>c.timezone&&Number.isFinite(c.latitude)&&Number.isFinite(c.longitude)).map(c=>({
+    id:String(c.id),name:String(c.name),country:String([c.admin1,c.country].filter(Boolean).join(', ')),timezone:String(c.timezone),latitude:c.latitude,longitude:c.longitude
+   }));
+   citySearchResults.set(mid,list);
+   // Ignore stale results when a workspace has been changed.
+   const el=document.querySelector(`[data-city-results="${CSS.escape(mid)}"]`);if(!el)return;
+   el.innerHTML=list.length?list.map((c,i)=>`<button class="city-result" type="button" data-city-add="${i}" data-city-mid="${esc(mid)}"><strong>${esc(c.name)}</strong><small>${esc(c.country)} · ${esc(c.timezone)}</small><span>＋</span></button>`).join(''):'<p class="empty-note">No matching cities. Try adding a country after a comma.</p>';
+  }catch(e){const el=document.querySelector(`[data-city-results="${CSS.escape(mid)}"]`);if(el)el.textContent='Could not search cities. Check your connection and try again.';}
+ }
+ document.addEventListener('submit',e=>{
+  const form=e.target.closest('[data-city-search]');if(!form)return;
+  e.preventDefault();findCities(form.dataset.citySearch,form.elements.city.value.trim());
+ });
+ document.addEventListener('click',e=>{
+  const add=e.target.closest('[data-city-add]'),del=e.target.closest('[data-city-remove]');
+  if(add){
+   const mid=add.dataset.cityMid,m=moduleFor(mid);if(!m||!['clock','weather'].includes(m.type))return;
+   const city=citySearchResults.get(mid)?.[Number(add.dataset.cityAdd)];if(!city)return;
+   if((m.config.cities||[]).some(c=>c.id===city.id||c.timezone===city.timezone&&c.name===city.name))return;
+   if(m.config.cities.length>=(m.type==='clock'?24:15)){alert('Maximum cities reached for this widget.');return;}
+   m.config.cities.push({...city});
+   if(m.type==='weather')m.config.selected=city.id;
+   change();return;
+  }
+  if(del){
+   const m=moduleFor(del.dataset.cityMid);if(!m||!m.config.cities)return;
+   m.config.cities=m.config.cities.filter(c=>c.id!==del.dataset.cityRemove);
+   if(m.type==='weather'&&!m.config.cities.some(c=>c.id===m.config.selected))m.config.selected=m.config.cities[0]?.id||'';
+   change();
+  }
+ });
+
 function content(m){const c=m.config;
  switch(m.type){
  case 'links':return renderLinkModule(m);
