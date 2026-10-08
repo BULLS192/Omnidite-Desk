@@ -27,7 +27,14 @@
         </div>
       </header>
       <div class="content">
-        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.2</div>
+        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.2.1</div>
+        <section id="deskUpdateBar" class="desk-update-bar" aria-label="Software updates">
+          <span class="update-indicator" aria-hidden="true">↻</span>
+          <div class="update-description"><strong>OMNIDITE DESK UPDATES</strong><span id="deskUpdateStatus" role="status" aria-live="polite">Check GitHub for new Desk features.</span></div>
+          <button id="deskCheckButton" type="button" class="smallbutton">Check updates</button>
+          <button id="deskInstallButton" type="button" class="button primary" hidden>Update now</button>
+        </section>
+        <p id="deskUpdateHelp" class="update-help" hidden>One-time setup required: from your Omnidite-Desk folder run <strong>Setup-OneClickUpdates.bat</strong>, then reload this extension. If you have not received these files yet, run <strong>Update-Desk.bat</strong> once first.</p>
         <div class="mobile-pages" id="mobilePages"></div><div class="hero-row">
           <div><h1 id="welcomeHeading">Your space to think, build,<br>and move faster<span class="highlight">.</span></h1><p class="lede">Everything important. Exactly where you want it.</p></div>
           <div class="hero-decoration" aria-hidden="true"><span class="orb orb-one"></span><span class="orb orb-two"></span></div>
@@ -40,7 +47,7 @@
         </form>
         <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
         <div id="grid" class="modules" aria-live="polite"></div>
-        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.2</span></div>
+        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.2.1</span></div>
       </div>
     </main>
   </div>
