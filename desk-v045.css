@@ -53,3 +53,17 @@ body.side-mode .desk-ops-strip{grid-template-columns:1fr;gap:7px}
 .desk-pulse-live[data-level="warning"]{color:#f4cd82;border-color:#775b32}
 .desk-pulse-live[data-level="unknown"]{color:#9eb1c7}
 :root[data-theme="light"] .desk-pulse-live{color:#244c78}
+
+/* V0.5.4: Google Calendar live reader — consistent with Desk's modal system. */
+.desk-google-calendar .desk-gcal-toolbar{display:flex;align-items:center;gap:12px;margin:14px 0}
+.desk-google-calendar .desk-gcal-toolbar .label{margin:0;white-space:nowrap}
+.desk-google-calendar .desk-gcal-toolbar select{width:auto;min-width:135px}
+.desk-google-calendar .desk-gcal-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0 14px}
+.desk-google-calendar .desk-gcal-choice{display:flex;gap:9px;align-items:center;padding:9px 11px;border:1px solid #304665;border-radius:8px;font-size:12px;color:#c4d6ec;min-width:0}
+.desk-google-calendar .desk-gcal-choice span{overflow-wrap:anywhere}
+.desk-google-calendar .desk-gcal-choice input{flex-shrink:0}
+.desk-google-calendar .desk-status-card code{display:inline-block;max-width:100%;overflow-wrap:anywhere}
+.desk-google-calendar .desk-item-main strong{overflow-wrap:anywhere}
+@media(max-width:650px){.desk-google-calendar .desk-gcal-choices{grid-template-columns:1fr}}
+body.side-mode .desk-google-calendar .desk-gcal-choices{grid-template-columns:1fr}
+:root[data-theme="light"] .desk-google-calendar .desk-gcal-choice{border-color:#bacbdc;color:#284568}
