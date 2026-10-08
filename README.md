@@ -1,11 +1,22 @@
-# Omnidite Desk v0.2.2 — personal Chrome command center
+# Omnidite Desk v0.3.0 — personal Chrome command center
 
 **No web hosting, Vercel builds, backend, third-party script loaders, API keys, or Chrome Web Store publication required.** Uses Manifest V3 and Chrome's built-in New Tab override / Side Panel.
 
-## What's in v0.2
+## What's new in V0.3
+
+- **Global command bar**: click Commands or press `Ctrl+K`. Search workspaces, tracked projects, link widgets, incomplete tasks, saved captures, and quick actions. Navigate with arrow keys and Enter.
+- **Projects hub**: maintain a personal directory of project names, optional URLs, and manual status labels; launch project links from the directory or command bar. Seeded suggestions include Omnidite, Providence, TTT-OS, Atlas, SGBuddy and F.R.E.Y.A. You can edit/delete each entry.
+- **Quick capture + research library**: manually save research titles, pasted webpage URLs, notes and project associations; browse, filter, edit or delete your captures. The app does not read arbitrary webpages automatically.
+- **Layout studio**: Compact/Balanced/Wide workspace presets; up to 12 named layout snapshots; drag or use widget up/down controls to reorder; resize in increments of 1 to 12 columns and vertically up to 1000px. Mobile and side-panel views remain single-column.
+- **Backward-compatible data**: original v0.2 state storage key, Chrome Sync opt-in, backups, native Git updater, themes, weather, wallpapers, task/notes/widgets remain. New project/capture/layout data is in the same local state and optional Chrome Sync/export backups. Wallpaper images remain device-local.
+- **Automated checks**: `node tools/check.mjs && node tools/v03-smoke.mjs` validates basic source integrity and interaction logic; final Windows Chrome tests are still necessary before release.
+
+**Recommended upgrade path:** Before adopting V0.3, export a backup in your current V0.2.2 Settings. Development happens on `feature/desk-v0.3-foundation`; your one-click updater follows **main**, so it will not expose the new version until the reviewed pull request is merged. Do not point your existing production clone at this feature branch unless intentionally testing it.
+
+## What's in v0.2 (preserved)
 
 - Multi-page workspaces: Overview, Projects, Personal; add, rename, delete, and move widgets between pages.
-- Drag from the **⠿** header handle to reorder. Drag the **bottom-right diagonal handle** to resize across a 12-column responsive grid (snaps to supported column widths) and change card height.
+- Drag from the **⠿** header handle to reorder. Drag the **bottom-right diagonal handle** to resize across a 12-column responsive grid (now supports all twelve width increments) and change card height.
 - Midnight, Slate, and Light themes, customizable accent, search provider and dashboard name.
 - Eleven widgets: link launcher, tasks, notes, world clocks, focus timer, local agenda, countdown, habits, metric counter, inspirational quote.
 - Searchable world clocks (up to 24), with analog and digital display, date and live UTC differences relative to your current computer timezone (automatically accounts for daylight-saving transitions).
@@ -65,7 +76,7 @@ Chrome extensions cannot execute Git or write their own source code directly, so
 **Uninstall:** Remove the `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.omnidite.desk_updater` registry key and the locally compiled `native-host/OmniditeDeskHost.exe`. Removing the extension alone does not unregister the host.
 
 
-Repository: **https://github.com/BULLS192/Omnidite-Desk**. The full v0.2 source is already committed to `main` with a GitHub Actions **validation-only** workflow (no hosting or deployment).
+Repository: **https://github.com/BULLS192/Omnidite-Desk**. Stable released source is committed to `main`; V0.3 development is on a feature branch with a GitHub Actions **validation-only** workflow (no hosting or deployment).
 
 **Recommended: clone for continuous updates.** On your Windows PC, open PowerShell in the parent directory where you keep coding projects:
 
@@ -87,6 +98,8 @@ git pull --ff-only origin main
 
 - `index.html`, `sidepanel.html`: dashboard shells
 - `app.js`: widgets, page management, grid interactions, storage and sync
+- `desk-v03.js`, `desk-v03.css`: V0.3 command bar, research, project hub and layout studio
+- `tools/v03-smoke.mjs`: source-level interaction smoke tests
 - `styles.css`: visual styles and responsive themes
 - `manifest.json`: manifest and shared **public key**; keep unchanged across machines
 - `background.js`: side-panel toggle
@@ -100,4 +113,4 @@ Extension permissions are `storage`, `sidePanel`, `nativeMessaging` and `favicon
 
 ### Browser testing
 
-Source-level and browser-interaction smoke checks were completed on the generated package. Run `node tools/check.mjs` for static manifest/files check. Windows native-host registration and Chrome reload must also be validated on the actual Windows machine. Real-world Chrome Sync between accounts/devices remains to be validated on your own signed-in installations.
+Source-level and browser-interaction smoke checks were completed on the generated package. Run `node tools/check.mjs && node tools/v03-smoke.mjs` for static and behavior smoke tests. Windows native-host registration and Chrome reload must also be validated on the actual Windows machine. Real-world Chrome Sync between accounts/devices remains to be validated on your own signed-in installations.
