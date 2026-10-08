@@ -30,6 +30,11 @@
   measuring=true;
   try{
    const cards=[...grid.querySelectorAll(':scope > .module')];
+   if(grid.dataset.sizing==='snap'){
+    // Snap mode owns cell dimensions; remove any prior freeform inline heights and row spans.
+    for(const card of cards)resetCard(card);
+    return;
+   }
    if(layoutValue(grid)==='rows'){
     for(const card of cards){
      resetCard(card);
