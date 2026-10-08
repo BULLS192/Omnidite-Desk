@@ -30,3 +30,7 @@ body.side-mode .desk-ops-grid{grid-template-columns:1fr}
 :root[data-theme="light"] .desk-status-card{background:#e9f1fb;border-color:#c7d6e6}
 :root[data-theme="light"] .desk-status-card p,:root[data-theme="light"] .desk-status-card small{color:#506580}
 :root[data-theme="light"] .desk-stats strong{color:#1e4672}
+
+/* Multiple new tools must remain scrollable on short desktop screens. */
+.sidebar{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.sidebar-bottom{margin-top:auto;padding-top:18px;flex-shrink:0}
