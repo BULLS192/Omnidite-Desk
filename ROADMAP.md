@@ -12,7 +12,7 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - **Ship one phase at a time**. Developer branch → tests → manual Chrome verification → review → merge to main; the existing updater follows main.
 - Use optional Chrome Sync only for small personal data. Live wallpapers remain locally accessible; export/import JSON is the disaster recovery mechanism.
 
-## V0.5.5 — Desk aesthetics (design preview, NOT released)
+## V0.5.5 — Desk visual refresh (released on main in PR #13)
 
 - [x] Focused navigation, primary shortcuts and collapsible secondary tools.
 - [x] Calendar at-a-glance tile using only existing local Google Calendar cache.
@@ -22,8 +22,8 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Implement Google Calendar month/week/day, selected-day agenda and compact controls.
 - [x] Implement built-in timer alarms, preview, volume and local-only custom upload.
 - [ ] Verify live five-city rendering, local reorder persistence, sound playback and Google Month/Week/Day on user's Windows Chrome.
-- [ ] Manual visual acceptance for wide New Tab, narrow Side Panel, custom backgrounds, variable widget widths and light theme.
-- [ ] User design approval before merge to `main` / one-click update.
+- [ ] Post-update verification on user's Windows Chrome: wide New Tab, narrow Side Panel, wallpapers and Light theme.
+- [x] User approved aesthetic direction; PR #13 merged into `main` and production CI passed.
 
 ## Future — World stock markets (deferred)
 
