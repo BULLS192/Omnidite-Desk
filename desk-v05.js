@@ -132,11 +132,11 @@ function checkPulseAlerts(cache){
   for(const m of p.metrics){if(typeof m.value==='number'&&m.limit!==null&&m.limit>0&&m.value/m.limit>=0.8)alertRecord(p.name,m.label+' reached '+Math.round(m.value/m.limit*100)+'% of reported limit','warning');}
  }
 }
-async function refreshPulse(silent=false){
+async function refreshPulse(silent=false,force=false){
  const url=S().pulseSettings?.url;
  if(!pulseAllowed(url)){if(!silent)alert('Configure a localhost:4173/api/providers feed or an HTTPS omnidite.com feed.');return;}
  const last=S().pulseCache?.checkedAt;
- if(last&&Date.now()-last<(silent?900000:60000)){if(!silent)alert('Feed checked recently. Wait a minute before refreshing.');return;}
+ if(!force&&last&&Date.now()-last<(silent?900000:60000)){if(!silent)alert('Feed checked recently. Wait a minute before refreshing.');return;}
  try{
   const u=new URL(url),origin=pulsePermissionOrigin(u);
   // Host permission is granted to this Omnidite origin, never all sites.
@@ -187,9 +187,8 @@ document.addEventListener('click',e=>{
   // Save the exact local URL, then invoke the Chrome permission request immediately from this click.
   const previous=S().pulseSettings||{url:'',auto:false};
   S().pulseSettings={url:LOCAL_PULSE,auto:previous.auto};
-  S().pulseCache=null;
   api.save();
-  refreshPulse(false);
+  refreshPulse(false,true);
  }
  if(a==='pulse-import')$('#deskPulseImport')?.click();
 });
