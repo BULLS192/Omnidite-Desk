@@ -29,3 +29,18 @@ body.side-mode .topbar .top-actions{gap:8px}
 body.side-mode .module{grid-column:span 12}body.side-mode .mobile-pages{display:flex}body.side-mode .page-pill{padding:7px 10px}
 
 :root[data-theme="light"] .nav-link.page-link.selected{background:#d6e8ff;color:#173d6e;border:1px solid #b8d4f6}:root[data-theme="light"] .nav-link{color:#36516e}:root[data-theme="light"] .nav-link.add-page{color:#325e91}:root[data-theme="light"] .sidebar-bottom{color:#385574}:root[data-theme="light"] .topbar .button.ghost{color:#2e5178}
+/* v0.2.1 — integrated local updater */
+.desk-update-bar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:13px 16px;margin:0 0 19px;background:color-mix(in srgb,var(--accent) 7%,#101e31);border:1px solid color-mix(in srgb,var(--accent) 22%,#283d55);border-radius:12px}
+.update-indicator{display:grid;place-items:center;width:30px;height:30px;flex-shrink:0;border-radius:8px;background:color-mix(in srgb,var(--accent) 16%,#182b43);color:var(--accent);font-size:20px}
+.update-description{display:flex;flex-direction:column;gap:3px;flex:1;min-width:150px}
+.update-description strong{font-size:10px;letter-spacing:1.1px;color:var(--accent)}
+.update-description span{font-size:11px;color:#99b1cc;line-height:1.35}
+.desk-update-bar .smallbutton,.desk-update-bar .button{white-space:nowrap;margin:0;padding:9px 13px;font-size:11px}
+.update-help{font-size:11px;line-height:1.7;color:#bacce4;background:#17283c;border:1px solid #3e5067;border-radius:9px;padding:12px 15px;margin:-10px 0 20px}
+[hidden]{display:none!important}
+:root[data-theme="light"] .desk-update-bar{background:#fff;border-color:#d0deed}
+:root[data-theme="light"] .update-description span{color:#526782}
+:root[data-theme="light"] .update-help{background:#f3f7fc;color:#27415d;border-color:#cfddec}
+body.side-mode .desk-update-bar{gap:7px;padding:10px;margin-bottom:18px}
+body.side-mode .update-description{min-width:140px}
+@media(max-width:650px){.desk-update-bar{gap:8px}.desk-update-bar .smallbutton,.desk-update-bar .button{padding:8px 10px}}
