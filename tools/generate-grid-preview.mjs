@@ -15,6 +15,9 @@ function fixture(mode){
   return '<section class="module" style="--span:'+cols+';--grid-w:'+p[0]+';--grid-h:'+p[1]+';--effective-span:'+p[0]+'" data-grid-w="'+p[0]+'" data-grid-h="'+p[1]+'" data-fixed-height="'+height+'"';
  });
  if(count!==7)throw Error('Expected seven sample widgets, got '+count);
+ let labelIndex=0;
+ html=html.replace(/(<span class="module-title">[^<]*<\/span>)/g,(title)=>{const p=footprints[labelIndex++];return p?title+'<span class="desk-grid-footprint">'+p[0]+'×'+p[1]+'</span>':title;});
+ if(labelIndex!==7)throw Error('Expected seven visible sample headers');
  html=html.replace('data-layout="compact"', 'data-layout="compact" data-sizing="'+mode+'" data-grid-columns="6" data-grid-cell-height="104" style="--snap-cell-height:104px"');
  html=html.replace('SAMPLE DATA · V0.5.6 COMPACT PACKING · NOT YOUR LIVE DESK', mode==='snap'?'SAMPLE DATA · V0.5.7 SNAP TO 6-COLUMN GRID':'SAMPLE DATA · V0.5.7 FREE RESIZE MODE');
  html=html.replace('</body>','<script src="desk-grid.js" defer></script></body>');
