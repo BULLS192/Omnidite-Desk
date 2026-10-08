@@ -51,7 +51,8 @@ function sessions(){
 async function ensureTabs(){
  if(!inChrome())throw Error('Tab access is available only in the installed Chrome extension.');
  if(!chrome.permissions?.request)throw Error('Chrome permissions API unavailable.');
- const allowed=await chrome.permissions.contains({permissions:['tabs']})||await chrome.permissions.request({permissions:['tabs']});
+ // Request directly during the click gesture; Chrome resolves true without a prompt when already granted.
+ const allowed=await chrome.permissions.request({permissions:['tabs']});
  if(!allowed)throw Error('Chrome tab permission was declined. You can still use the other Desk tools.');
 }
 async function newSession(){
