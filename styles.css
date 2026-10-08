@@ -58,3 +58,20 @@ body.side-mode .update-description{min-width:140px}
 body.has-wallpaper{background-repeat:no-repeat;background-position:center center;background-size:cover;background-attachment:fixed}body.has-wallpaper .main,body.has-wallpaper .content{background:transparent!important}body.has-wallpaper .topbar{background:rgba(8,18,33,.4)}body.has-wallpaper .module{backdrop-filter:blur(14px);background:linear-gradient(140deg,rgba(18,32,52,.92),rgba(12,22,37,.89));border-color:#3a4f70}body.has-wallpaper .searchbar{background:rgba(19,33,51,.91)}body.has-wallpaper .hero-row,body.has-wallpaper .sectionhead,body.has-wallpaper .footer{color:#eaf1fb}body.has-wallpaper .lede,body.has-wallpaper .sectionhead p{color:#b7cbe3}
 :root[data-theme="light"] body.has-wallpaper .main{color:#e8eefb}:root[data-theme="light"] body.has-wallpaper .module-title,:root[data-theme="light"] body.has-wallpaper .clock-time,:root[data-theme="light"] body.has-wallpaper .launch-name{color:#eaf1fa}:root[data-theme="light"] body.has-wallpaper .launch{background:#1a2a40;color:#eaf1fa;border-color:#37506d}:root[data-theme="light"] body.has-wallpaper .weather-now{background:#192a40}
 @media(max-width:620px){.wallpaper-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.analog-face{width:61px;height:61px;flex-basis:61px}.clock-city .clock-time{font-size:19px}.forecast-row{grid-template-columns:minmax(0,1.4fr)22px minmax(0,1.3fr)43px;font-size:10px}.city-result small{font-size:9px}}
+
+
+/* Desk v0.2.3 · connected Google Drive / OneDrive / local wallpaper folders */
+.synced-folder{margin-top:26px;padding-top:15px;border-top:1px solid #38506d}
+.wallpaper-section-head{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:12px 0 11px}
+.wallpaper-section-head strong{font-size:12px;color:#dfebff}
+.wallpaper-section-head span{font-size:10px;color:#88a8c9}
+.folder-connection{display:flex;flex-direction:column;gap:4px;border:1px solid #365170;border-radius:10px;padding:13px;background:rgba(27,50,77,.65);margin:13px 0 10px}
+.folder-connection strong{font-size:12px;overflow-wrap:anywhere}
+.folder-connection small{color:#94b3d4;font-size:10px;line-height:1.5;overflow-wrap:anywhere}
+.folder-commands{display:flex;gap:8px;flex-wrap:wrap;margin:11px 0 14px}
+.wallpaper-pages{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 10px}
+.wallpaper-pages span{font-size:11px;color:#a6bdd9}
+.wallpaper-placeholder{height:96px;display:grid;place-items:center;background:#1a304e;color:#a8c8ef;font-size:28px}
+:root[data-theme="light"] .wallpaper-section-head strong{color:#284562}
+:root[data-theme="light"] .folder-connection{background:#e8eff8;border-color:#bfcee1}
+:root[data-theme="light"] .folder-connection small,:root[data-theme="light"] .wallpaper-pages span{color:#536d8d}
