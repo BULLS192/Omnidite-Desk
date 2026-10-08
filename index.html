@@ -28,6 +28,7 @@
       <button class="nav-link" data-v05="overview"><span>▥</span> Systems overview</button>
       <button class="nav-link" data-v05="github"><span>⌘</span> GitHub activity</button>
       <button class="nav-link" data-v05="pulse"><span>◈</span> Omnidite Pulse</button>
+      <button class="nav-link" data-v052="controls"><span>⏻</span> Pulse background controls</button>
       <div class="nav-heading">DESK COMMANDS</div>
       <button class="nav-link" data-v03="command"><span>⌕</span> Command bar <span class="nav-kbd">Ctrl K</span></button>
       <button class="nav-link" data-v03="projects"><span>◇</span> Projects hub</button>
@@ -48,7 +49,7 @@
         </div>
       </header>
       <div class="content">
-        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.5.1</div>
+        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.5.2</div>
         <section id="deskUpdateBar" class="desk-update-bar" aria-label="Software updates">
           <span class="update-indicator" aria-hidden="true">↻</span>
           <div class="update-description"><strong>OMNIDITE DESK UPDATES</strong><span id="deskUpdateStatus" role="status" aria-live="polite">Check GitHub for new Desk features.</span></div>
@@ -80,6 +81,7 @@
           <button type="button" class="smallbutton" data-v04="content">✎ Content</button>
           <button type="button" class="smallbutton" data-v04="calendar">▦ Calendar</button>
           <button type="button" class="smallbutton" data-v05="overview">▥ Operations</button>
+          <button type="button" id="deskV052Status" class="desk-pulse-live" data-v052="controls">Pulse: checking…</button>
           <span id="deskV05Badge" class="desk-ops-badge" aria-live="polite">Systems: not live</span>
         </div>
         <section class="desk-ops-strip" aria-label="Operational status overview">
@@ -89,7 +91,7 @@
         </section>
         <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <button class="page-edit" data-v03="layouts">Layouts</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
         <div id="grid" class="modules" aria-live="polite"></div>
-        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.5.1</span></div>
+        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.5.2</span></div>
       </div>
     </main>
   </div>
@@ -103,5 +105,6 @@
   <script src="desk-v03.js" defer></script>
   <script src="desk-v04.js" defer></script>
   <script src="desk-v05.js" defer></script>
+  <script src="desk-v052.js" defer></script>
 </body>
 </html>
