@@ -1,4 +1,4 @@
-/* Omnidite Desk v0.2.1 — vanilla JS, strict MV3 CSP, no analytics. */
+/* Omnidite Desk v0.2.2 — vanilla JS, strict MV3 CSP, no analytics. */
 (() => {
 'use strict';
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
