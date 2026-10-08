@@ -42,3 +42,10 @@ body.side-mode .modules>.module{grid-column:span 12!important}
 :root[data-theme="light"] .desk-item{border-color:#cad6e5}
 :root[data-theme="light"] .desk-result-type{color:#3364a4}
 :root[data-theme="light"] .desk-item-link{color:#1d5b9b}
+.desk-quick-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}
+.desk-quick-actions .smallbutton{background:#182b45;border-color:#2b4666;color:#b9d2f2;min-width:92px}
+.desk-quick-actions .smallbutton:hover{background:#274b75;border-color:var(--accent,#4a8df5)}
+body.side-mode .desk-quick-actions{gap:6px}
+body.side-mode .desk-quick-actions .smallbutton{font-size:10px;min-width:0;flex:1 0 27%;padding:8px 5px}
+@media(max-width:650px){.desk-quick-actions .smallbutton{flex:1 0 28%;min-width:0}}
+:root[data-theme="light"] .desk-quick-actions .smallbutton{background:#e6eef8;color:#244e80;border-color:#c9d8e8}
