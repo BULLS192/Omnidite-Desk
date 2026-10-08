@@ -235,14 +235,14 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  function renderWorldClocks(m){
   const cities=m.config.cities||[];
   return `<p class="module-sub">ANALOG + DIGITAL · ${cities.length} CITIES · RELATIVE TO YOUR DEVICE TIME</p>
-   <div class="worldclocks">${cities.map(c=>`<div class="clock-city" data-clock-city="${esc(c.timezone)}">
+   <div ${widgetGrid(m,'worldclocks')}>${cities.map((c,i)=>`<div class="clock-city" data-clock-city="${esc(c.timezone)}">
     <div class="analog-face" aria-hidden="true"><span class="analog-tick tick-12"></span><span class="analog-tick tick-3"></span><span class="analog-tick tick-6"></span><span class="analog-tick tick-9"></span>
      <i class="hand hour-hand"></i><i class="hand minute-hand"></i><i class="hand second-hand"></i><b class="clock-pin"></b></div>
     <div class="clock-information"><div class="clock-city-name">${esc(c.name)} <span>${esc(c.country)}</span></div>
     <div class="clock-time" data-clock-time="${esc(c.timezone)}">--:--:--</div>
     <div class="clock-date" data-clock-date="${esc(c.timezone)}">—</div>
     <div class="clock-diff" data-clock-offset="${esc(c.timezone)}">—</div></div>
-    <button class="city-remove" title="Remove city" aria-label="Remove ${esc(c.name)}" data-city-remove="${esc(c.id)}" data-city-mid="${esc(m.id)}">×</button>
+    <div class="desk-clock-actions">${itemOrderButtons(m.id,i,cities.length)}<button class="city-remove" title="Remove city" aria-label="Remove ${esc(c.name)}" data-city-remove="${esc(c.id)}" data-city-mid="${esc(m.id)}">×</button></div>
     </div>`).join('')||'<p class="empty-note">Search for a city below to add your first clock.</p>'}</div>${cityPicker(m)}`;
  }
  function updateWorldClocks(now){
@@ -322,7 +322,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
    <div class="weather-city-bar">${cs.map(city=>`<button class="weather-city-pill ${c.selected===city.id?'selected':''}" type="button" data-weather-select="${esc(city.id)}" data-weather-mid="${esc(m.id)}">${esc(city.name)}</button>`).join('')}</div>
    <div class="weather-tabs">${[['now','Now'],['hourly','Hourly'],['daily','7 days']].map(([v,label])=>`<button type="button" class="${c.view===v?'selected':''}" data-weather-view="${v}" data-weather-mid="${esc(m.id)}">${label}</button>`).join('')}</div>
    <div class="weather-content" data-weather-content="${esc(m.id)}"><p class="empty-note">Loading live forecasts…</p></div>
-   <div class="weather-city-management">${cityPicker(m)}<div class="weather-remove-list">${cs.map(city=>`<span>${esc(city.name)} <button type="button" data-city-remove="${esc(city.id)}" data-city-mid="${esc(m.id)}" aria-label="Remove ${esc(city.name)}">×</button></span>`).join('')}</div></div>`;
+   <div class="weather-city-management">${cityPicker(m)}<div class="weather-remove-list">${cs.map((city,i)=>`<span>${esc(city.name)} ${itemOrderButtons(m.id,i,cs.length)} <button type="button" data-city-remove="${esc(city.id)}" data-city-mid="${esc(m.id)}" aria-label="Remove ${esc(city.name)}">×</button></span>`).join('')}</div></div>`;
  }
  function weatherRequest(city){
   const key=city.latitude.toFixed(4)+','+city.longitude.toFixed(4);
@@ -345,10 +345,10 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   }).catch(e=>{if(old)return old.data;throw e;}).finally(()=>weatherInFlight.delete(key));
   weatherInFlight.set(key,work);return work;
  }
- function weatherTile(city,data){
+ function weatherTile(city,data,mid,i,total){
   const w=data.current||{},[symbol,label]=weatherCondition(w.weather_code,!!w.is_day);
   return `<div class="weather-now"><div class="weather-main"><div class="weather-symbol">${symbol}</div><div><strong>${esc(city.name)}</strong><div class="weather-reading">${temperature(w.temperature_2m)}</div><div class="weather-desc">${label}</div></div></div>
-   <div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div></div>`;
+   <div class="desk-weather-actions">${itemOrderButtons(mid,i,total)}</div><div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div></div>`;
  }
  function weatherForecast(data,view){
   if(view==='hourly'){
@@ -378,7 +378,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
      const all=await Promise.allSettled(cities.map(weatherRequest));
      const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
      if(!current||!livePanel||current.config.view!==view)return;
-     livePanel.innerHTML=`<div class="weather-now-grid">${all.map((res,i)=>res.status==='fulfilled'?weatherTile(cities[i],res.value):`<div class="weather-error">${esc(cities[i].name)}: weather unavailable</div>`).join('')}</div>`;
+     livePanel.innerHTML=`<div ${widgetGrid(current,'weather-now-grid')}>${all.map((res,i)=>res.status==='fulfilled'?weatherTile(cities[i],res.value,current.id,i,cities.length):`<div class="weather-error">${esc(cities[i].name)}: weather unavailable</div>`).join('')}</div>`;
     }else{
      const data=await weatherRequest(selected);
      const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
@@ -402,9 +402,9 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  }
  function renderLinkModule(m){
   const list=m.config.links||[];
-  return `<p class="module-sub">QUICK ACCESS · ${list.length} LINKS</p><div class="linkgrid">${list.map(l=>{
+  return `<p class="module-sub">QUICK ACCESS · ${list.length} LINKS</p><div ${widgetGrid(m,'linkgrid')}>${list.map((l,i)=>{
    const icon=siteFavicon(l.url);
-   return `<a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${icon?`<img class="site-favicon" src="${esc(icon)}" alt="" loading="lazy">`:''}<span class="launch-initial">${esc(l.label[0]?.toUpperCase()||'↗')}</span></span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>`;
+   return `<div class="desk-launch-item"><a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${icon?`<img class="site-favicon" src="${esc(icon)}" alt="" loading="lazy">`:''}<span class="launch-initial">${esc(l.label[0]?.toUpperCase()||'↗')}</span></span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>${itemOrderButtons(m.id,i,list.length)}</div>`;
   }).join('')||'<p class="empty-note">Edit to add a link.</p>'}</div>`;
  }
  function renderFocusModule(m){
@@ -757,20 +757,20 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
 function content(m){const c=m.config;
  switch(m.type){
  case 'links':return renderLinkModule(m);
- case 'tasks':return `<p class="module-sub">${c.tasks.filter(x=>x.done).length} / ${c.tasks.length} COMPLETED</p><form class="task-input-row" data-add-task="${esc(m.id)}"><input name="text" placeholder="Add a task…" maxlength="200" required><button>＋</button></form>${c.tasks.map(t=>`<div class="taskrow ${t.done?'done':''}"><input type="checkbox" data-toggle-task="${esc(m.id)}" data-id="${esc(t.id)}" ${t.done?'checked':''}><span class="tasktext">${esc(t.text)}</span><button class="delete-task" data-action="delete-task" data-mid="${esc(m.id)}" data-tid="${esc(t.id)}">×</button></div>`).join('')}`;
+ case 'tasks':return `<p class="module-sub">${c.tasks.filter(x=>x.done).length} / ${c.tasks.length} COMPLETED</p><form class="task-input-row" data-add-task="${esc(m.id)}"><input name="text" placeholder="Add a task…" maxlength="200" required><button>＋</button></form><div ${widgetGrid(m,'desk-task-grid')}>${c.tasks.map((t,i)=>`<div class="taskrow ${t.done?'done':''}"><input type="checkbox" data-toggle-task="${esc(m.id)}" data-id="${esc(t.id)}" ${t.done?'checked':''}><span class="tasktext">${esc(t.text)}</span>${itemOrderButtons(m.id,i,c.tasks.length)}<button class="delete-task" data-action="delete-task" data-mid="${esc(m.id)}" data-tid="${esc(t.id)}">×</button></div>`).join('')}</div>`;
  case 'notes':return `<p class="module-sub">AUTO SAVED</p><textarea class="notebox" data-note="${esc(m.id)}" maxlength="12000" placeholder="Capture an idea…">${esc(c.text)}</textarea>`;
  case 'clock':return renderWorldClocks(m);
   case 'weather':return renderWeatherModule(m);
  case 'focus':return renderFocusModule(m);
- case 'agenda':return `<p class="module-sub">PERSONAL AGENDA · LOCAL EVENTS</p><form class="agenda-form" data-add-event="${esc(m.id)}"><input class="modal-input" name="title" placeholder="Event title" maxlength="140" required><input class="modal-input" type="datetime-local" name="when" required><button class="smallbutton">Add event</button></form><div class="agenda-items">${c.events.slice().sort((a,b)=>a.when.localeCompare(b.when)).map(e=>`<div class="agenda-event"><span>${esc(new Date(e.when).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span><strong>${esc(e.title)}</strong><button class="delete-task" data-action="delete-event" data-mid="${esc(m.id)}" data-tid="${esc(e.id)}">×</button></div>`).join('')||'<p class="empty-note">No events. Add one above.</p>'}</div>`;
+ case 'agenda':return `<p class="module-sub">PERSONAL AGENDA · LOCAL EVENTS</p><form class="agenda-form" data-add-event="${esc(m.id)}"><input class="modal-input" name="title" placeholder="Event title" maxlength="140" required><input class="modal-input" type="datetime-local" name="when" required><button class="smallbutton">Add event</button></form><div ${widgetGrid(m,'agenda-items')}>${c.events.map((e,i)=>`<div class="agenda-event"><span>${esc(new Date(e.when).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span><strong>${esc(e.title)}</strong>${itemOrderButtons(m.id,i,c.events.length)}<button class="delete-task" data-action="delete-event" data-mid="${esc(m.id)}" data-tid="${esc(e.id)}">×</button></div>`).join('')||'<p class="empty-note">No events. Add one above.</p>'}</div>`;
  case 'countdown':return `<p class="module-sub">${esc(c.label)}</p><div class="count-number" data-countdown="${esc(m.id)}">—</div><div class="focus-hint">DAYS UNTIL ${esc(c.target)}</div>`;
- case 'habits':{const today=new Date().toLocaleDateString('en-CA');return `<p class="module-sub">TODAY'S CHECK-IN</p><form class="task-input-row" data-add-habit="${esc(m.id)}"><input name="text" placeholder="Add a habit…" maxlength="200" required><button>＋</button></form>${c.habits.map(h=>`<div class="taskrow ${h.day===today?'done':''}"><input type="checkbox" data-toggle-habit="${esc(m.id)}" data-id="${esc(h.id)}" ${h.day===today?'checked':''}><span class="tasktext">${esc(h.text)}</span><button class="delete-task" data-action="delete-habit" data-mid="${esc(m.id)}" data-tid="${esc(h.id)}">×</button></div>`).join('')}`;}
+ case 'habits':{const today=new Date().toLocaleDateString('en-CA');return `<p class="module-sub">TODAY'S CHECK-IN</p><form class="task-input-row" data-add-habit="${esc(m.id)}"><input name="text" placeholder="Add a habit…" maxlength="200" required><button>＋</button></form><div ${widgetGrid(m,'desk-task-grid')}>${c.habits.map((h,i)=>`<div class="taskrow ${h.day===today?'done':''}"><input type="checkbox" data-toggle-habit="${esc(m.id)}" data-id="${esc(h.id)}" ${h.day===today?'checked':''}><span class="tasktext">${esc(h.text)}</span>${itemOrderButtons(m.id,i,c.habits.length)}<button class="delete-task" data-action="delete-habit" data-mid="${esc(m.id)}" data-tid="${esc(h.id)}">×</button></div>`).join('')}</div>`;}
  case 'metric':return `<p class="module-sub">CUSTOM COUNTER</p><div class="count-number">${esc(c.value)}<span class="metric-unit">${esc(c.unit)}</span></div><div class="focus-controls"><button class="smallbutton" data-action="metric-sub" data-mid="${esc(m.id)}">− ${esc(c.step)}</button><button class="smallbutton" data-action="metric-add" data-mid="${esc(m.id)}">＋ ${esc(c.step)}</button></div>`;
  case 'quote':{const q=quotes[Math.floor(Date.now()/86400000)%quotes.length];return `<p class="module-sub">DAILY PERSPECTIVE</p><blockquote class="quote-text">“${esc(q[0])}”</blockquote><div class="focus-hint">— ${esc(q[1])}</div>`;}
  }
  return '';
 }
-function moduleHtml(m){return `<section class="module" style="--span:${m.cols};${m.height?`min-height:${m.height}px;`:''}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools"><button class="tiny move-widget" data-action="move-up" data-mid="${esc(m.id)}" title="Move widget earlier" aria-label="Move widget earlier">↑</button><button class="tiny move-widget" data-action="move-down" data-mid="${esc(m.id)}" title="Move widget later" aria-label="Move widget later">↓</button><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget">⚙</button><span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
+function moduleHtml(m){return `<section class="module" style="--span:${m.cols};${m.height?`min-height:${m.height}px;`:''}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools">${LIST_TYPES.has(m.type)?`<button class="tiny desk-layout-cycle" type="button" data-action="cycle-columns" data-mid="${esc(m.id)}" title="Change items per row" aria-label="Change items per row">▦ ${layoutColumns(m.config.columns)}</button>`:''}<button class="tiny move-widget" data-action="move-up" data-mid="${esc(m.id)}" title="Move widget earlier" aria-label="Move widget earlier">↑</button><button class="tiny move-widget" data-action="move-down" data-mid="${esc(m.id)}" title="Move widget later" aria-label="Move widget later">↓</button><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget">⚙</button><span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
 
 // An explicit user click triggers Git via a *locally registered* native host.
 // The host accepts only "status" and "update" and hard-codes the official Git remote.
@@ -865,7 +865,8 @@ document.addEventListener('click',e=>{
  const b=e.target.closest('[data-action]');if(!b)return;const {action,mid,tid}=b.dataset,m=moduleFor(mid);
  if(action==='edit')return editModule(mid);if(!m)return;
   if(action==='move-up'||action==='move-down'){const arr=page().modules;const ix=arr.indexOf(m),to=ix+(action==='move-up'?-1:1);if(ix>=0&&to>=0&&to<arr.length){arr.splice(to,0,arr.splice(ix,1)[0]);change();}return;}
- if(action==='item-move'){
+ if(action==='cycle-columns'&&LIST_TYPES.has(m.type)){m.config.columns=layoutColumns((m.config.columns||1)%6+1);change();return;}
+  if(action==='item-move'){
     const collection=m.type==='clock'||m.type==='weather'?'cities':m.type==='agenda'?'events':m.type==='links'?'links':m.type;
     const arr=m.config?.[collection];if(!Array.isArray(arr))return;
     const btn=e.target.closest('[data-action]'),ix=Number(btn.dataset.itemIndex),shift=Number(btn.dataset.moveDirection);
