@@ -34,7 +34,8 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [ ] Context menu, collections and dedicated research export.
 - [x] Local read-only .ics calendar snapshot import with supported timestamps and import replacement.
 - [x] Implement Chrome Identity read-only Google Calendar client and local-only cache on V0.5.4 feature branch.
-- [ ] Register real Google Cloud Chrome Extension OAuth client and finish on-device account authorization (release blocker).
+- [x] Configure public Google Cloud Chrome Extension OAuth client ID in the V0.5.4 manifest.
+- [ ] Confirm live Google account authorization, test user's consent and on-device calendar read after release.
 - [x] Local content calendar for Omnidite articles and social planning.
 - **Acceptance:** work offline except explicitly connected widgets, no unintended browser/tab reads, sane sync size limits, no loss of data.
 
@@ -53,8 +54,8 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 ## Current release state — October 8, 2026
 
 - Stable `main`: V0.5.3, confirmed updating on the user's Chrome profile. Local Omnidite Pulse is connected and showing service usage data; real Startup-folder behavior is subject to next sign-in testing.
-- V0.5.4 is an **unreleased development PR** for read-only live Google Calendar. It uses Chrome Identity and requires one Google Cloud Chrome Extension OAuth client ID matching the existing stable Chrome extension ID.
-- The OAuth client ID is public, but **do not commit any client secret, access tokens, downloaded credentials JSON or private events**. Actual Google authorization has **not** yet been performed.
+- V0.5.4 is a read-only live Google Calendar integration with a configured Chrome Extension OAuth client ID. Confirm its Item ID matches the original stable Chrome extension ID.
+- The OAuth client ID is public. **Do not commit any client secret, access tokens, downloaded credentials JSON or private events**. Actual Google authorization must still be tested on the user's installed Chrome extension.
 - The original .ics snapshot import remains available; live fetched event details reside only in per-profile Chrome local storage, outside the existing Sync and backup state.
 
 ## V1.0 — F.R.E.Y.A. intelligence (future)
