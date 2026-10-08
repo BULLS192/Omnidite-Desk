@@ -116,6 +116,7 @@ function readIcs(input){
  return events.sort((a,b)=>a.when-b.when);
 }
 function calendar(){
+ if(window.DeskGoogleCalendar?.open){window.DeskGoogleCalendar.open();return;}
  const events=(S().calendarEvents||[]).filter(e=>e.when>=Date.now()-86400000).sort((a,b)=>a.when-b.when);
  panel('Calendar overview','Read-only events imported from a calendar .ics export, stored in Desk. No Google account credentials required.',
  '<div class="modal-actions">'+button('↑ Import .ics','calendar-import')+button('↗ Open Google Calendar','calendar-open')+'</div>'+
