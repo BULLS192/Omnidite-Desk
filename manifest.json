@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Omnidite Desk \u2014 Personal Dashboard",
+  "short_name": "Omnidite Desk",
+  "version": "0.2.0",
+  "description": "Customizable multi-page local-first browser command center, with optional Chrome Sync.",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "storage",
+    "sidePanel"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open Omnidite Desk side panel"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxk8dc+UalWUO3SKO4VuOZ44JthTfWA27rLX8rpPw4RuCFMZFapqnT/0grKc/uw6T4t7SRG7yEFo1U2YaerAsv+JekC4UbsSX3CJYHODrChBa9vNxovmNKcMtPnkS6bf+9Lxte2OYpD9jmzQNaaRxQWdJSqRa7fb68a9uTVZXcdz3tMQcDD68NFMIXz4KsKG3O3JebX1rZLwcrjAKdSPVFjd6R0noyzlZSZHLPHI5ksrhonrJyyjRNxSdfzNUlLHeviurEMaF574DkHbURaRfczStkBqcH0UIAZuc6494R3u4nsOCWABVve6cG+Hf9LzfAkzV54oPaoh7sAkdiZLk4wIDAQAB"
+}
