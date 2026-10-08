@@ -1,4 +1,15 @@
-# Omnidite Desk v0.5.6 — Released
+# Omnidite Desk v0.5.7 — Snap-to-grid development preview (V0.5.6 stable)
+
+## V0.5.7 — Flexible sizing or fixed phone-style grid (development preview)
+
+The user can switch between **⌗ Free resize** (existing continuous 12-column resizing, auto/fixed pixel height) and **▦ Snap to grid** (cell footprint sizing like 1×4, 2×2, 2×3, 4×4 and 6×3). The sizing-mode switch appears next to the Compact/Aligned toggle in Your Modules. Snap mode retains its own per-widget `gridW` and `gridH`, so switching back to Free restores existing `cols` and `height`; no existing widget is discarded or resized destructively.
+
+- **⚙ Grid** chooses desktop width in **4, 6, 8, or 12 columns**, and cell heights **80, 96, 104, 120, 144 or 160 pixels**. Each cell has a 12px gutter.
+- Each widget **⚙ Edit widget** lets you set Snap footprint independently (1–12 cells in each dimension) or choose one of the presets. Bottom-right drag uses cell-by-cell increments in Snap mode.
+- A wide desktop viewport uses the selected column count, medium layouts use at most 4, and narrow/Side Panel layouts use at most 2. Widgets wider than the available responsive grid clamp their *display width*; their saved footprint remains unchanged. Fixed-size interiors scroll safely on small screens.
+- Snap grid uses dense placement to fill holes while maintaining the saved widget order separately. Layout Studio snapshots retain both free and snapped footprint dimensions and the active mode.
+- **No Google Calendar, Pulse, OAuth, external host permissions, backup deletion or native updater changes.**
+- **Release gate:** automated feature and Windows helper tests, browser screenshots, and hands-on Chrome test with user's own widgets, especially 1-column narrow cards and 2-column Side Panel.
 
 ## V0.5.6 — Compact stackable widgets and real height controls (released on main in PR #14)
 
