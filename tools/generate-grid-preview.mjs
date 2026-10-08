@@ -20,6 +20,12 @@ function fixture(mode){
  if(labelIndex!==7)throw Error('Expected seven visible sample headers');
  html=html.replace('data-layout="compact"', 'data-layout="compact" data-sizing="'+mode+'" data-grid-columns="6" data-grid-cell-height="104" style="--snap-cell-height:104px"');
  html=html.replace('SAMPLE DATA · V0.5.6 COMPACT PACKING · NOT YOUR LIVE DESK', mode==='snap'?'SAMPLE DATA · V0.5.7 SNAP TO 6-COLUMN GRID':'SAMPLE DATA · V0.5.7 FREE RESIZE MODE');
+ if(mode==='snap'){
+  html=html.replace('aria-pressed="false" title="Switch between free resize and fixed-cell widget footprints">⌗ Free resize','aria-pressed="true" title="Switch between free resize and fixed-cell widget footprints">▦ Snap to grid');
+  html=html.replace('id="deskLayoutMode" type="button"','id="deskLayoutMode" type="button" hidden');
+  html=html.replace('data-global="grid-settings" hidden','data-global="grid-settings"');
+ }
+
  html=html.replace('</body>','<script src="desk-grid.js" defer></script></body>');
  return html;
 }
