@@ -1,4 +1,12 @@
-# Omnidite Desk v0.5.2
+# Omnidite Desk v0.5.3
+
+## V0.5.3 — Startup fallback for restricted Windows PCs
+
+Windows may deny `Register-ScheduledTask` with error 0x80070005 even for your own limited user account. The Pulse installer now falls back automatically to a shortcut in the signed-in user's **Startup folder** and manages its own detached hidden `node.exe` process. **Do not run as administrator or relax policy settings** just to get Pulse started.
+
+When released: update Pulse with `git pull --ff-only origin main`, stop any manually running Pulse copy, and double-click `windows\Install-Background.bat` again. The installer prints `Startup method: StartupFolder` when the fallback is chosen. Update Desk through its normal on-page updater to V0.5.3, and rerun `Setup-OneClickUpdates.bat` once to compile the new native host. Desk Start/Stop/Restart buttons then support either the scheduled task or the fallback; when using the fallback, they refuse to terminate unrelated processes or a separately launched manual Pulse copy.
+
+Windows CI now exercises the fallback's startup, health, stop and restart in a real Windows hosted runner. User machine permissions, login startup and Chrome behavior still require confirmation on your PC.
 
 ## V0.5.2 — Pulse background startup and controls (Windows)
 
