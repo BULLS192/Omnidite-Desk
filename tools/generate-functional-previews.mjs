@@ -16,6 +16,7 @@ const start=widgets.indexOf('<div id="grid" class="modules" aria-live="polite">'
 if(start<0||end<0)throw Error('Missing fixture module section');
 widgets=widgets.slice(0,start)+'<div id="grid" class="modules" aria-live="polite">'+clock+weather+focus+'</div>\n        '+widgets.slice(end);
 widgets=widgets.replace('id="moduleCount">4','id="moduleCount">3');
+widgets=widgets.replace('</head>','<style>.hero-row,.searchbar,.desk-primary-actions,.desk-tools-more,.desk-ops-strip,.desk-update-bar,.sectionhead,.content>.eyebrow{display:none!important}.content{padding-top:16px!important}.modules{margin-top:10px}</style></head>');
 write('design-review-widgets.html',widgets);
 const month=new Date(2026,9,1,12),startDay=new Date(month);startDay.setDate(startDay.getDate()-(startDay.getDay()+6)%7);
 const eventDays=new Map([[5,['Operations sync']],[8,['Product review','Planning session']],[12,['Design critique']],[15,['Workshop meeting']],[19,['Project update']],[26,['Weekly planning']]]);
