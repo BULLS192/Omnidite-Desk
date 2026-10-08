@@ -15,4 +15,4 @@ jobs:
       - name: Syntax validation
         run: node --check app.js && node --check desk-v03.js && node --check background.js
       - name: Manifest and assets checks
-        run: node tools/check.mjs
+        run: node tools/check.mjs && node tools/v03-smoke.mjs
