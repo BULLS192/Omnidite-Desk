@@ -12,9 +12,9 @@ jobs:
         with:
           node-version: '22'
       - name: Syntax validation
-        run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check background.js
+        run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check desk-google-calendar.js && node --check background.js
       - name: Manifest and assets checks
-        run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs
+        run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs && node tools/google-calendar-smoke.mjs
   native-host-build:
     runs-on: windows-latest
     steps:
