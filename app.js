@@ -330,6 +330,41 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  });
  setInterval(()=>{if(page().modules.some(m=>m.type==='weather'))refreshWeather();},15*60*1000);
 
+
+ function siteFavicon(url){
+  if(typeof chrome==='undefined'||!chrome.runtime?.getURL)return '';
+  try{const u=new URL(chrome.runtime.getURL('/_favicon/'));u.searchParams.set('pageUrl',url);u.searchParams.set('size','32');return u.toString();}catch{return '';}
+ }
+ function renderLinkModule(m){
+  const list=m.config.links||[];
+  return `<p class="module-sub">QUICK ACCESS · ${list.length} LINKS</p><div class="linkgrid">${list.map(l=>{
+   const icon=siteFavicon(l.url);
+   return `<a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${icon?`<img class="site-favicon" src="${esc(icon)}" alt="" loading="lazy">`:''}<span class="launch-initial">${esc(l.label[0]?.toUpperCase()||'↗')}</span></span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>`;
+  }).join('')||'<p class="empty-note">Edit to add a link.</p>'}</div>`;
+ }
+ function renderFocusModule(m){
+  const c=m.config,minutes=Math.round((c.duration||1500)/60);
+  return `<p class="module-sub">FOCUS SPRINT · CHOOSE YOUR DURATION</p><div class="focus-display" data-timer="${esc(m.id)}">--:--</div>
+   <div class="focus-presets">${[15,25,45,60].map(v=>`<button type="button" class="${minutes===v?'selected':''}" data-focus-preset="${v}" data-focus-mid="${esc(m.id)}">${v} min</button>`).join('')}</div>
+   <form class="focus-custom" data-focus-custom="${esc(m.id)}"><label for="focus-minutes-${esc(m.id)}">Custom minutes</label><input id="focus-minutes-${esc(m.id)}" name="minutes" aria-label="Custom focus minutes" type="number" min="1" max="240" step="1" value="${minutes}" required><button class="smallbutton">Set</button></form>
+   <div class="focus-controls"><button class="smallbutton" data-action="focus-toggle" data-mid="${esc(m.id)}">${c.until?'Pause':'Start'}</button><button class="smallbutton" data-action="focus-reset" data-mid="${esc(m.id)}">Reset</button></div>`;
+ }
+ function setFocusDuration(mid,mins){
+  const m=moduleFor(mid);if(!m||m.type!=='focus')return;
+  const n=Math.round(Number(mins));if(!Number.isFinite(n)||n<1||n>240){alert('Choose a timer between 1 and 240 minutes.');return;}
+  m.config.duration=n*60;m.config.seconds=n*60;m.config.until=null;change();
+ }
+ document.addEventListener('submit',e=>{
+  const form=e.target.closest('[data-focus-custom]');if(!form)return;
+  e.preventDefault();setFocusDuration(form.dataset.focusCustom,form.elements.minutes.value);
+ });
+ document.addEventListener('click',e=>{
+  const preset=e.target.closest('[data-focus-preset]');if(preset)setFocusDuration(preset.dataset.focusMid,preset.dataset.focusPreset);
+ });
+ document.addEventListener('error',e=>{
+  if(e.target?.classList?.contains('site-favicon'))e.target.style.display='none';
+ },true);
+
 function content(m){const c=m.config;
  switch(m.type){
  case 'links':return renderLinkModule(m);
