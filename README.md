@@ -43,23 +43,23 @@ Under **Settings → Enable Chrome Sync**, opt into synchronizing dashboard stat
 
 ## GitHub-based code updates (no hosting)
 
-Repository: **https://github.com/BULLS192/Omnidite-Desk**.
+Repository: **https://github.com/BULLS192/Omnidite-Desk**. The full v0.2 source is already committed to `main` with a GitHub Actions **validation-only** workflow (no hosting or deployment).
 
-The repository was empty at setup time. To publish this folder, open **PowerShell inside this extracted folder** and run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\publish-to-github.ps1
-```
-
-You need [Git for Windows](https://git-scm.com/download/win), access to `BULLS192/Omnidite-Desk` and GitHub credentials (Git Credential Manager can prompt). The script **does not force-push**. If the remote branch isn't empty when publishing, review the remote changes and rebase/pull first; the script stops instead of overwriting work.
-
-To receive later updates:
+**Recommended: clone for continuous updates.** On your Windows PC, open PowerShell in the parent directory where you keep coding projects:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\update-from-github.ps1
+git clone https://github.com/BULLS192/Omnidite-Desk.git
+cd Omnidite-Desk
 ```
 
-Click **Reload** in `chrome://extensions`. Your widgets persist in Chrome storage independently of GitHub code commits.
+Then use `chrome://extensions` → **Load unpacked** → choose that cloned `Omnidite-Desk` folder. Later updates require only:
+
+```powershell
+git pull --ff-only origin main
+# Then open chrome://extensions and click Reload on Omnidite Desk.
+```
+
+You can also double-click/run `update-from-github.ps1` in PowerShell while inside a Git clone. Git must be installed first: [Git for Windows](https://git-scm.com/download/win). The ZIP is an offline installation alternative; if you initially loaded the ZIP, export a backup, disable that installation, then load the Git clone (the fixed extension key preserves the extension ID across folder paths). Chrome settings remain associated with that ID. Personal widget data lives in Chrome storage, **not GitHub**.
 
 ### Source structure
 
