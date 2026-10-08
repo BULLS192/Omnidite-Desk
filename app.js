@@ -123,7 +123,7 @@ function settings(){show(`<div class="modal-pad">${header('Desk settings','Perso
  <label class="sync-label"><input type="checkbox" id="syncToggle" ${syncEnabled?'checked':''}> Enable Chrome Sync (opt-in)</label>
  <p class="helper">Requires Chrome signed in with extension sync enabled and the same Omnidite Desk extension ID on both computers. Data, including notes and tasks, may be uploaded to your Chrome Sync account. Last-write-wins; don't edit simultaneously on two devices. Max ~72 KB of raw dashboard data.</p>
  <div class="modal-actions"><button type="button" data-modal="push-sync" class="button ghost" ${!syncEnabled?'disabled':''}>↑ Sync now</button><button type="button" data-modal="pull-sync" class="button ghost" ${!syncEnabled?'disabled':''}>↓ Pull latest</button></div><p id="syncStatus" class="helper">${esc(lastSync)}</p>
- <hr class="settings-divider"><div class="eyebrow">BACKUPS</div><p class="helper">Store backups somewhere safe before resetting or removing the extension. Code on GitHub does not contain your personal data.</p>
+ <hr class="settings-divider"><div class="eyebrow">BACKGROUNDS</div><p class="helper">Upload or import wallpaper folders. Images remain only on this device.</p><button type="button" class="smallbutton" data-modal="backgrounds">Manage backgrounds</button><hr class="settings-divider"><div class="eyebrow">BACKUPS</div><p class="helper">Store backups somewhere safe before resetting or removing the extension. Code on GitHub does not contain your personal data.</p>
  <div class="modal-actions"><button type="button" class="button ghost" data-modal="export">↓ Export JSON</button><button type="button" class="button ghost" data-modal="import">↑ Import JSON</button><button type="button" class="button ghost danger" data-modal="reset">Reset</button></div></div>`);}
 function pageDialog(edit=false){const p=page();show(`<form id="pageForm" class="modal-pad" data-edit="${edit?'yes':'no'}">${header(edit?'Edit workspace':'New workspace',edit?'Rename this page or remove it.':'Create another dashboard page for a different focus.')}<label class="label">Workspace title</label><input name="title" class="modal-input" required maxlength="45" value="${edit?esc(p.title):''}" placeholder="e.g. Operations"><div class="modal-actions"><button class="button primary" type="submit">${edit?'Save name':'Create workspace'}</button>${edit&&state.pages.length>1?'<button type="button" class="button ghost danger" data-modal="delete-page">Delete workspace</button>':''}</div></form>`);}
 const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],['It always seems impossible until it’s done.','Nelson Mandela'],['Simplicity is the ultimate sophistication.','Often attributed to Leonardo da Vinci'],['The best way out is always through.','Robert Frost']];
@@ -365,6 +365,120 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   if(e.target?.classList?.contains('site-favicon'))e.target.style.display='none';
  },true);
 
+
+ const wallpaperKey='odWallpapersPrefs';
+ let wallpaperPrefs={selected:null,rotate:false,interval:15},wallpaperUrl=null,wallpaperPreviews=[],wallpaperLastSwitch=Date.now();
+ function wallpaperDatabase(){
+  return new Promise((resolve,reject)=>{
+   const request=indexedDB.open('omnidite-desk-wallpapers',1);
+   request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('images'))request.result.createObjectStore('images',{keyPath:'id'});};
+   request.onsuccess=()=>resolve(request.result);
+   request.onerror=()=>reject(request.error||Error('Wallpaper storage unavailable'));
+  });
+ }
+ async function wallpaperStore(method,payload){
+  const db=await wallpaperDatabase();
+  return new Promise((resolve,reject)=>{
+   const tx=db.transaction('images',method==='list'||method==='get'?'readonly':'readwrite');
+   const store=tx.objectStore('images'),request=method==='list'?store.getAll():method==='get'?store.get(payload):method==='delete'?store.delete(payload):store.put(payload);
+   request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+   tx.oncomplete=()=>db.close();tx.onabort=()=>db.close();
+  });
+ }
+ function clearWallpaperPreviews(){for(const url of wallpaperPreviews)URL.revokeObjectURL(url);wallpaperPreviews=[];}
+ async function saveWallpaperPrefs(){await local.set(wallpaperKey,wallpaperPrefs);}
+ async function applyWallpaper(){
+  if(wallpaperUrl){URL.revokeObjectURL(wallpaperUrl);wallpaperUrl=null;}
+  const id=wallpaperPrefs.selected;
+  if(!id){document.body.classList.remove('has-wallpaper');document.body.style.backgroundImage='';return;}
+  try{
+   const item=await wallpaperStore('get',id);
+   if(!item){document.body.classList.remove('has-wallpaper');document.body.style.backgroundImage='';return;}
+   wallpaperUrl=URL.createObjectURL(item.blob);
+   document.body.style.backgroundImage=`linear-gradient(90deg,rgba(6,13,26,.82),rgba(6,13,26,.68)),url("${wallpaperUrl}")`;
+   document.body.classList.add('has-wallpaper');
+  }catch(e){console.warn('Wallpaper unavailable',e);}
+ }
+ async function wallpaperGallery(){
+  try{
+   const list=await wallpaperStore('list');
+   clearWallpaperPreviews();
+   const cards=list.map(item=>{
+    const url=URL.createObjectURL(item.blob);wallpaperPreviews.push(url);
+    return `<div class="wallpaper-tile ${wallpaperPrefs.selected===item.id?'selected':''}">
+     <button type="button" data-wallpaper-action="select" data-wallpaper-id="${esc(item.id)}" title="Use this background"><img src="${esc(url)}" alt="${esc(item.name)}"><span>${esc(item.name)}</span></button>
+     <button type="button" class="wallpaper-delete" data-wallpaper-action="delete" data-wallpaper-id="${esc(item.id)}" title="Remove image">×</button></div>`;
+   }).join('');
+   show(`<div class="modal-pad">${header('Desk backgrounds','Choose your own image or import a folder of wallpapers.')}
+    <p class="helper">Stored only on this computer. Folder import makes a local copy; select the folder again to add new images.</p>
+    <div class="modal-actions"><button type="button" class="smallbutton" data-wallpaper-action="upload">＋ Upload images</button>
+    <button type="button" class="smallbutton" data-wallpaper-action="folder">▣ Import folder</button>
+    <button type="button" class="button ghost" data-wallpaper-action="clear">Default background</button></div>
+    <div class="wallpaper-options"><label class="sync-label"><input id="wallpaperRotation" type="checkbox" ${wallpaperPrefs.rotate?'checked':''}> Cycle backgrounds automatically</label>
+    <label>Change every <select id="wallpaperInterval" class="modal-input">${[5,15,30,60].map(v=>`<option value="${v}" ${wallpaperPrefs.interval===v?'selected':''}>${v} minutes</option>`).join('')}</select></label></div>
+    <div class="wallpaper-grid">${cards||'<p class="empty-note">No wallpapers yet. Upload images or import a folder to get started.</p>'}</div>
+    <p class="helper">${list.length} backgrounds saved locally · up to 60 images. Large images are optimized for the dashboard.</p></div>`);
+  }catch(e){show(`<div class="modal-pad">${header('Desk backgrounds','Image storage is unavailable.')}<p class="helper">${esc(e.message)}</p></div>`);}
+ }
+ async function shrinkWallpaper(file){
+  const image=await createImageBitmap(file);
+  const ratio=Math.min(1,1920/Math.max(image.width,image.height));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(image.width*ratio));canvas.height=Math.max(1,Math.round(image.height*ratio));
+  canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);image.close();
+  return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error('Could not optimize image')),'image/jpeg',.82));
+ }
+ async function importWallpapers(files){
+  const selected=[...files].filter(f=>f.type.startsWith('image/')||/\.(png|jpe?g|webp|bmp|gif)$/i.test(f.name)).slice(0,60);
+  if(!selected.length){alert('No supported image files found.');return;}
+  try{
+   const existing=await wallpaperStore('list'),remaining=Math.max(0,60-existing.length);
+   if(!remaining){alert('60-image gallery is full. Delete images before importing more.');return;}
+   let saved=0;
+   for(const file of selected.slice(0,remaining)){
+    if(file.size>25*1024*1024)continue;
+    try{
+     const blob=await shrinkWallpaper(file);
+     const id=uid();await wallpaperStore('put',{id,name:cleanText(file.name,100),blob,added:Date.now()});saved++;
+     if(!wallpaperPrefs.selected)wallpaperPrefs.selected=id;
+    }catch(e){console.warn('Skipped image:',file.name,e);}
+   }
+   await saveWallpaperPrefs();await applyWallpaper();await wallpaperGallery();
+   if(!saved)alert('No images could be imported. Try JPG, PNG or WebP files.');
+  }catch(e){alert('Could not save wallpapers: '+e.message);}
+ }
+ async function nextWallpaper(){
+  const list=await wallpaperStore('list');if(list.length<2)return;
+  const index=list.findIndex(item=>item.id===wallpaperPrefs.selected);
+  wallpaperPrefs.selected=list[(index+1)%list.length].id;wallpaperLastSwitch=Date.now();
+  await saveWallpaperPrefs();await applyWallpaper();
+ }
+ async function setupWallpapers(){
+  try{
+   const stored=await local.get(wallpaperKey);
+   if(stored&&typeof stored==='object')wallpaperPrefs={selected:typeof stored.selected==='string'?stored.selected:null,rotate:!!stored.rotate,interval:[5,15,30,60].includes(stored.interval)?stored.interval:15};
+   await applyWallpaper();
+  }catch(e){console.warn('Wallpaper initialization failed',e);}
+ }
+ modal.addEventListener('click',async e=>{
+  const button=e.target.closest('[data-wallpaper-action]');if(!button)return;
+  const action=button.dataset.wallpaperAction,id=button.dataset.wallpaperId;
+  if(action==='upload')return $('#wallpaperFile').click();
+  if(action==='folder')return $('#wallpaperFolder').click();
+  if(action==='select'){wallpaperPrefs.selected=id;wallpaperPrefs.rotate=false;}
+  if(action==='clear'){wallpaperPrefs.selected=null;wallpaperPrefs.rotate=false;}
+  if(action==='delete'){await wallpaperStore('delete',id);if(wallpaperPrefs.selected===id)wallpaperPrefs.selected=null;}
+  await saveWallpaperPrefs();await applyWallpaper();await wallpaperGallery();
+ });
+ modal.addEventListener('change',async e=>{
+  if(e.target.id==='wallpaperRotation'){wallpaperPrefs.rotate=e.target.checked;wallpaperLastSwitch=Date.now();await saveWallpaperPrefs();}
+  if(e.target.id==='wallpaperInterval'){wallpaperPrefs.interval=Number(e.target.value);wallpaperLastSwitch=Date.now();await saveWallpaperPrefs();}
+ });
+ for(const picker of ['wallpaperFile','wallpaperFolder']){
+  document.getElementById(picker)?.addEventListener('change',async e=>{if(e.target.files?.length)await importWallpapers(e.target.files);e.target.value='';});
+ }
+ setInterval(()=>{if(wallpaperPrefs.rotate&&Date.now()-wallpaperLastSwitch>=wallpaperPrefs.interval*60000)nextWallpaper().catch(console.warn);},60000);
+
 function content(m){const c=m.config;
  switch(m.type){
  case 'links':return renderLinkModule(m);
@@ -472,7 +586,7 @@ document.addEventListener('pointerup',()=>{if(!resize)return;resize=null;documen
 document.addEventListener('pointercancel',()=>{if(resize){resize=null;document.body.classList.remove('resizing');change(false);}});
 document.addEventListener('click',e=>{
  const pg=e.target.closest('[data-page]');if(pg){state.activePage=pg.dataset.page;change();return;}
- const gl=e.target.closest('[data-global]');if(gl){const a=gl.dataset.global;if(a==='add')gallery();if(a==='customize')settings();if(a==='new-page')pageDialog(false);if(a==='edit-page')pageDialog(true);return;}
+ const gl=e.target.closest('[data-global]');if(gl){const a=gl.dataset.global;if(a==='add')gallery();if(a==='customize')settings();if(a==='backgrounds')wallpaperGallery();if(a==='new-page')pageDialog(false);if(a==='edit-page')pageDialog(true);return;}
  const b=e.target.closest('[data-action]');if(!b)return;const {action,mid,tid}=b.dataset,m=moduleFor(mid);
  if(action==='edit')return editModule(mid);if(!m)return;
  if(action==='delete-task'){m.config.tasks=m.config.tasks.filter(t=>t.id!==tid);change();}
@@ -503,7 +617,7 @@ modal.addEventListener('click',async e=>{
  if(a==='remove-row'){b.closest('.editlink')?.remove();return;}
  if(a==='delete-widget'){if(confirm('Delete this widget and its content?')){removeWidget(b.dataset.id);close();}return;}
  if(a==='delete-page'){if(state.pages.length<=1)return;if(confirm('Delete this workspace and ALL its widgets?')){state.pages=state.pages.filter(p=>p.id!==state.activePage);state.activePage=state.pages[0].id;close();change();}return;}
- if(a==='export')return exportBackup();if(a==='import')return $('#importFile').click();
+ if(a==='backgrounds')return wallpaperGallery();if(a==='export')return exportBackup();if(a==='import')return $('#importFile').click();
  if(a==='reset'){if(confirm('Reset all workspaces, widgets, notes and settings? Export a backup first.')){state=starter();close();change();}return;}
  if(a==='push-sync')return pushSync();if(a==='pull-sync')return pullSync(true,true).catch(x=>status(x.message,true));
 });
@@ -531,6 +645,7 @@ async function initialize(){
   if(syncEnabled){try{await pullSync(true,!stored&&!old);status('Chrome Sync on');}catch(e){status('Sync unavailable: '+e.message,true);}}
  }catch(e){status('Could not load saved data: '+e.message,true);}
  render();
+ setupWallpapers();
  if(supportsExt&&chrome.storage?.onChanged){chrome.storage.onChanged.addListener((changes,area)=>{if(area==='sync'&&syncEnabled&&changes[SYNC_META]&&!applyingRemote){clearTimeout(saveTimer);pullSync().catch(e=>status('Sync read failed: '+e.message,true));} if(area==='local'&&changes[V2]&&!applyingRemote){const remote=changes[V2].newValue;if(remote&&remote.updatedAt>state.updatedAt){try{state=normalize(remote);render();}catch{}}}});}
  setInterval(update,1000);
 }
