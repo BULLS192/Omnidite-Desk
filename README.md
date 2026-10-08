@@ -1,6 +1,6 @@
-# Omnidite Desk v0.5.5 — Released
+# Omnidite Desk v0.5.6 — Released
 
-## V0.5.6 — Compact stackable widgets and real height controls (preview)
+## V0.5.6 — Compact stackable widgets and real height controls (released on main in PR #14)
 
 Fixes empty space under short cards (for example Quick Launch next to long World Clock/Weather widgets).
 
