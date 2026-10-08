@@ -582,6 +582,9 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
     wallpaperPrefs.rotate=false;
     wallpaperLastSwitch=Date.now();
     await saveWallpaperPrefs();await applyWallpaper();
+   }else if(wallpaperPrefs.source==='folder'){
+    wallpaperPrefs.source='gallery';wallpaperPrefs.folderFile=null;wallpaperPrefs.rotate=false;
+    await saveWallpaperPrefs();await applyWallpaper();
    }
    await wallpaperGallery();
   }catch(e){alert('Could not connect folder: '+e.message);}
@@ -627,7 +630,10 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   if(action==='folder')return $('#wallpaperFolder').click();
   if(action==='connect-folder')return connectLiveFolder();
   if(action==='reauthorize-folder'){
-   const allowed=await connectedFolderPermission(true);
+   // Permission requests must be launched directly from this user click.
+   let allowed=false;
+   try{allowed=(await folderHandle.requestPermission({mode:'read'}))==='granted';}
+   catch(e){folderStatus='Folder authorization failed: '+e.message;}
    if(allowed){await scanConnectedFolder();await applyWallpaper();}
    return wallpaperGallery();
   }
