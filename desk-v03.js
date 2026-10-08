@@ -144,7 +144,7 @@
       '<button type="button" class="module-option" data-v03="preset" data-preset="compact"><strong>Compact</strong><small>Smaller tiles, more at once</small></button>' +
       '<button type="button" class="module-option" data-v03="preset" data-preset="balanced"><strong>Balanced</strong><small>Readable multi-column layout</small></button>' +
       '<button type="button" class="module-option" data-v03="preset" data-preset="wide"><strong>Wide</strong><small>One full-width module per row</small></button></div>' +
-      '<p class="helper">You can also drag tiles, move them using the ↑ / ↓ controls, and resize from the lower-right corner. Widths snap to all twelve grid units on desktop.</p>' +
+      '<p class="helper">You can also drag tiles, move them using the ↑ / ↓ controls, and resize from the lower-right corner. Choose Free resize for traditional 12-column sizing or Snap to grid for fixed cell footprints. Layout snapshots retain both sizes.</p>' +
       '<form id="v03SnapshotForm"><label class="label">Save a reusable layout snapshot</label><div class="desk-inline"><input name="name" class="modal-input" maxlength="70" required placeholder="e.g. Research focus"><button class="smallbutton" type="submit">Save</button></div></form>' +
       '<h3 class="desk-small-heading">Saved layouts for ' + esc(api.page().title) + '</h3><div class="desk-collection">' +
       (currentPageSnapshots().map(s => '<div class="desk-item"><strong>' + esc(s.name) +
@@ -174,10 +174,16 @@
       if (!m) return;
       m.cols = Math.max(1, Math.min(12, w.cols));
       m.height = w.height;
+      if(Number.isInteger(w.gridW)&&w.gridW>=1&&w.gridW<=12)m.gridW=w.gridW;
+      if(Number.isInteger(w.gridH)&&w.gridH>=1&&w.gridH<=12)m.gridH=w.gridH;
       ordered.push(m);
       lookup.delete(m.id);
     });
     page.modules = ordered.concat([...lookup.values()]);
+    if(snap.widgets.some(w=>w.gridW>0&&w.gridH>0)){
+      state().sizingMode=snap.sizingMode==='snap'?'snap':'free';
+      if(snap.gridSettings)state().gridSettings={...snap.gridSettings};
+    }
     api.save();
     openLayouts();
   }
@@ -218,7 +224,7 @@
       if (!name) return;
       const snapshots = state().layoutSnapshots;
       if (snapshots.length >= 12) {alert('Maximum 12 saved layouts. Remove an old snapshot first.');return;}
-      snapshots.push({id:api.uid(),name,pageId:api.page().id,widgets:api.page().modules.map(m => ({id:m.id,cols:m.cols,height:m.height}))});
+      snapshots.push({id:api.uid(),name,pageId:api.page().id,widgets:api.page().modules.map(m => ({id:m.id,cols:m.cols,height:m.height,gridW:m.gridW,gridH:m.gridH})),sizingMode:state().sizingMode,gridSettings:{...state().gridSettings}});
       api.save();openLayouts();
     }
   }
