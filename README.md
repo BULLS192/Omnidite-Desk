@@ -1,6 +1,37 @@
-# Omnidite Desk v0.3.0 — personal Chrome command center
+# Omnidite Desk v0.5.0 — personal Chrome command center
 
 **No web hosting, Vercel builds, backend, third-party script loaders, API keys, or Chrome Web Store publication required.** Uses Manifest V3 and Chrome's built-in New Tab override / Side Panel.
+
+
+## V0.4/V0.5 development (feature branch only)
+
+Development branch: feature/desk-v0.5-productivity-operations, based on the V0.3 foundation. No V0.5 files are released to main; the Windows updater still tracks main.
+
+### V0.4 — Productivity
+
+- **Structured task planner:** project, priority, due date, and completion; original simple task widgets stay unchanged.
+- **Work sessions:** save/reopen up to eight named sets of up to 15 HTTP(S) Chrome tabs. The user grants optional tabs permission on first use. Only a deliberate Restore click opens the tabs. Chrome internal URLs are excluded. Saved URLs can appear in Chrome Sync if enabled.
+- **Capture active tab:** in the Side Panel, save the active website title/URL to the research library after optional tabs consent. The New Tab extension itself is not a webpage worth capturing.
+- **Global local search:** search projects, tasks, content, sessions, captured research, shortcuts, and workspace names.
+- **Content calendar:** manually plan articles and social posts by channel, stage, project and target date.
+- **Read-only calendar:** import an .ics export from Google Calendar or another provider. This is a local snapshot, NOT live Google OAuth syncing. Import can be repeated; unsupported TZID calendar events are skipped to prevent misleading display.
+
+### V0.5 — Operations
+
+- **GitHub:** manually read the selected PUBLIC repository's open pull-request page, repository issue count and recent Actions. Optional site-specific permission grants api.github.com access. No GitHub PAT. Issue counts derived from open_issues_count less fetched PRs are only approximate when more than 30 PRs are open. GitHub's unauthenticated API has rate limits.
+- **Omnidite Pulse adapter:** configure a read-only HTTPS JSON endpoint under omnidite.com, or import a JSON status snapshot. The existing Pulse capturedAt/providers/metrics structure is supported. Example: {"capturedAt":"2026-10-08T10:00:00Z","providers":[{"name":"Vercel","status":"ok","metrics":[{"label":"Deployments","value":18,"limit":100,"unit":""}]}]}. Desk does not assume the endpoint exists or attempt to obtain administrator credentials.
+- **Alerts:** store local warning/down and threshold >=80% alerts. The operations dashboard shows source freshness. No email, push or guaranteed background monitoring.
+- **Network:** only explicit reads. Optional auto-refresh of the configured Pulse feed every 15 minutes while open, OFF by default. No cookies or auth headers sent; redirects rejected. Status feed must be deliberately sanitized and read-only.
+
+### Permissions, privacy, release
+
+- Existing required extension permissions and stable extension ID are preserved.
+- Optional permission: tabs, requested by the user at session/capture time.
+- Optional host permissions: https://api.github.com/* and https://*.omnidite.com/*, requested upon monitoring.
+- Do not put passwords, tokens or sensitive information in Pulse feed URLs, saved research or imported JSON.
+- Saved sessions/calendar/events increase extension storage usage; Chrome Sync has quotas. Export local backups before testing or switching versions.
+- This build needs GitHub automated checks and an actual Windows Chrome New Tab/Side Panel acceptance pass before release. No claim of live Google Calendar OAuth or an automatically connected authenticated Pulse backend.
+- Run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs
 
 ## What's new in V0.3
 
@@ -120,6 +151,8 @@ git pull --ff-only origin main
 - `index.html`, `sidepanel.html`: dashboard shells
 - `app.js`: widgets, page management, grid interactions, storage and sync
 - `desk-v03.js`, `desk-v03.css`: command bar, projects, research capture and layout studio
+- `desk-v04.js`, `desk-v05.js`, `desk-v045.css`: productivity and read-only operations
+- `tools/v045-smoke.mjs`: mocked permission/browser/API behavior tests
 - `tools/v03-smoke.mjs`: V0.3 feature smoke tests
 - `styles.css`: visual styles and responsive themes
 - `manifest.json`: manifest and shared **public key**; keep unchanged across machines
