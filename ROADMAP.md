@@ -18,7 +18,7 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Calendar at-a-glance tile using only existing local Google Calendar cache.
 - [x] Theme-aware premium navy/slate/light visual system for desktop, Side Panel and wallpapers.
 - [x] Add static guards and a privacy-safe calendar at-a-glance smoke test.
-- [x] Implement user-selectable internal grids (1–6) and per-item ordering for multi-item widgets.
+- [x] Implement user-selectable internal grids (1–6), per-item drag-to-reorder and ↑ ↓ accessibility fallback for multi-item widgets.
 - [x] Implement Google Calendar month/week/day, selected-day agenda and compact controls.
 - [x] Implement built-in timer alarms, preview, volume and local-only custom upload.
 - [ ] Verify live five-city rendering, local reorder persistence, sound playback and Google Month/Week/Day on user's Windows Chrome.
