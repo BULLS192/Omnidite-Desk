@@ -10,7 +10,7 @@ const API='https://www.googleapis.com/calendar/v3';
 const SCOPE='https://www.googleapis.com/auth/calendar.readonly';
 const MAX_CALENDARS=6,MAX_EVENTS=160;
 let cache={connected:false,selected:[],calendars:[],events:[],updatedAt:0,rangeDays:7};
-let loaded=false,busy=false,lastToken='',lastMessage='',autoRefreshAttempted=false;
+let loaded=false,busy=false,lastToken='',lastMessage='',lastAutoRefreshAt=0;
 const hasChrome=()=>typeof chrome!=='undefined'&&!!chrome.identity?.getAuthToken&&!!chrome.storage?.local;
 const configured=()=>{const id=chrome?.runtime?.getManifest?.()?.oauth2?.client_id||'';return /^\d{8,}-[a-z0-9_-]+\.apps\.googleusercontent\.com$/i.test(id);};
 const safe=(v,n=150)=>String(v??'').slice(0,n);
@@ -220,8 +220,8 @@ document.addEventListener('change',e=>{
 async function open(){
  await load();view();
  // Only refresh after prior explicit authorization, never prompt on opening.
- if(cache.connected&&!autoRefreshAttempted&&configured()&&Date.now()-cache.updatedAt>15*60000){
-  autoRefreshAttempted=true;perform(false);
+ if(cache.connected&&configured()&&Date.now()-cache.updatedAt>15*60000&&Date.now()-lastAutoRefreshAt>15*60000){
+  lastAutoRefreshAt=Date.now();perform(false);
  }
 }
 window.DeskGoogleCalendar={open};
