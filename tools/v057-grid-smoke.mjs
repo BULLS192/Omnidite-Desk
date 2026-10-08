@@ -1,0 +1,57 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const source=fs.readFileSync(new URL('../desk-grid.js',import.meta.url),'utf8');
+const card=(w,h)=>({dataset:{gridW:String(w),gridH:String(h)},style:{props:{},setProperty(k,v){this.props[k]=v}}});
+const cards=[card(1,4),card(2,2),card(4,4),card(6,3)];
+const grid={dataset:{sizing:'snap',gridColumns:'6',gridCellHeight:'104'},width:1200,isConnected:true,
+ style:{props:{},setProperty(k,v){this.props[k]=v}},getBoundingClientRect(){return {width:this.width}},
+ querySelectorAll(q){assert.equal(q,':scope > .module');return cards;}};
+const document={readyState:'complete',body:{classList:{contains:()=>false}},getElementById:id=>id==='grid'?grid:null};
+let resizeCallback;
+class ResizeObserverMock{constructor(fn){resizeCallback=fn}observe(){}disconnect(){}}
+const context={window:{addEventListener(){}},document,ResizeObserver:ResizeObserverMock,Number,Math};
+vm.runInNewContext(source,context);
+const api=context.window.DeskSnapGrid;
+assert.ok(api);
+assert.equal(api.GAP,12);
+assert.deepEqual([...api.COLUMN_CHOICES],[4,6,8,12]);
+assert.equal(api.normalizeSettings({columns:5,cellHeight:999}).columns,6);
+assert.equal(api.normalizeFootprint(4,4).w,4);
+assert.equal(api.normalizeFootprint(4,4).h,4);
+assert.equal(api.footprintHeight(4,104),452);
+assert.equal(api.PRESETS.map(p=>p.w+'x'+p.h).join(','),'1x4,2x2,2x3,4x4,6x3');
+assert.equal(api.effectiveColumns(1200,6),6);
+assert.equal(api.effectiveColumns(780,6),4);
+assert.equal(api.effectiveColumns(450,6),2);
+assert.equal(api.effectiveColumns(1200,8,true),2);
+api.apply();
+assert.equal(grid.style.props['--snap-visible-columns'],'6');
+assert.deepEqual(cards.map(c=>c.style.props['--effective-span']),['1','2','4','6']);
+grid.width=450;resizeCallback();
+assert.equal(grid.style.props['--snap-visible-columns'],'2');
+assert.deepEqual(cards.map(c=>c.style.props['--effective-span']),['1','2','2','2']);
+grid.width=1200;
+const step=(1200-12*5)/6+12;
+const dragged=api.snapDimensions(step,116,2,2,1200,6,104);
+assert.deepEqual([dragged.w,dragged.h,dragged.effective],[3,3,6]);
+const minimum=api.snapDimensions(-9999,-9999,1,1,1200,6,104);
+assert.deepEqual([minimum.w,minimum.h],[1,1]);
+const max=api.snapDimensions(9999,9999,1,1,1200,6,104);
+assert.deepEqual([max.w,max.h],[6,12]);
+grid.dataset.sizing='free';grid.width=400;api.apply();
+assert.equal(grid.style.props['--snap-visible-columns'],'2');
+const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
+for(const s of ['sizingMode','gridSettings','gridW','gridH','gridSettingsForm','grid-preset','toggle-snap','snap.snapDimensions','data-grid-w','data-grid-h'])
+ assert.ok(app.includes(s),'App must support '+s);
+assert.ok(app.includes("state.sizingMode=state.sizingMode==='snap'?'free':'snap'"));
+assert.ok(app.includes('height:Number.isFinite(x.height)'));
+assert.ok(app.includes('gridW:Number.isInteger'));
+assert.ok(app.includes('gridH:Number.isInteger'));
+const css=fs.readFileSync(new URL('../desk-v057.css',import.meta.url),'utf8');
+assert.ok(css.includes('data-sizing="snap"'));
+assert.ok(css.includes('overflow-y:auto'));
+assert.ok(css.includes('grid-auto-flow:row dense'));
+console.log('PASS: 1x4/2x2/4x4 presets, desktop six-column and responsive two-column grid');
+console.log('PASS: quantized drag, width clamping, cell-height math, free-mode noninterference');
+console.log('PASS: stored grid settings, layout snapshots and scrollable narrow widgets');

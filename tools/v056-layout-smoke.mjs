@@ -38,7 +38,7 @@ assert.equal(short.style.height,'275px','Dynamic weather content can resize its 
 assert.match(short.style.gridRowEnd,/span 15/);
 assert.ok(/grid-auto-flow:row dense/.test(fs.readFileSync(new URL('../desk-v056.css',import.meta.url),'utf8')));
 const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
-for(const token of ['data-fixed-height','deskLayoutMode','toggle-layout','name="height"','m.height=chosenHeight','requestAnimationFrame(()=>window.DeskCompactLayout','window.DeskCompactLayout?.schedule()'])
+for(const token of ['data-fixed-height','deskLayoutMode','toggle-layout','name="height"','m.height=chosenHeight','window.DeskCompactLayout?.observe()','window.DeskSnapGrid?.observe()','window.DeskCompactLayout?.schedule()'])
  assert.ok(app.includes(token),'App must expose '+token);
 console.log('PASS: independently measured auto-heights and content-aware compact row spans');
 console.log('PASS: fixed 200px card height, aligned-row fallback and reactive content growth');

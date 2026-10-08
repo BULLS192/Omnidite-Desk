@@ -12,11 +12,11 @@ jobs:
         with:
           node-version: '22'
       - name: Syntax validation
-        run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check desk-google-calendar.js && node --check desk-v055.js && node --check desk-focus-audio.js && node --check desk-compact.js && node --check background.js
+        run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check desk-google-calendar.js && node --check desk-v055.js && node --check desk-focus-audio.js && node --check desk-compact.js && node --check desk-grid.js && node --check background.js
       - name: Manifest and assets checks
-        run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs && node tools/google-calendar-smoke.mjs && node tools/v055-visual-smoke.mjs && node tools/v055-widget-smoke.mjs && node tools/v055-focus-smoke.mjs && node tools/v056-layout-smoke.mjs
+        run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs && node tools/google-calendar-smoke.mjs && node tools/v055-visual-smoke.mjs && node tools/v055-widget-smoke.mjs && node tools/v055-focus-smoke.mjs && node tools/v056-layout-smoke.mjs && node tools/v057-grid-smoke.mjs
   design-screenshots:
-    if: github.event_name == 'pull_request' && (github.head_ref == 'design/desk-v055-visual-refresh' || github.head_ref == 'feature/desk-v056-compact-masonry')
+    if: github.event_name == 'pull_request' && (github.head_ref == 'design/desk-v055-visual-refresh' || github.head_ref == 'feature/desk-v056-compact-masonry' || github.head_ref == 'feature/desk-v057-snap-grid')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '22'
       - name: Generate fake-data sample pages
-        run: node tools/generate-design-review.mjs && node tools/generate-functional-previews.mjs && node tools/generate-compact-preview.mjs
+        run: node tools/generate-design-review.mjs && node tools/generate-functional-previews.mjs && node tools/generate-compact-preview.mjs && node tools/generate-grid-preview.mjs
       - name: Capture desktop and Side Panel visual review
         shell: bash
         run: |
@@ -45,15 +45,25 @@ jobs:
           "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=3000 --window-size=1600,1160 --screenshot="$PWD/preview-aligned-rows.png" http://127.0.0.1:8765/design-review-aligned.html
           test -s preview-compact-packing.png
           test -s preview-aligned-rows.png
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=3000 --window-size=1600,1700 --screenshot="$PWD/preview-snap-6-columns.png" http://127.0.0.1:8765/design-review-snap.html
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=3000 --window-size=1600,1700 --screenshot="$PWD/preview-free-resize.png" http://127.0.0.1:8765/design-review-free.html
+          test -s preview-snap-6-columns.png
+          test -s preview-free-resize.png
           test -s preview-desktop.png
           test -s preview-sidepanel.png
       - name: Attach sample screenshots and offline HTML previews
         uses: actions/upload-artifact@v4
         with:
-          name: Desk-V055-sample-design-preview
+          name: Desk-V057-layout-review
           path: |
             preview-desktop.png
             preview-sidepanel.png
+            preview-snap-6-columns.png
+            preview-free-resize.png
+            design-review-snap.html
+            design-review-free.html
+            desk-v057.css
+            desk-grid.js
             preview-compact-packing.png
             preview-aligned-rows.png
             design-review-compact.html
