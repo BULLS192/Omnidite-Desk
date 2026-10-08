@@ -4,6 +4,11 @@
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
 const SYNC_META='od_v2_meta', CHUNK='od_v2_chunk_';
 const TYPES=['links','tasks','notes','clock','weather','focus','agenda','countdown','habits','metric','quote'];
+const LIST_TYPES=new Set(['links','tasks','clock','weather','agenda','habits']);
+const defaultInnerColumns=type=>type==='links'||type==='weather'?2:1;
+const layoutColumns=(v,defaultValue=1)=>Number.isInteger(v)&&v>=1&&v<=6?v:defaultValue;
+const itemOrderButtons=(mid,i,total)=>'<span class="desk-item-order"><span class="desk-item-handle" draggable="true" data-item-drag="'+esc(mid)+'" data-item-index="'+i+'" title="Drag to reorder">⠿</span><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="-1" aria-label="Move item earlier" '+(i===0?'disabled':'')+'>↑</button><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="1" aria-label="Move item later" '+(i===total-1?'disabled':'')+'>↓</button></span>';
+const widgetGrid=(m,cls)=>'class="'+cls+' desk-inner-grid" data-columns="'+layoutColumns(m.config.columns,defaultInnerColumns(m.type))+'"';
 const META={
  links:['↗','Link launcher','Your project shortcuts'],tasks:['✓','Task list','Daily priorities'],notes:['▤','Notes','Keep ideas handy'],
  clock:['◷','World clocks','Analog and digital city clocks'],weather:['☁','Live weather','Current, hourly and 7-day forecasts'],focus:['◴','Focus timer','Custom-length deep work'],
@@ -38,12 +43,13 @@ function sanitizeModule(x,ids){
  const id=typeof x.id==='string'&&/^[\w-]{1,90}$/.test(x.id)&&!ids.has(x.id)?x.id:uid(); ids.add(id);
  const c=x.config&&typeof x.config==='object'&&!Array.isArray(x.config)?x.config:{};
  const out={id,type:x.type,title:cleanText(x.title||META[x.type][1],80),cols:Number.isInteger(x.cols)&&x.cols>=1&&x.cols<=12?x.cols:({small:4,wide:6,full:12}[x.width]||4),height:Number.isFinite(x.height)?Math.min(1000,Math.max(0,Math.round(x.height))):0,config:{}};
+ if(LIST_TYPES.has(x.type))out.config.columns=layoutColumns(c.columns,defaultInnerColumns(x.type));
  if(x.type==='links')out.config.links=(Array.isArray(c.links)?c.links:[]).slice(0,30).filter(l=>validUrl(String(l?.url||''))).map(l=>({label:cleanText(l.label||'Link',80),url:cleanText(l.url,1000)}));
  if(x.type==='tasks'||x.type==='habits')out.config[x.type==='tasks'?'tasks':'habits']=(Array.isArray(c.tasks||c.habits)?c.tasks||c.habits:[]).slice(0,80).filter(t=>t&&typeof t.text==='string').map(t=>({id:cleanText(t.id||uid(),90),text:cleanText(t.text,200),done:!!t.done,day:cleanText(t.day||'',12)}));
  if(x.type==='notes')out.config.text=cleanText(c.text,12000);
- if(x.type==='focus'){const duration=Number.isFinite(c.duration)?Math.min(14400,Math.max(60,Math.round(c.duration))):1500;out.config={duration,seconds:Number.isFinite(c.seconds)?Math.min(14400,Math.max(0,Math.round(c.seconds))):duration,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null};}
- if(x.type==='clock')out.config={cities:sanitizeCities(c.cities,'clock')};
- if(x.type==='weather')out.config={cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
+ if(x.type==='focus'){const duration=Number.isFinite(c.duration)?Math.min(14400,Math.max(60,Math.round(c.duration))):1500;out.config={duration,seconds:Number.isFinite(c.seconds)?Math.min(14400,Math.max(0,Math.round(c.seconds))):duration,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null,sound:['chime','soft','bell','digital','none','custom'].includes(c.sound)?c.sound:'chime',volume:Number.isFinite(c.volume)?Math.min(100,Math.max(0,Math.round(c.volume))):70};}
+ if(x.type==='clock')out.config={...out.config,cities:sanitizeCities(c.cities,'clock')};
+ if(x.type==='weather')out.config={...out.config,cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
  if(x.type==='agenda')out.config.events=(Array.isArray(c.events)?c.events:[]).slice(0,75).filter(e=>e&&e.title&&e.when).map(e=>({id:cleanText(e.id||uid(),90),title:cleanText(e.title,140),when:cleanText(e.when,25)}));
  if(x.type==='countdown')out.config={target:/^\d{4}-\d{2}-\d{2}$/.test(c.target||'')?c.target:'2026-12-31',label:cleanText(c.label||'Milestone',80)};
  if(x.type==='metric')out.config={value:Number.isFinite(Number(c.value))?Math.min(1e9,Math.max(-1e9,Number(c.value))):0,unit:cleanText(c.unit||'',40),step:Number.isFinite(Number(c.step))?Math.min(1e6,Math.max(.01,Number(c.step))):1};
@@ -167,6 +173,7 @@ function editModule(id){const m=moduleFor(id);if(!m)return;
  show(`<form class="modal-pad" id="editForm" data-id="${esc(id)}">${header('Edit widget','Change its name, size, options, or workspace.')}<label class="label">Title</label><input class="modal-input" name="title" maxlength="80" required value="${esc(m.title)}">
  <label class="label">Workspace</label><select class="modal-input" name="page">${state.pages.map(p=>`<option value="${esc(p.id)}" ${p.modules.includes(m)?'selected':''}>${esc(p.title)}</option>`).join('')}</select>
  <label class="label">Width</label><select class="modal-input" name="cols">${Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${m.cols===n?'selected':''}>${n}/12 columns</option>`).join('')}</select>
+ ${LIST_TYPES.has(m.type)?`<label class="label">Items per row</label><select class="modal-input" name="innerColumns">${Array.from({length:6},(_,i)=>i+1).map(n=>`<option value="${n}" ${layoutColumns(m.config.columns,defaultInnerColumns(m.type))===n?'selected':''}>${n} ${n===1?'item':'items'} per row</option>`).join('')}</select><p class="helper">Make the widget wider to fit more items; narrow panels stack them automatically.</p>`:''}
  ${m.type==='links'?`<label class="label">Links</label><div id="editLinks">${m.config.links.map(linkRow).join('')}</div><button type="button" class="smallbutton" data-modal="add-link">＋ Add link</button>`:''}
  ${m.type==='countdown'?`<label class="label">Deadline</label><input class="modal-input" type="date" name="target" value="${esc(m.config.target)}"><label class="label">Label</label><input class="modal-input" name="label" value="${esc(m.config.label)}">`:''}
  ${m.type==='metric'?`<label class="label">Unit</label><input class="modal-input" name="unit" value="${esc(m.config.unit)}"><label class="label">Increment step</label><input class="modal-input" type="number" step="any" name="step" value="${esc(m.config.step)}">`:''}
@@ -229,14 +236,14 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  function renderWorldClocks(m){
   const cities=m.config.cities||[];
   return `<p class="module-sub">ANALOG + DIGITAL · ${cities.length} CITIES · RELATIVE TO YOUR DEVICE TIME</p>
-   <div class="worldclocks">${cities.map(c=>`<div class="clock-city" data-clock-city="${esc(c.timezone)}">
+   <div ${widgetGrid(m,'worldclocks')}>${cities.map((c,i)=>`<div class="clock-city" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}" data-clock-city="${esc(c.timezone)}">
     <div class="analog-face" aria-hidden="true"><span class="analog-tick tick-12"></span><span class="analog-tick tick-3"></span><span class="analog-tick tick-6"></span><span class="analog-tick tick-9"></span>
      <i class="hand hour-hand"></i><i class="hand minute-hand"></i><i class="hand second-hand"></i><b class="clock-pin"></b></div>
     <div class="clock-information"><div class="clock-city-name">${esc(c.name)} <span>${esc(c.country)}</span></div>
     <div class="clock-time" data-clock-time="${esc(c.timezone)}">--:--:--</div>
     <div class="clock-date" data-clock-date="${esc(c.timezone)}">—</div>
     <div class="clock-diff" data-clock-offset="${esc(c.timezone)}">—</div></div>
-    <button class="city-remove" title="Remove city" aria-label="Remove ${esc(c.name)}" data-city-remove="${esc(c.id)}" data-city-mid="${esc(m.id)}">×</button>
+    <div class="desk-clock-actions">${itemOrderButtons(m.id,i,cities.length)}<button class="city-remove" title="Remove city" aria-label="Remove ${esc(c.name)}" data-city-remove="${esc(c.id)}" data-city-mid="${esc(m.id)}">×</button></div>
     </div>`).join('')||'<p class="empty-note">Search for a city below to add your first clock.</p>'}</div>${cityPicker(m)}`;
  }
  function updateWorldClocks(now){
@@ -316,7 +323,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
    <div class="weather-city-bar">${cs.map(city=>`<button class="weather-city-pill ${c.selected===city.id?'selected':''}" type="button" data-weather-select="${esc(city.id)}" data-weather-mid="${esc(m.id)}">${esc(city.name)}</button>`).join('')}</div>
    <div class="weather-tabs">${[['now','Now'],['hourly','Hourly'],['daily','7 days']].map(([v,label])=>`<button type="button" class="${c.view===v?'selected':''}" data-weather-view="${v}" data-weather-mid="${esc(m.id)}">${label}</button>`).join('')}</div>
    <div class="weather-content" data-weather-content="${esc(m.id)}"><p class="empty-note">Loading live forecasts…</p></div>
-   <div class="weather-city-management">${cityPicker(m)}<div class="weather-remove-list">${cs.map(city=>`<span>${esc(city.name)} <button type="button" data-city-remove="${esc(city.id)}" data-city-mid="${esc(m.id)}" aria-label="Remove ${esc(city.name)}">×</button></span>`).join('')}</div></div>`;
+   <div class="weather-city-management">${cityPicker(m)}<div class="weather-remove-list">${cs.map((city,i)=>`<span>${esc(city.name)} ${itemOrderButtons(m.id,i,cs.length)} <button type="button" data-city-remove="${esc(city.id)}" data-city-mid="${esc(m.id)}" aria-label="Remove ${esc(city.name)}">×</button></span>`).join('')}</div></div>`;
  }
  function weatherRequest(city){
   const key=city.latitude.toFixed(4)+','+city.longitude.toFixed(4);
@@ -339,10 +346,10 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   }).catch(e=>{if(old)return old.data;throw e;}).finally(()=>weatherInFlight.delete(key));
   weatherInFlight.set(key,work);return work;
  }
- function weatherTile(city,data){
+ function weatherTile(city,data,mid,i,total){
   const w=data.current||{},[symbol,label]=weatherCondition(w.weather_code,!!w.is_day);
-  return `<div class="weather-now"><div class="weather-main"><div class="weather-symbol">${symbol}</div><div><strong>${esc(city.name)}</strong><div class="weather-reading">${temperature(w.temperature_2m)}</div><div class="weather-desc">${label}</div></div></div>
-   <div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div></div>`;
+  return `<div class="weather-now" data-item-drop-mid="${esc(mid)}" data-item-drop-index="${i}"><div class="weather-main"><div class="weather-symbol">${symbol}</div><div><strong>${esc(city.name)}</strong><div class="weather-reading">${temperature(w.temperature_2m)}</div><div class="weather-desc">${label}</div></div></div>
+   <div class="desk-weather-actions">${itemOrderButtons(mid,i,total)}</div><div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div></div>`;
  }
  function weatherForecast(data,view){
   if(view==='hourly'){
@@ -372,7 +379,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
      const all=await Promise.allSettled(cities.map(weatherRequest));
      const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
      if(!current||!livePanel||current.config.view!==view)return;
-     livePanel.innerHTML=`<div class="weather-now-grid">${all.map((res,i)=>res.status==='fulfilled'?weatherTile(cities[i],res.value):`<div class="weather-error">${esc(cities[i].name)}: weather unavailable</div>`).join('')}</div>`;
+     livePanel.innerHTML=`<div ${widgetGrid(current,'weather-now-grid')}>${all.map((res,i)=>res.status==='fulfilled'?weatherTile(cities[i],res.value,current.id,i,cities.length):`<div class="weather-error">${esc(cities[i].name)}: weather unavailable</div>`).join('')}</div>`;
     }else{
      const data=await weatherRequest(selected);
      const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
@@ -396,9 +403,9 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  }
  function renderLinkModule(m){
   const list=m.config.links||[];
-  return `<p class="module-sub">QUICK ACCESS · ${list.length} LINKS</p><div class="linkgrid">${list.map(l=>{
+  return `<p class="module-sub">QUICK ACCESS · ${list.length} LINKS</p><div ${widgetGrid(m,'linkgrid')}>${list.map((l,i)=>{
    const icon=siteFavicon(l.url);
-   return `<a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${icon?`<img class="site-favicon" src="${esc(icon)}" alt="" loading="lazy">`:''}<span class="launch-initial">${esc(l.label[0]?.toUpperCase()||'↗')}</span></span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>`;
+   return `<div class="desk-launch-item" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}"><a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${icon?`<img class="site-favicon" src="${esc(icon)}" alt="" loading="lazy">`:''}<span class="launch-initial">${esc(l.label[0]?.toUpperCase()||'↗')}</span></span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>${itemOrderButtons(m.id,i,list.length)}</div>`;
   }).join('')||'<p class="empty-note">Edit to add a link.</p>'}</div>`;
  }
  function renderFocusModule(m){
@@ -406,7 +413,11 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   return `<p class="module-sub">FOCUS SPRINT · CHOOSE YOUR DURATION</p><div class="focus-display" data-timer="${esc(m.id)}">--:--</div>
    <div class="focus-presets">${[15,25,45,60].map(v=>`<button type="button" class="${minutes===v?'selected':''}" data-focus-preset="${v}" data-focus-mid="${esc(m.id)}">${v} min</button>`).join('')}</div>
    <form class="focus-custom" data-focus-custom="${esc(m.id)}"><label for="focus-minutes-${esc(m.id)}">Custom minutes</label><input id="focus-minutes-${esc(m.id)}" name="minutes" aria-label="Custom focus minutes" type="number" min="1" max="240" step="1" value="${minutes}" required><button class="smallbutton">Set</button></form>
-   <div class="focus-controls"><button class="smallbutton" data-action="focus-toggle" data-mid="${esc(m.id)}">${c.until?'Pause':'Start'}</button><button class="smallbutton" data-action="focus-reset" data-mid="${esc(m.id)}">Reset</button></div>`;
+   <div class="focus-controls"><button class="smallbutton" data-action="focus-toggle" data-mid="${esc(m.id)}">${c.until?'Pause':'Start'}</button><button class="smallbutton" data-action="focus-reset" data-mid="${esc(m.id)}">Reset</button></div>
+   ${!c.until&&c.seconds===0?'<p class="focus-complete" role="status">✓ Focus session complete</p>':''}
+   <div class="focus-audio-controls"><div class="focus-audio-row"><label for="focus-sound-${esc(m.id)}">End sound</label><select class="modal-input" id="focus-sound-${esc(m.id)}" data-focus-sound="${esc(m.id)}">${[['chime','Gentle chime'],['soft','Soft piano-like tones'],['bell','Classic bell'],['digital','Digital beep'],['custom','My uploaded sound'],['none','Silent']].map(([v,label])=>`<option value="${v}" ${(c.sound||'chime')===v?'selected':''}>${label}</option>`).join('')}</select><button type="button" class="smallbutton" data-focus-preview="${esc(m.id)}">▷ Preview</button></div>
+   <div class="focus-audio-row"><label for="focus-volume-${esc(m.id)}">Volume</label><input id="focus-volume-${esc(m.id)}" data-focus-volume="${esc(m.id)}" type="range" min="0" max="100" value="${c.volume??70}" aria-label="Alarm volume"><button type="button" class="smallbutton" data-focus-upload="${esc(m.id)}">↑ Upload sound</button></div>
+   <input type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,.mp3,.wav,.ogg" data-focus-file="${esc(m.id)}" hidden><p class="focus-audio-note">Alarm works when Desk stays open. Uploaded audio is kept locally in this Chrome profile (maximum 1 MB), never in Chrome Sync.</p></div>`;
  }
  function setFocusDuration(mid,mins){
   const m=moduleFor(mid);if(!m||m.type!=='focus')return;
@@ -420,7 +431,22 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  document.addEventListener('click',e=>{
   const preset=e.target.closest('[data-focus-preset]');if(preset)setFocusDuration(preset.dataset.focusMid,preset.dataset.focusPreset);
  });
- document.addEventListener('error',e=>{
+ document.addEventListener('click',e=>{
+   const upload=e.target.closest('[data-focus-upload]'),preview=e.target.closest('[data-focus-preview]');
+   if(upload)document.querySelector('[data-focus-file="'+CSS.escape(upload.dataset.focusUpload)+'"]')?.click();
+   if(preview){const m=moduleFor(preview.dataset.focusPreview);if(m?.type==='focus')window.DeskFocusAudio?.play(m.config.sound||'chime',m.config.volume??70,m.id);}
+  });
+  document.addEventListener('change',async e=>{
+   const sound=e.target.closest('[data-focus-sound]'),volume=e.target.closest('[data-focus-volume]'),file=e.target.closest('[data-focus-file]');
+   if(sound){const m=moduleFor(sound.dataset.focusSound);if(m?.type==='focus'&&['chime','soft','bell','digital','custom','none'].includes(sound.value)){m.config.sound=sound.value;change();}}
+   if(volume){const m=moduleFor(volume.dataset.focusVolume);if(m?.type==='focus'){m.config.volume=Math.min(100,Math.max(0,Number(volume.value)||0));change(false);}}
+   if(file&&file.files?.[0]){
+    const m=moduleFor(file.dataset.focusFile);if(!m||m.type!=='focus')return;
+    try{await window.DeskFocusAudio?.upload(m.id,file.files[0]);m.config.sound='custom';change();}
+    catch(err){alert('Could not save alarm sound: '+err.message);}
+   }
+  });
+  document.addEventListener('error',e=>{
   if(e.target?.classList?.contains('site-favicon'))e.target.style.display='none';
  },true);
 
@@ -751,20 +777,20 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
 function content(m){const c=m.config;
  switch(m.type){
  case 'links':return renderLinkModule(m);
- case 'tasks':return `<p class="module-sub">${c.tasks.filter(x=>x.done).length} / ${c.tasks.length} COMPLETED</p><form class="task-input-row" data-add-task="${esc(m.id)}"><input name="text" placeholder="Add a task…" maxlength="200" required><button>＋</button></form>${c.tasks.map(t=>`<div class="taskrow ${t.done?'done':''}"><input type="checkbox" data-toggle-task="${esc(m.id)}" data-id="${esc(t.id)}" ${t.done?'checked':''}><span class="tasktext">${esc(t.text)}</span><button class="delete-task" data-action="delete-task" data-mid="${esc(m.id)}" data-tid="${esc(t.id)}">×</button></div>`).join('')}`;
+ case 'tasks':return `<p class="module-sub">${c.tasks.filter(x=>x.done).length} / ${c.tasks.length} COMPLETED</p><form class="task-input-row" data-add-task="${esc(m.id)}"><input name="text" placeholder="Add a task…" maxlength="200" required><button>＋</button></form><div ${widgetGrid(m,'desk-task-grid')}>${c.tasks.map((t,i)=>`<div class="taskrow ${t.done?'done':''}" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}"><input type="checkbox" data-toggle-task="${esc(m.id)}" data-id="${esc(t.id)}" ${t.done?'checked':''}><span class="tasktext">${esc(t.text)}</span>${itemOrderButtons(m.id,i,c.tasks.length)}<button class="delete-task" data-action="delete-task" data-mid="${esc(m.id)}" data-tid="${esc(t.id)}">×</button></div>`).join('')}</div>`;
  case 'notes':return `<p class="module-sub">AUTO SAVED</p><textarea class="notebox" data-note="${esc(m.id)}" maxlength="12000" placeholder="Capture an idea…">${esc(c.text)}</textarea>`;
  case 'clock':return renderWorldClocks(m);
   case 'weather':return renderWeatherModule(m);
  case 'focus':return renderFocusModule(m);
- case 'agenda':return `<p class="module-sub">PERSONAL AGENDA · LOCAL EVENTS</p><form class="agenda-form" data-add-event="${esc(m.id)}"><input class="modal-input" name="title" placeholder="Event title" maxlength="140" required><input class="modal-input" type="datetime-local" name="when" required><button class="smallbutton">Add event</button></form><div class="agenda-items">${c.events.slice().sort((a,b)=>a.when.localeCompare(b.when)).map(e=>`<div class="agenda-event"><span>${esc(new Date(e.when).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span><strong>${esc(e.title)}</strong><button class="delete-task" data-action="delete-event" data-mid="${esc(m.id)}" data-tid="${esc(e.id)}">×</button></div>`).join('')||'<p class="empty-note">No events. Add one above.</p>'}</div>`;
+ case 'agenda':return `<p class="module-sub">PERSONAL AGENDA · LOCAL EVENTS</p><form class="agenda-form" data-add-event="${esc(m.id)}"><input class="modal-input" name="title" placeholder="Event title" maxlength="140" required><input class="modal-input" type="datetime-local" name="when" required><button class="smallbutton">Add event</button></form><div ${widgetGrid(m,'agenda-items')}>${c.events.map((e,i)=>`<div class="agenda-event" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}"><span>${esc(new Date(e.when).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span><strong>${esc(e.title)}</strong>${itemOrderButtons(m.id,i,c.events.length)}<button class="delete-task" data-action="delete-event" data-mid="${esc(m.id)}" data-tid="${esc(e.id)}">×</button></div>`).join('')||'<p class="empty-note">No events. Add one above.</p>'}</div>`;
  case 'countdown':return `<p class="module-sub">${esc(c.label)}</p><div class="count-number" data-countdown="${esc(m.id)}">—</div><div class="focus-hint">DAYS UNTIL ${esc(c.target)}</div>`;
- case 'habits':{const today=new Date().toLocaleDateString('en-CA');return `<p class="module-sub">TODAY'S CHECK-IN</p><form class="task-input-row" data-add-habit="${esc(m.id)}"><input name="text" placeholder="Add a habit…" maxlength="200" required><button>＋</button></form>${c.habits.map(h=>`<div class="taskrow ${h.day===today?'done':''}"><input type="checkbox" data-toggle-habit="${esc(m.id)}" data-id="${esc(h.id)}" ${h.day===today?'checked':''}><span class="tasktext">${esc(h.text)}</span><button class="delete-task" data-action="delete-habit" data-mid="${esc(m.id)}" data-tid="${esc(h.id)}">×</button></div>`).join('')}`;}
+ case 'habits':{const today=new Date().toLocaleDateString('en-CA');return `<p class="module-sub">TODAY'S CHECK-IN</p><form class="task-input-row" data-add-habit="${esc(m.id)}"><input name="text" placeholder="Add a habit…" maxlength="200" required><button>＋</button></form><div ${widgetGrid(m,'desk-task-grid')}>${c.habits.map((h,i)=>`<div class="taskrow ${h.day===today?'done':''}" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}"><input type="checkbox" data-toggle-habit="${esc(m.id)}" data-id="${esc(h.id)}" ${h.day===today?'checked':''}><span class="tasktext">${esc(h.text)}</span>${itemOrderButtons(m.id,i,c.habits.length)}<button class="delete-task" data-action="delete-habit" data-mid="${esc(m.id)}" data-tid="${esc(h.id)}">×</button></div>`).join('')}</div>`;}
  case 'metric':return `<p class="module-sub">CUSTOM COUNTER</p><div class="count-number">${esc(c.value)}<span class="metric-unit">${esc(c.unit)}</span></div><div class="focus-controls"><button class="smallbutton" data-action="metric-sub" data-mid="${esc(m.id)}">− ${esc(c.step)}</button><button class="smallbutton" data-action="metric-add" data-mid="${esc(m.id)}">＋ ${esc(c.step)}</button></div>`;
  case 'quote':{const q=quotes[Math.floor(Date.now()/86400000)%quotes.length];return `<p class="module-sub">DAILY PERSPECTIVE</p><blockquote class="quote-text">“${esc(q[0])}”</blockquote><div class="focus-hint">— ${esc(q[1])}</div>`;}
  }
  return '';
 }
-function moduleHtml(m){return `<section class="module" style="--span:${m.cols};${m.height?`min-height:${m.height}px;`:''}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools"><button class="tiny move-widget" data-action="move-up" data-mid="${esc(m.id)}" title="Move widget earlier" aria-label="Move widget earlier">↑</button><button class="tiny move-widget" data-action="move-down" data-mid="${esc(m.id)}" title="Move widget later" aria-label="Move widget later">↓</button><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget">⚙</button><span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
+function moduleHtml(m){return `<section class="module" style="--span:${m.cols};${m.height?`min-height:${m.height}px;`:''}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools">${LIST_TYPES.has(m.type)?`<button class="tiny desk-layout-cycle" type="button" data-action="cycle-columns" data-mid="${esc(m.id)}" title="Change items per row" aria-label="Change items per row">▦ ${layoutColumns(m.config.columns,defaultInnerColumns(m.type))}</button>`:''}<button class="tiny move-widget" data-action="move-up" data-mid="${esc(m.id)}" title="Move widget earlier" aria-label="Move widget earlier">↑</button><button class="tiny move-widget" data-action="move-down" data-mid="${esc(m.id)}" title="Move widget later" aria-label="Move widget later">↓</button><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget">⚙</button><span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
 
 // An explicit user click triggers Git via a *locally registered* native host.
 // The host accepts only "status" and "update" and hard-codes the official Git remote.
@@ -835,12 +861,46 @@ function render(){
 }
 function update(){const now=new Date();$('#localDate').textContent=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'}).format(now).toUpperCase();
  updateWorldClocks(now);
- document.querySelectorAll('[data-timer]').forEach(el=>{const c=moduleFor(el.dataset.timer)?.config;if(!c)return;const secs=c.until?Math.max(0,Math.ceil((c.until-Date.now())/1000)):c.seconds;el.textContent=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;});
+ document.querySelectorAll('[data-timer]').forEach(el=>{const mid=el.dataset.timer,c=moduleFor(mid)?.config;if(!c)return;
+   if(c.until&&c.until<=Date.now()){c.until=null;c.seconds=0;const mode=c.sound||'chime',volume=c.volume??70;change();window.DeskFocusAudio?.play(mode,volume,mid);return;}
+   const secs=c.until?Math.max(0,Math.ceil((c.until-Date.now())/1000)):c.seconds;el.textContent=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;});
  document.querySelectorAll('[data-countdown]').forEach(el=>{const c=moduleFor(el.dataset.countdown)?.config;if(!c)return;const target=new Date(c.target+'T00:00:00');el.textContent=Number.isNaN(target.getTime())?'—':Math.max(0,Math.ceil((target-Date.now())/86400000));});
 }
 function add(type){if(!TYPES.includes(type))return;const def={links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}};page().modules.push(mk(type,undefined,def[type]||{}));close();change();}
 function removeWidget(id){for(const p of state.pages)p.modules=p.modules.filter(m=>m.id!==id);change();}
 function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='omnidite-desk-v0.3-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+// Optional drag-to-reorder inside each widget; original cross-widget drag remains unchanged.
+let draggedInner=null;
+const clearInnerDrop=()=>document.querySelectorAll('.desk-item-drop-target').forEach(x=>x.classList.remove('desk-item-drop-target'));
+document.addEventListener('dragstart',e=>{
+ const handle=e.target.closest('[data-item-drag]');if(!handle)return;
+ const index=Number(handle.dataset.itemIndex),m=moduleFor(handle.dataset.itemDrag);
+ if(!m||!LIST_TYPES.has(m.type)||!Number.isInteger(index))return;
+ draggedInner={mid:m.id,index};
+ if(e.dataTransfer){e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','desk-item');}
+ e.stopPropagation();
+});
+document.addEventListener('dragover',e=>{
+ if(!draggedInner)return;
+ const target=e.target.closest('[data-item-drop-mid]');if(!target||target.dataset.itemDropMid!==draggedInner.mid)return;
+ e.preventDefault();clearInnerDrop();target.classList.add('desk-item-drop-target');
+});
+document.addEventListener('dragleave',e=>{
+ const target=e.target.closest('[data-item-drop-mid]');if(target&&!target.contains(e.relatedTarget))target.classList.remove('desk-item-drop-target');
+});
+document.addEventListener('drop',e=>{
+ if(!draggedInner)return;
+ const dest=e.target.closest('[data-item-drop-mid]'),source=draggedInner;draggedInner=null;clearInnerDrop();
+ if(!dest||dest.dataset.itemDropMid!==source.mid)return;
+ e.preventDefault();e.stopPropagation();
+ const m=moduleFor(source.mid);if(!m)return;
+ const collection=m.type==='clock'||m.type==='weather'?'cities':m.type==='agenda'?'events':m.type==='links'?'links':m.type;
+ const items=m.config?.[collection],to=Number(dest.dataset.itemDropIndex);
+ if(!Array.isArray(items)||!Number.isInteger(to)||to<0||to>=items.length||source.index<0||source.index>=items.length||to===source.index)return;
+ items.splice(to,0,items.splice(source.index,1)[0]);change();
+});
+document.addEventListener('dragend',()=>{draggedInner=null;clearInnerDrop();});
+
 // Drag handles reorder within active page; widget body controls stay interactive.
 let dragged=null;
 document.addEventListener('dragstart',e=>{const h=e.target.closest('[data-drag]');if(!h)return;dragged=h.dataset.drag; e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragged);h.closest('.module')?.classList.add('dragging');});
@@ -859,10 +919,18 @@ document.addEventListener('click',e=>{
  const b=e.target.closest('[data-action]');if(!b)return;const {action,mid,tid}=b.dataset,m=moduleFor(mid);
  if(action==='edit')return editModule(mid);if(!m)return;
   if(action==='move-up'||action==='move-down'){const arr=page().modules;const ix=arr.indexOf(m),to=ix+(action==='move-up'?-1:1);if(ix>=0&&to>=0&&to<arr.length){arr.splice(to,0,arr.splice(ix,1)[0]);change();}return;}
- if(action==='delete-task'){m.config.tasks=m.config.tasks.filter(t=>t.id!==tid);change();}
+ if(action==='cycle-columns'&&LIST_TYPES.has(m.type)){m.config.columns=(layoutColumns(m.config.columns,defaultInnerColumns(m.type))%6)+1;change();return;}
+  if(action==='item-move'){
+    const collection=m.type==='clock'||m.type==='weather'?'cities':m.type==='agenda'?'events':m.type==='links'?'links':m.type;
+    const arr=m.config?.[collection];if(!Array.isArray(arr))return;
+    const btn=e.target.closest('[data-action]'),ix=Number(btn.dataset.itemIndex),shift=Number(btn.dataset.moveDirection);
+    if(!Number.isInteger(ix)||ix<0||ix>=arr.length||![-1,1].includes(shift)||ix+shift<0||ix+shift>=arr.length)return;
+    [arr[ix],arr[ix+shift]]=[arr[ix+shift],arr[ix]];change();return;
+  }
+  if(action==='delete-task'){m.config.tasks=m.config.tasks.filter(t=>t.id!==tid);change();}
  if(action==='delete-habit'){m.config.habits=m.config.habits.filter(t=>t.id!==tid);change();}
  if(action==='delete-event'){m.config.events=m.config.events.filter(t=>t.id!==tid);change();}
- if(action==='focus-toggle'){if(m.config.until){m.config.seconds=Math.max(0,Math.ceil((m.config.until-Date.now())/1000));m.config.until=null;}else{if(!m.config.seconds)m.config.seconds=m.config.duration||1500;m.config.until=Date.now()+m.config.seconds*1000;}change();}
+ if(action==='focus-toggle'){if(m.config.until){m.config.seconds=Math.max(0,Math.ceil((m.config.until-Date.now())/1000));m.config.until=null;}else{if(!m.config.seconds)m.config.seconds=m.config.duration||1500;window.DeskFocusAudio?.unlock();m.config.until=Date.now()+m.config.seconds*1000;}change();}
  if(action==='focus-reset'){m.config.seconds=m.config.duration||1500;m.config.until=null;change();}
  if(action==='metric-add'||action==='metric-sub'){m.config.value+=m.config.step*(action==='metric-add'?1:-1);change();}
 });
@@ -899,7 +967,7 @@ modal.addEventListener('change',async e=>{if(e.target.id==='syncToggle'){
 modal.addEventListener('submit',e=>{const f=e.target;if(!['editForm','settingsForm','pageForm'].includes(f.id))return;e.preventDefault();
  if(f.id==='settingsForm'){state.brand=cleanText(f.elements.brand.value.trim()||'Omnidite Desk',55);state.searchEngine=f.elements.searchEngine.value;state.theme=f.elements.theme.value;state.accent=f.elements.accent.value;}
  if(f.id==='editForm'){
-  const m=moduleFor(f.dataset.id);if(!m)return;m.title=cleanText(f.elements.title.value.trim()||META[m.type][1],80);m.cols=Number(f.elements.cols.value);
+  const m=moduleFor(f.dataset.id);if(!m)return;m.title=cleanText(f.elements.title.value.trim()||META[m.type][1],80);m.cols=Number(f.elements.cols.value);if(LIST_TYPES.has(m.type))m.config.columns=layoutColumns(Number(f.elements.innerColumns?.value));
   const dest=state.pages.find(p=>p.id===f.elements.page.value);const src=state.pages.find(p=>p.modules.includes(m));if(dest&&src!==dest){src.modules=src.modules.filter(x=>x.id!==m.id);dest.modules.push(m);}
   if(m.type==='links'){const links=[...f.querySelectorAll('.editlink')].map(r=>({label:$('.link-label',r).value.trim(),url:$('.link-url',r).value.trim()})).filter(x=>x.label||x.url);if(links.some(l=>!l.label||!validUrl(l.url))){alert('Every shortcut needs a label and a valid http/https URL.');return;}m.config.links=links.slice(0,30);}
   if(m.type==='countdown'){m.config.target=f.elements.target.value;m.config.label=cleanText(f.elements.label.value,80);}

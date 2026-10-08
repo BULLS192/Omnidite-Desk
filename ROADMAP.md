@@ -12,6 +12,26 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - **Ship one phase at a time**. Developer branch → tests → manual Chrome verification → review → merge to main; the existing updater follows main.
 - Use optional Chrome Sync only for small personal data. Live wallpapers remain locally accessible; export/import JSON is the disaster recovery mechanism.
 
+## V0.5.5 — Desk aesthetics (design preview, NOT released)
+
+- [x] Focused navigation, primary shortcuts and collapsible secondary tools.
+- [x] Calendar at-a-glance tile using only existing local Google Calendar cache.
+- [x] Theme-aware premium navy/slate/light visual system for desktop, Side Panel and wallpapers.
+- [x] Add static guards and a privacy-safe calendar at-a-glance smoke test.
+- [x] Implement user-selectable internal grids (1–6), per-item drag-to-reorder and ↑ ↓ accessibility fallback for multi-item widgets.
+- [x] Implement Google Calendar month/week/day, selected-day agenda and compact controls.
+- [x] Implement built-in timer alarms, preview, volume and local-only custom upload.
+- [ ] Verify live five-city rendering, local reorder persistence, sound playback and Google Month/Week/Day on user's Windows Chrome.
+- [ ] Manual visual acceptance for wide New Tab, narrow Side Panel, custom backgrounds, variable widget widths and light theme.
+- [ ] User design approval before merge to `main` / one-click update.
+
+## Future — World stock markets (deferred)
+
+- [ ] Choose market data feeds and review licensing/realtime vs delayed status.
+- [ ] Exchange-session clocks for SGX, NYSE, Nasdaq, LSE, HKEX and SSE with holiday and DST accuracy.
+- [ ] Optional index and watchlist cards, sourced price timestamps, market alerts and API-budget safeguards.
+- [ ] Keep trading execution out of Desk's initial market-monitoring scope.
+
 ## V0.3 — Foundation (released on main in PR #3)
 - [x] Command palette across workspaces, launch URLs, tasks, research, and tools (button, slash shortcut; Ctrl+K where Chrome allows it).
 - [x] Editable project directory with optional URL and manual label.
@@ -35,7 +55,7 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Local read-only .ics calendar snapshot import with supported timestamps and import replacement.
 - [x] Implement Chrome Identity read-only Google Calendar client and local-only cache on V0.5.4 feature branch.
 - [x] Configure public Google Cloud Chrome Extension OAuth client ID in the V0.5.4 manifest.
-- [ ] Confirm live Google account authorization, test user's consent and on-device calendar read after release.
+- [x] User confirmed Google Calendar successfully synced on their installed V0.5.4.
 - [x] Local content calendar for Omnidite articles and social planning.
 - **Acceptance:** work offline except explicitly connected widgets, no unintended browser/tab reads, sane sync size limits, no loss of data.
 

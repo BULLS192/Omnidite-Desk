@@ -8,7 +8,7 @@ const STORAGE_KEY='omnidite-google-calendar-local-v1';
 const HOST='https://www.googleapis.com/*';
 const API='https://www.googleapis.com/calendar/v3';
 const SCOPE='https://www.googleapis.com/auth/calendar.readonly';
-const MAX_CALENDARS=6,MAX_EVENTS=160;
+const MAX_CALENDARS=6,MAX_EVENTS=500;
 let cache={connected:false,selected:[],calendars:[],events:[],updatedAt:0,rangeDays:7};
 let loaded=false,busy=false,lastToken='',lastMessage='',lastAutoRefreshAt=0;
 const hasChrome=()=>typeof chrome!=='undefined'&&!!chrome.identity?.getAuthToken&&!!chrome.storage?.local;
@@ -59,28 +59,80 @@ function setup(){
  '<div class="modal-actions">'+action('Refresh setup check','setup-check')+action('Open Google Cloud','cloud')+action('Use offline .ics import','offline')+'</div></div>'+
  '<p class="helper">This development build does not yet contain an authorized OAuth client ID. The normal installed Desk stays unchanged until authorization is configured and tested.</p>');
 }
+let displayMode='month',anchorDate=new Date();
+function dateKey(date){
+ const d=date instanceof Date?date:new Date(date);
+ return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+}
+function localDate(key){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(key||''))return null;
+ const [y,m,d]=key.split('-').map(Number),v=new Date(y,m-1,d,12);
+ return v.getFullYear()===y&&v.getMonth()===m-1&&v.getDate()===d?v:null;
+}
+function shiftDate(delta){
+ const y=anchorDate.getFullYear(),month=anchorDate.getMonth(),day=anchorDate.getDate();
+ if(displayMode==='month')anchorDate=new Date(y,month+delta,1,12);
+ else{const d=new Date(y,month,day,12);d.setDate(d.getDate()+delta*(displayMode==='week'?7:1));anchorDate=d;}
+}
+function calendarEvents(){return cache.events.filter(e=>cache.selected.includes(e.calendar)&&Number.isFinite(e.when)).slice().sort((a,b)=>a.when-b.when);}
+function dayEvents(events,key){return events.filter(e=>dateKey(e.when)===key);}
+function eventLine(e){
+ const cal=cache.calendars.find(c=>c.id===e.calendar);
+ return '<div class="desk-calendar-event"><span class="desk-calendar-event-time">'+esc(e.allDay?'All day':new Date(e.when).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}))+'</span>'+
+ '<div class="desk-calendar-event-info"><strong>'+esc(e.title)+'</strong><small>'+esc(cal?.name||'Calendar')+'</small></div>'+
+ (e.url?'<a href="'+esc(e.url)+'" target="_blank" rel="noopener noreferrer" aria-label="Open event in Google Calendar">↗</a>':'')+'</div>';
+}
+function calendarLayout(events){
+ const today=dateKey(new Date()),chosen=dateKey(anchorDate);
+ const current=new Date(anchorDate.getFullYear(),anchorDate.getMonth(),1,12);
+ const mondayOffset=(current.getDay()+6)%7;
+ const first=new Date(current);first.setDate(first.getDate()-mondayOffset);
+ const weekdays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+ let days=[];
+ if(displayMode==='month')days=Array.from({length:42},(_,i)=>{const d=new Date(first);d.setDate(first.getDate()+i);return d;});
+ else if(displayMode==='week'){
+  const d=new Date(anchorDate.getFullYear(),anchorDate.getMonth(),anchorDate.getDate(),12);d.setDate(d.getDate()-(d.getDay()+6)%7);
+  days=Array.from({length:7},(_,i)=>{const next=new Date(d);next.setDate(d.getDate()+i);return next;});
+ }else days=[new Date(anchorDate)];
+ const labels=displayMode==='month'?'<div class="desk-calendar-weekdays">'+weekdays.map(w=>'<span>'+w+'</span>').join('')+'</div>':'';
+ const cells=days.map(d=>{
+  const key=dateKey(d),onDay=dayEvents(events,key),outside=d.getMonth()!==anchorDate.getMonth();
+  const dayName=d.toLocaleDateString(undefined,{weekday:'short'});
+  return '<button type="button" data-gcal-day="'+key+'" class="desk-calendar-date '+(outside&&displayMode==='month'?'outside ':'')+(key===today?'is-today ':'')+(key===chosen?'is-selected ':'')+'" aria-label="'+esc(d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}))+' with '+onDay.length+' events">'+
+  (displayMode==='month'?'<span class="desk-calendar-num">'+d.getDate()+'</span>':'<span class="desk-calendar-day-name">'+esc(dayName)+'</span><span class="desk-calendar-num">'+d.getDate()+'</span>')+
+  '<span class="desk-calendar-dots">'+onDay.slice(0,3).map(()=>'<span class="desk-calendar-dot"></span>').join('')+'</span>'+
+  (displayMode==='month'?'<span class="desk-calendar-day-preview">'+onDay.slice(0,2).map(e=>'<span>'+esc(e.title)+'</span>').join('')+'</span>':'')+
+  '</button>';
+ }).join('');
+ const selected=dayEvents(events,chosen);
+ const agendaTitle=anchorDate.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+ const upcoming=events.filter(e=>e.when>=Date.now()-3600000).slice(0,5);
+ return '<div class="desk-calendar-surface"><div class="desk-calendar-toolbar">'+
+ '<div class="desk-calendar-navigation"><button type="button" class="desk-calendar-nav" data-gcal="nav-prev" aria-label="Previous period">‹</button><button type="button" class="smallbutton" data-gcal="today">Today</button><button type="button" class="desk-calendar-nav" data-gcal="nav-next" aria-label="Next period">›</button>'+
+ '<strong>'+esc(anchorDate.toLocaleDateString(undefined,{month:'long',year:'numeric'}))+'</strong></div>'+
+ '<div class="desk-calendar-modes">'+[['month','Month'],['week','Week'],['day','Day']].map(([val,label])=>'<button type="button" data-gcal-mode="'+val+'" class="'+(displayMode===val?'active':'')+'" aria-pressed="'+(displayMode===val)+'">'+label+'</button>').join('')+'</div></div>'+
+ labels+'<div class="desk-calendar-grid '+(displayMode==='month'?'month':'compact')+'">'+cells+'</div>'+
+ '<div class="desk-calendar-agenda"><div class="desk-calendar-agenda-header"><strong>'+esc(agendaTitle)+'</strong><small>'+selected.length+' '+(selected.length===1?'event':'events')+'</small></div>'+
+ (selected.map(eventLine).join('')||'<p class="desk-calendar-empty">Nothing scheduled for this date.</p>')+'</div>'+
+ '<div class="desk-calendar-upcoming"><h3>Coming up</h3>'+(upcoming.length?upcoming.map(eventLine).join(''):'<p class="desk-calendar-empty">No upcoming events in the cached calendars.</p>')+'</div></div>';
+}
 function view(){
  if(!hasChrome()){panel('<p class="empty-note">Live Google Calendar requires the installed Chrome extension.</p>');return;}
  if(!configured()){setup();return;}
  const checked=cache.updatedAt&&Date.now()-cache.updatedAt<30*60000;
  const selected=new Set(cache.selected);
  const settings=cache.calendars.map(c=>'<label class="desk-gcal-choice"><input type="checkbox" data-gcal-choice="'+esc(c.id)+'" '+(selected.has(c.id)?'checked':'')+'><span>'+esc(c.name)+(c.primary?' · Primary':'')+'</span></label>').join('');
- const now=Date.now(),limit=now+cache.rangeDays*86400000;
- const upcoming=cache.events.filter(e=>selected.has(e.calendar)&&e.when<limit&&e.when>=now-86400000).sort((a,b)=>a.when-b.when);
- const offline=(api.getState().calendarEvents||[]).filter(e=>Number.isFinite(e.when)&&e.when>=now-86400000).sort((a,b)=>a.when-b.when).slice(0,15);
- const items=upcoming.map(e=>'<div class="desk-item"><div class="desk-item-main"><strong>'+esc(e.title)+'</strong><small>'+esc(dateLabel(e))+' · '+esc(cache.calendars.find(c=>c.id===e.calendar)?.name||'Calendar')+'</small></div>'+
- (e.url?'<a class="smallbutton" target="_blank" rel="noopener noreferrer" href="'+esc(e.url)+'">Open ↗</a>':'')+'</div>').join('');
- const status=!cache.connected?'Not connected':checked?'Recently updated':'Snapshot · refresh needed';
- panel('<div class="desk-status-card"><h3>'+esc(status)+(busy?' · Working…':'')+'</h3><p class="helper">Last fetched: '+esc(timeSince(cache.updatedAt))+(lastMessage?' · '+esc(lastMessage):'')+'</p>'+
- '<div class="modal-actions">'+(!cache.connected?action('Connect Google account','connect',busy):action('↻ Refresh events','refresh',busy)+action('Reauthorize account','connect',busy))+action('↗ Google Calendar','open')+
- (cache.connected?action('Disconnect & clear local events','disconnect',busy):action('Import .ics instead','offline'))+'</div></div>'+
- '<div class="desk-gcal-toolbar"><label class="label" for="gcalRange">Show next</label><select id="gcalRange" class="modal-input">'+[7,14,30].map(n=>'<option value="'+n+'" '+(cache.rangeDays===n?'selected':'')+'>'+n+' days</option>').join('')+'</select></div>'+
- (cache.connected?'<h3 class="desk-small-heading">Calendars to include (up to '+MAX_CALENDARS+')</h3><p class="helper">Select calendars, then choose Apply selection to refresh the displayed events.</p>'+
- '<div class="desk-gcal-choices">'+settings+'</div><div class="modal-actions">'+action('Apply selection','apply',busy)+'</div>':'')+
- '<h3 class="desk-small-heading">Upcoming live events</h3><div class="desk-collection">'+(items||'<p class="empty-note">No upcoming events in the selected calendars or the account has not been connected yet.</p>')+'</div>'+
- '<h3 class="desk-small-heading">Offline .ics import (separate snapshot)</h3><div class="desk-collection">'+
+ const offline=(api.getState().calendarEvents||[]).filter(e=>Number.isFinite(e.when)&&e.when>=Date.now()-86400000).sort((a,b)=>a.when-b.when).slice(0,15);
+ const status=!cache.connected?'Connect a calendar':checked?'Calendar synced':'Saved calendar snapshot';
+ panel('<div class="desk-calendar-header"><div><span class="desk-calendar-status">'+esc(status)+(busy?' · Refreshing…':'')+'</span><small>Last updated '+esc(timeSince(cache.updatedAt))+(lastMessage?' · '+esc(lastMessage):'')+'</small></div>'+
+ '<div class="desk-calendar-controls">'+(!cache.connected?action('Connect Google account','connect',busy):action('↻ Refresh','refresh',busy))+
+ (cache.connected?action('Reauthorize','connect',busy):'')+action('Open Google Calendar ↗','open')+'</div></div>'+
+ calendarLayout(calendarEvents())+
+ '<details class="desk-calendar-settings"><summary>Calendars & connection settings</summary>'+
+ (cache.connected?'<p class="helper">Select up to '+MAX_CALENDARS+' calendars.</p><div class="desk-gcal-choices">'+settings+'</div><div class="modal-actions">'+action('Apply selection','apply',busy)+action('Disconnect & clear local events','disconnect',busy)+'</div>':'<p class="helper">Sign in above to choose which calendars appear.</p>')+
+ '</details><details class="desk-calendar-settings"><summary>Offline .ics snapshot</summary><div class="desk-collection">'+
  (offline.map(e=>'<div class="desk-item"><div class="desk-item-main"><strong>'+esc(safe(e.title,180))+'</strong><small>'+esc(fmt(e.when))+' · Imported .ics</small></div></div>').join('')||'<p class="empty-note">No imported .ics events.</p>')+'</div>'+
- '<div class="modal-actions">'+action('↑ Import .ics offline snapshot','offline')+'</div>'+intro());
+ '<div class="modal-actions">'+action('↑ Import .ics offline snapshot','offline')+'</div></details>'+intro());
 }
 async function save(){
  if(!hasChrome())return;
@@ -138,11 +190,11 @@ function parseEvents(data,id){
  return events;
 }
 async function getEvents(key,ids){
- const now=new Date(Date.now()-86400000).toISOString();
- const end=new Date(Date.now()+30*86400000).toISOString();
+ const now=new Date(Date.now()-35*86400000).toISOString();
+ const end=new Date(Date.now()+120*86400000).toISOString();
  const result=await Promise.all(ids.map(async id=>{
   const url=API+'/calendars/'+encodeURIComponent(id)+'/events?'+new URLSearchParams({
-   timeMin:now,timeMax:end,singleEvents:'true',orderBy:'startTime',maxResults:'100',
+   timeMin:now,timeMax:end,singleEvents:'true',orderBy:'startTime',maxResults:'250',
    fields:'items(id,summary,status,transparency,start(date,dateTime),htmlLink),nextPageToken'
   });
   const json=await googleGet(url,key);
@@ -209,7 +261,15 @@ document.addEventListener('click',e=>{
  if(a==='open')window.open('https://calendar.google.com/calendar/u/0/r','_blank','noopener,noreferrer');
  if(a==='cloud')window.open('https://console.cloud.google.com/apis/credentials','_blank','noopener,noreferrer');
  if(a==='setup-check')view();
+ if(a==='nav-prev'){shiftDate(-1);view();}
+ if(a==='nav-next'){shiftDate(1);view();}
+ if(a==='today'){anchorDate=new Date();view();}
  if(a==='copy-id'&&chrome?.runtime?.id&&navigator?.clipboard?.writeText)navigator.clipboard.writeText(chrome.runtime.id).catch(()=>{});
+});
+document.addEventListener('click',e=>{
+ const day=e.target.closest('[data-gcal-day]'),mode=e.target.closest('[data-gcal-mode]');
+ if(day){const next=localDate(day.dataset.gcalDay);if(next){anchorDate=next;view();}}
+ if(mode&&['month','week','day'].includes(mode.dataset.gcalMode)){displayMode=mode.dataset.gcalMode;view();}
 });
 document.addEventListener('change',e=>{
  if(e.target.id==='gcalRange'){

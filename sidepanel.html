@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="desk-v03.css">
   <link rel="stylesheet" href="desk-v045.css">
+  <link rel="stylesheet" href="desk-v055.css">
 </head>
 <body class="side-mode">
   <div class="shell">
@@ -49,16 +50,9 @@
         </div>
       </header>
       <div class="content">
-        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.5.4</div>
-        <section id="deskUpdateBar" class="desk-update-bar" aria-label="Software updates">
-          <span class="update-indicator" aria-hidden="true">↻</span>
-          <div class="update-description"><strong>OMNIDITE DESK UPDATES</strong><span id="deskUpdateStatus" role="status" aria-live="polite">Check GitHub for new Desk features.</span></div>
-          <button id="deskCheckButton" type="button" class="smallbutton">Check updates</button>
-          <button id="deskInstallButton" type="button" class="button primary" hidden>Update now</button>
-        </section>
-        <p id="deskUpdateHelp" class="update-help" hidden>One-time setup required: from your Omnidite-Desk folder run <strong>Setup-OneClickUpdates.bat</strong>, then reload this extension. If you have not received these files yet, run <strong>Update-Desk.bat</strong> once first.</p>
+        <div class="eyebrow"><span class="live-dot"></span> YOUR SPACE · LIVE WORKSPACE OVERVIEW</div>
         <div class="mobile-pages" id="mobilePages"></div><div class="hero-row">
-          <div><h1 id="welcomeHeading">Your space to think, build,<br>and move faster<span class="highlight">.</span></h1><p class="lede">Everything important. Exactly where you want it.</p></div>
+          <div><h1 id="welcomeHeading">Make room for what<br>matters today<span class="highlight">.</span></h1><p class="lede">Your work, meetings and systems. One clear view.</p></div>
           <div class="hero-decoration" aria-hidden="true"><span class="orb orb-one"></span><span class="orb orb-two"></span></div>
         </div>
         <form class="searchbar" id="searchForm" autocomplete="off">
@@ -67,31 +61,43 @@
           <span class="search-shortcut">↵</span>
           <button type="submit">Search <span>↗</span></button>
         </form>
-        <nav class="desk-quick-actions" aria-label="Omnidite Desk tools">
-          <button type="button" class="smallbutton" data-v03="command">⌕ Commands</button>
-          <button type="button" class="smallbutton" data-v03="projects">◇ Projects</button>
-          <button type="button" class="smallbutton" data-v03="capture">✎ Capture</button>
-          <button type="button" class="smallbutton" data-v03="research">▤ Research</button>
-          <button type="button" class="smallbutton" data-v03="layouts">⊞ Layouts</button>
+        <nav class="desk-quick-actions desk-primary-actions" aria-label="Primary Desk shortcuts">
+          <button type="button" class="smallbutton" data-v03="projects"><span class="desk-action-glyph" aria-hidden="true">◇</span> Projects</button>
+          <button type="button" class="smallbutton" data-v04="calendar"><span class="desk-action-glyph" aria-hidden="true">▦</span> Calendar</button>
+          <button type="button" class="smallbutton" data-v05="overview"><span class="desk-action-glyph" aria-hidden="true">◈</span> Operations</button>
+          <button type="button" class="smallbutton" data-v03="capture"><span class="desk-action-glyph" aria-hidden="true">✎</span> Quick capture</button>
         </nav>
-        <div class="desk-quick-actions" aria-label="Desk productivity and monitoring">
-          <button type="button" class="smallbutton" data-v04="search">⌕ Global search</button>
-          <button type="button" class="smallbutton" data-v04="tasks">✓ Tasks</button>
-          <button type="button" class="smallbutton" data-v04="sessions">▣ Sessions</button>
-          <button type="button" class="smallbutton" data-v04="content">✎ Content</button>
-          <button type="button" class="smallbutton" data-v04="calendar">▦ Calendar</button>
-          <button type="button" class="smallbutton" data-v05="overview">▥ Operations</button>
-          <button type="button" id="deskV052Status" class="desk-pulse-live" data-v052="controls">Pulse: checking…</button>
-          <span id="deskV05Badge" class="desk-ops-badge" aria-live="polite">Systems: not live</span>
-        </div>
-        <section class="desk-ops-strip" aria-label="Operational status overview">
+        <details class="desk-tools-more">
+          <summary>More tools &amp; status</summary>
+          <div class="desk-quick-actions" aria-label="Additional Desk shortcuts">
+            <button type="button" class="smallbutton" data-v03="command">⌕ Commands</button>
+            <button type="button" class="smallbutton" data-v03="research">▤ Research</button>
+            <button type="button" class="smallbutton" data-v03="layouts">⊞ Layouts</button>
+            <button type="button" class="smallbutton" data-v04="search">⌕ Global search</button>
+            <button type="button" class="smallbutton" data-v04="tasks">✓ Tasks</button>
+            <button type="button" class="smallbutton" data-v04="sessions">▣ Sessions</button>
+            <button type="button" class="smallbutton" data-v04="content">✎ Content</button>
+            <button type="button" id="deskV052Status" class="desk-pulse-live" data-v052="controls">Pulse: checking…</button>
+            <span id="deskV05Badge" class="desk-ops-badge" aria-live="polite">Systems: not live</span>
+          </div>
+        </details>
+        <section class="desk-ops-strip" aria-label="At a glance">
+          <button type="button" class="desk-ops-tile desk-ops-tile--calendar" data-v04="calendar"><span>UP NEXT · GOOGLE CALENDAR</span><strong id="deskNextMeeting">Checking calendar…</strong><small id="deskNextMeetingTime">Your upcoming appointment</small></button>
           <button type="button" class="desk-ops-tile" data-v05="github"><span>GITHUB</span><strong id="deskV05GitHub">Not checked</strong><small>Read-only repository activity</small></button>
           <button type="button" class="desk-ops-tile" data-v05="pulse"><span>OMNIDITE PULSE</span><strong id="deskV05Pulse">Not connected</strong><small>Hosting and service health</small></button>
           <button type="button" class="desk-ops-tile" data-v05="overview"><span>LOCAL ALERTS</span><strong id="deskV05Alerts">No saved alerts</strong><small>Review warnings and thresholds</small></button>
         </section>
+        <section id="deskUpdateBar" class="desk-update-bar" aria-label="Software updates">
+          <span class="update-indicator" aria-hidden="true">↻</span>
+          <div class="update-description"><strong>OMNIDITE DESK UPDATES</strong><span id="deskUpdateStatus" role="status" aria-live="polite">Check GitHub for new Desk features.</span></div>
+          <button id="deskCheckButton" type="button" class="smallbutton">Check updates</button>
+          <button id="deskInstallButton" type="button" class="button primary" hidden>Update now</button>
+        </section>
+        <p id="deskUpdateHelp" class="update-help" hidden>One-time setup required: from your Omnidite-Desk folder run <strong>Setup-OneClickUpdates.bat</strong>, then reload this extension. If you have not received these files yet, run <strong>Update-Desk.bat</strong> once first.</p>
+
         <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <button class="page-edit" data-v03="layouts">Layouts</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
         <div id="grid" class="modules" aria-live="polite"></div>
-        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.5.4</span></div>
+        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.5.5 DESIGN PREVIEW</span></div>
       </div>
     </main>
   </div>
@@ -107,5 +113,7 @@
   <script src="desk-v05.js" defer></script>
   <script src="desk-v052.js" defer></script>
   <script src="desk-google-calendar.js" defer></script>
+  <script src="desk-focus-audio.js" defer></script>
+  <script src="desk-v055.js" defer></script>
 </body>
 </html>
