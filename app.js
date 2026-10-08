@@ -7,7 +7,7 @@ const TYPES=['links','tasks','notes','clock','weather','focus','agenda','countdo
 const LIST_TYPES=new Set(['links','tasks','clock','weather','agenda','habits']);
 const defaultInnerColumns=type=>type==='links'||type==='weather'?2:1;
 const layoutColumns=(v,defaultValue=1)=>Number.isInteger(v)&&v>=1&&v<=6?v:defaultValue;
-const itemOrderButtons=(mid,i,total)=>'<span class="desk-item-order"><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="-1" aria-label="Move item earlier" '+(i===0?'disabled':'')+'>↑</button><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="1" aria-label="Move item later" '+(i===total-1?'disabled':'')+'>↓</button></span>';
+const itemOrderButtons=(mid,i,total)=>'<span class="desk-item-order"><span class="desk-item-handle" draggable="true" data-item-drag="'+esc(mid)+'" data-item-index="'+i+'" title="Drag to reorder">⠿</span><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="-1" aria-label="Move item earlier" '+(i===0?'disabled':'')+'>↑</button><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="1" aria-label="Move item later" '+(i===total-1?'disabled':'')+'>↓</button></span>';
 const widgetGrid=(m,cls)=>'class="'+cls+' desk-inner-grid" data-columns="'+layoutColumns(m.config.columns,defaultInnerColumns(m.type))+'"';
 const META={
  links:['↗','Link launcher','Your project shortcuts'],tasks:['✓','Task list','Daily priorities'],notes:['▤','Notes','Keep ideas handy'],
@@ -236,7 +236,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  function renderWorldClocks(m){
   const cities=m.config.cities||[];
   return `<p class="module-sub">ANALOG + DIGITAL · ${cities.length} CITIES · RELATIVE TO YOUR DEVICE TIME</p>
-   <div ${widgetGrid(m,'worldclocks')}>${cities.map((c,i)=>`<div class="clock-city" data-clock-city="${esc(c.timezone)}">
+   <div ${widgetGrid(m,'worldclocks')}>${cities.map((c,i)=>`<div class="clock-city" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}" data-clock-city="${esc(c.timezone)}">
     <div class="analog-face" aria-hidden="true"><span class="analog-tick tick-12"></span><span class="analog-tick tick-3"></span><span class="analog-tick tick-6"></span><span class="analog-tick tick-9"></span>
      <i class="hand hour-hand"></i><i class="hand minute-hand"></i><i class="hand second-hand"></i><b class="clock-pin"></b></div>
     <div class="clock-information"><div class="clock-city-name">${esc(c.name)} <span>${esc(c.country)}</span></div>
@@ -348,7 +348,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  }
  function weatherTile(city,data,mid,i,total){
   const w=data.current||{},[symbol,label]=weatherCondition(w.weather_code,!!w.is_day);
-  return `<div class="weather-now"><div class="weather-main"><div class="weather-symbol">${symbol}</div><div><strong>${esc(city.name)}</strong><div class="weather-reading">${temperature(w.temperature_2m)}</div><div class="weather-desc">${label}</div></div></div>
+  return `<div class="weather-now" data-item-drop-mid="${esc(mid)}" data-item-drop-index="${i}"><div class="weather-main"><div class="weather-symbol">${symbol}</div><div><strong>${esc(city.name)}</strong><div class="weather-reading">${temperature(w.temperature_2m)}</div><div class="weather-desc">${label}</div></div></div>
    <div class="desk-weather-actions">${itemOrderButtons(mid,i,total)}</div><div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div></div>`;
  }
  function weatherForecast(data,view){
@@ -405,7 +405,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   const list=m.config.links||[];
   return `<p class="module-sub">QUICK ACCESS · ${list.length} LINKS</p><div ${widgetGrid(m,'linkgrid')}>${list.map((l,i)=>{
    const icon=siteFavicon(l.url);
-   return `<div class="desk-launch-item"><a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${icon?`<img class="site-favicon" src="${esc(icon)}" alt="" loading="lazy">`:''}<span class="launch-initial">${esc(l.label[0]?.toUpperCase()||'↗')}</span></span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>${itemOrderButtons(m.id,i,list.length)}</div>`;
+   return `<div class="desk-launch-item" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}"><a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${icon?`<img class="site-favicon" src="${esc(icon)}" alt="" loading="lazy">`:''}<span class="launch-initial">${esc(l.label[0]?.toUpperCase()||'↗')}</span></span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>${itemOrderButtons(m.id,i,list.length)}</div>`;
   }).join('')||'<p class="empty-note">Edit to add a link.</p>'}</div>`;
  }
  function renderFocusModule(m){
@@ -777,14 +777,14 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
 function content(m){const c=m.config;
  switch(m.type){
  case 'links':return renderLinkModule(m);
- case 'tasks':return `<p class="module-sub">${c.tasks.filter(x=>x.done).length} / ${c.tasks.length} COMPLETED</p><form class="task-input-row" data-add-task="${esc(m.id)}"><input name="text" placeholder="Add a task…" maxlength="200" required><button>＋</button></form><div ${widgetGrid(m,'desk-task-grid')}>${c.tasks.map((t,i)=>`<div class="taskrow ${t.done?'done':''}"><input type="checkbox" data-toggle-task="${esc(m.id)}" data-id="${esc(t.id)}" ${t.done?'checked':''}><span class="tasktext">${esc(t.text)}</span>${itemOrderButtons(m.id,i,c.tasks.length)}<button class="delete-task" data-action="delete-task" data-mid="${esc(m.id)}" data-tid="${esc(t.id)}">×</button></div>`).join('')}</div>`;
+ case 'tasks':return `<p class="module-sub">${c.tasks.filter(x=>x.done).length} / ${c.tasks.length} COMPLETED</p><form class="task-input-row" data-add-task="${esc(m.id)}"><input name="text" placeholder="Add a task…" maxlength="200" required><button>＋</button></form><div ${widgetGrid(m,'desk-task-grid')}>${c.tasks.map((t,i)=>`<div class="taskrow ${t.done?'done':''}" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}"><input type="checkbox" data-toggle-task="${esc(m.id)}" data-id="${esc(t.id)}" ${t.done?'checked':''}><span class="tasktext">${esc(t.text)}</span>${itemOrderButtons(m.id,i,c.tasks.length)}<button class="delete-task" data-action="delete-task" data-mid="${esc(m.id)}" data-tid="${esc(t.id)}">×</button></div>`).join('')}</div>`;
  case 'notes':return `<p class="module-sub">AUTO SAVED</p><textarea class="notebox" data-note="${esc(m.id)}" maxlength="12000" placeholder="Capture an idea…">${esc(c.text)}</textarea>`;
  case 'clock':return renderWorldClocks(m);
   case 'weather':return renderWeatherModule(m);
  case 'focus':return renderFocusModule(m);
- case 'agenda':return `<p class="module-sub">PERSONAL AGENDA · LOCAL EVENTS</p><form class="agenda-form" data-add-event="${esc(m.id)}"><input class="modal-input" name="title" placeholder="Event title" maxlength="140" required><input class="modal-input" type="datetime-local" name="when" required><button class="smallbutton">Add event</button></form><div ${widgetGrid(m,'agenda-items')}>${c.events.map((e,i)=>`<div class="agenda-event"><span>${esc(new Date(e.when).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span><strong>${esc(e.title)}</strong>${itemOrderButtons(m.id,i,c.events.length)}<button class="delete-task" data-action="delete-event" data-mid="${esc(m.id)}" data-tid="${esc(e.id)}">×</button></div>`).join('')||'<p class="empty-note">No events. Add one above.</p>'}</div>`;
+ case 'agenda':return `<p class="module-sub">PERSONAL AGENDA · LOCAL EVENTS</p><form class="agenda-form" data-add-event="${esc(m.id)}"><input class="modal-input" name="title" placeholder="Event title" maxlength="140" required><input class="modal-input" type="datetime-local" name="when" required><button class="smallbutton">Add event</button></form><div ${widgetGrid(m,'agenda-items')}>${c.events.map((e,i)=>`<div class="agenda-event" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}"><span>${esc(new Date(e.when).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span><strong>${esc(e.title)}</strong>${itemOrderButtons(m.id,i,c.events.length)}<button class="delete-task" data-action="delete-event" data-mid="${esc(m.id)}" data-tid="${esc(e.id)}">×</button></div>`).join('')||'<p class="empty-note">No events. Add one above.</p>'}</div>`;
  case 'countdown':return `<p class="module-sub">${esc(c.label)}</p><div class="count-number" data-countdown="${esc(m.id)}">—</div><div class="focus-hint">DAYS UNTIL ${esc(c.target)}</div>`;
- case 'habits':{const today=new Date().toLocaleDateString('en-CA');return `<p class="module-sub">TODAY'S CHECK-IN</p><form class="task-input-row" data-add-habit="${esc(m.id)}"><input name="text" placeholder="Add a habit…" maxlength="200" required><button>＋</button></form><div ${widgetGrid(m,'desk-task-grid')}>${c.habits.map((h,i)=>`<div class="taskrow ${h.day===today?'done':''}"><input type="checkbox" data-toggle-habit="${esc(m.id)}" data-id="${esc(h.id)}" ${h.day===today?'checked':''}><span class="tasktext">${esc(h.text)}</span>${itemOrderButtons(m.id,i,c.habits.length)}<button class="delete-task" data-action="delete-habit" data-mid="${esc(m.id)}" data-tid="${esc(h.id)}">×</button></div>`).join('')}</div>`;}
+ case 'habits':{const today=new Date().toLocaleDateString('en-CA');return `<p class="module-sub">TODAY'S CHECK-IN</p><form class="task-input-row" data-add-habit="${esc(m.id)}"><input name="text" placeholder="Add a habit…" maxlength="200" required><button>＋</button></form><div ${widgetGrid(m,'desk-task-grid')}>${c.habits.map((h,i)=>`<div class="taskrow ${h.day===today?'done':''}" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}"><input type="checkbox" data-toggle-habit="${esc(m.id)}" data-id="${esc(h.id)}" ${h.day===today?'checked':''}><span class="tasktext">${esc(h.text)}</span>${itemOrderButtons(m.id,i,c.habits.length)}<button class="delete-task" data-action="delete-habit" data-mid="${esc(m.id)}" data-tid="${esc(h.id)}">×</button></div>`).join('')}</div>`;}
  case 'metric':return `<p class="module-sub">CUSTOM COUNTER</p><div class="count-number">${esc(c.value)}<span class="metric-unit">${esc(c.unit)}</span></div><div class="focus-controls"><button class="smallbutton" data-action="metric-sub" data-mid="${esc(m.id)}">− ${esc(c.step)}</button><button class="smallbutton" data-action="metric-add" data-mid="${esc(m.id)}">＋ ${esc(c.step)}</button></div>`;
  case 'quote':{const q=quotes[Math.floor(Date.now()/86400000)%quotes.length];return `<p class="module-sub">DAILY PERSPECTIVE</p><blockquote class="quote-text">“${esc(q[0])}”</blockquote><div class="focus-hint">— ${esc(q[1])}</div>`;}
  }
@@ -869,6 +869,38 @@ function update(){const now=new Date();$('#localDate').textContent=new Intl.Date
 function add(type){if(!TYPES.includes(type))return;const def={links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}};page().modules.push(mk(type,undefined,def[type]||{}));close();change();}
 function removeWidget(id){for(const p of state.pages)p.modules=p.modules.filter(m=>m.id!==id);change();}
 function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='omnidite-desk-v0.3-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+// Optional drag-to-reorder inside each widget; original cross-widget drag remains unchanged.
+let draggedInner=null;
+const clearInnerDrop=()=>document.querySelectorAll('.desk-item-drop-target').forEach(x=>x.classList.remove('desk-item-drop-target'));
+document.addEventListener('dragstart',e=>{
+ const handle=e.target.closest('[data-item-drag]');if(!handle)return;
+ const index=Number(handle.dataset.itemIndex),m=moduleFor(handle.dataset.itemDrag);
+ if(!m||!LIST_TYPES.has(m.type)||!Number.isInteger(index))return;
+ draggedInner={mid:m.id,index};
+ if(e.dataTransfer){e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','desk-item');}
+ e.stopPropagation();
+});
+document.addEventListener('dragover',e=>{
+ if(!draggedInner)return;
+ const target=e.target.closest('[data-item-drop-mid]');if(!target||target.dataset.itemDropMid!==draggedInner.mid)return;
+ e.preventDefault();clearInnerDrop();target.classList.add('desk-item-drop-target');
+});
+document.addEventListener('dragleave',e=>{
+ const target=e.target.closest('[data-item-drop-mid]');if(target&&!target.contains(e.relatedTarget))target.classList.remove('desk-item-drop-target');
+});
+document.addEventListener('drop',e=>{
+ if(!draggedInner)return;
+ const dest=e.target.closest('[data-item-drop-mid]'),source=draggedInner;draggedInner=null;clearInnerDrop();
+ if(!dest||dest.dataset.itemDropMid!==source.mid)return;
+ e.preventDefault();e.stopPropagation();
+ const m=moduleFor(source.mid);if(!m)return;
+ const collection=m.type==='clock'||m.type==='weather'?'cities':m.type==='agenda'?'events':m.type==='links'?'links':m.type;
+ const items=m.config?.[collection],to=Number(dest.dataset.itemDropIndex);
+ if(!Array.isArray(items)||!Number.isInteger(to)||to<0||to>=items.length||source.index<0||source.index>=items.length||to===source.index)return;
+ items.splice(to,0,items.splice(source.index,1)[0]);change();
+});
+document.addEventListener('dragend',()=>{draggedInner=null;clearInnerDrop();});
+
 // Drag handles reorder within active page; widget body controls stay interactive.
 let dragged=null;
 document.addEventListener('dragstart',e=>{const h=e.target.closest('[data-drag]');if(!h)return;dragged=h.dataset.drag; e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragged);h.closest('.module')?.classList.add('dragging');});
