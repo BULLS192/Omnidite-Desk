@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Omnidite Desk — Personal Dashboard",
   "short_name": "Omnidite Desk",
-  "version": "0.5.4",
-  "description": "Omnidite Desk with read-only Google Calendar, local Pulse service monitoring and productivity workspaces.",
+  "version": "0.5.5",
+  "description": "Omnidite Desk with polished visual workspaces, read-only Google Calendar, local Pulse and local-first productivity tools.",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
