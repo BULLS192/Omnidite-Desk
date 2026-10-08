@@ -1,4 +1,19 @@
-# Omnidite Desk v0.5.0 — personal Chrome command center
+# Omnidite Desk v0.5.1
+
+## V0.5.1 — Local Omnidite Pulse connection (development preview)
+
+Desk can read the existing local [Omnidite Pulse](https://github.com/BULLS192/omnidite-pulse) API without uploading usage statistics or tokens to Vercel.
+
+**Requirements:** Pulse is running on the same computer at `http://localhost:4173` (Node `npm.cmd run dev`). Its existing `/api/providers` endpoint returns a read-only `{capturedAt, providers}` JSON object. You can verify it in a browser at `http://localhost:4173/api/providers`.
+
+1. Open Desk's **Operations → Omnidite Pulse** panel.
+2. Choose **Connect local Pulse** and approve Chrome's optional local-site permission.
+3. View the live provider snapshots, then use **Refresh feed** to refresh on demand.
+4. To opt in to polling while Desk is open, choose **Configure feed** and enable **Refresh at most every 15 minutes**.
+
+The allowed local feed is intentionally restricted to `http://127.0.0.1:4173/api/providers` or `http://localhost:4173/api/providers` — **not** arbitrary LAN addresses, ports, or paths. The Chrome host grant is `http://127.0.0.1/*` or `http://localhost/*`; the application separately validates the port and exact path. Previous optional HTTPS `*.omnidite.com` feeds and JSON imports continue to work. Desk sends no cookies, admin tokens, Authorization headers or modifications. Pulse must be running for live updates. Its own server must bind to loopback, as configured in the companion Pulse update.
+
+**Note:** First release requires an on-device Chrome permissions/network acceptance pass. Imported snapshots and cached feeds are clearly labeled, not treated as live when stale. API use and spend are provider-specific; unknown quotas remain unknown. — personal Chrome command center
 
 **No web hosting, Vercel builds, backend, third-party script loaders, API keys, or Chrome Web Store publication required.** Uses Manifest V3 and Chrome's built-in New Tab override / Side Panel.
 

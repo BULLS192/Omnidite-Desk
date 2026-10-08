@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Omnidite Desk — Personal Dashboard",
   "short_name": "Omnidite Desk",
-  "version": "0.5.0",
-  "description": "Local-first Desk with customizable workspaces, browser sessions, project tasks, calendar import, content planning and read-only operations monitoring.",
+  "version": "0.5.1",
+  "description": "Local-first Omnidite Desk with browser sessions, planning, read-only GitHub monitoring and local Omnidite Pulse integration.",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
@@ -38,6 +38,8 @@
   ],
   "optional_host_permissions": [
     "https://api.github.com/*",
-    "https://*.omnidite.com/*"
+    "https://*.omnidite.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
   ]
 }

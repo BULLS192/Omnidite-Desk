@@ -4,10 +4,12 @@
 const api=window.DeskBridge;if(!api)return;
 const $=(s,r=document)=>r.querySelector(s),esc=api.esc,S=()=>api.getState();
 const GITHUB='https://api.github.com/*';
+const LOCAL_PULSE='http://127.0.0.1:4173/api/providers';
 const repoPattern=/^[a-zA-Z0-9_.-]{1,80}\/[a-zA-Z0-9_.-]{1,100}$/;
 const isRepo=s=>repoPattern.test(String(s||''))&&!String(s).includes('..');
 const isHttps=s=>{try{return new URL(s).protocol==='https:';}catch{return false;}};
-const pulseAllowed=s=>{try{const u=new URL(s);return u.protocol==='https:'&&(u.hostname==='omnidite.com'||u.hostname.endsWith('.omnidite.com'))&&!u.username&&!u.password;}catch{return false;}};
+const pulseAllowed=s=>{try{const u=new URL(s);return !u.username&&!u.password&&((u.protocol==='https:'&&(u.hostname==='omnidite.com'||u.hostname.endsWith('.omnidite.com')))||(u.protocol==='http:'&&['127.0.0.1','localhost'].includes(u.hostname)&&u.port==='4173'&&u.pathname==='/api/providers'&&!u.search&&!u.hash));}catch{return false;}};
+const pulsePermissionOrigin=u=>u.protocol==='http:'?u.origin.replace(':4173','')+'/*':u.origin+'/*';
 const maxAlert=16;
 const statusName=v=>['ok','healthy','success','operational'].includes(String(v).toLowerCase())?'ok':['warning','degraded','partial'].includes(String(v).toLowerCase())?'warning':['error','down','outage','critical','failed'].includes(String(v).toLowerCase())?'down':'unknown';
 const formatWhen=stamp=>stamp?new Date(stamp).toLocaleString():'Never';
@@ -28,8 +30,8 @@ async function askHost(origin){
  const granted=await chrome.permissions.request({origins:[origin]});
  if(!granted)throw Error('Permission for the selected monitoring host was declined.');
 }
-async function getJson(url){
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+async function getJson(url,timeoutMs=12000){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
  try{
   const res=await fetch(url,{method:'GET',cache:'no-store',credentials:'omit',redirect:'error',signal:controller.signal,headers:{Accept:'application/json'}});
   if(!res.ok)throw Error('HTTP '+res.status);
@@ -92,9 +94,9 @@ async function refreshGithub(){
 }
 function pulseSettings(){
  const old=S().pulseSettings||{url:'',auto:false};
- view('Omnidite Pulse feed','Connect a sanitized, read-only HTTPS status JSON endpoint on your Omnidite domain.',
- '<form id="v05PulseForm"><label class="label">HTTPS feed URL</label><input class="modal-input" type="url" name="url" maxlength="1000" value="'+esc(old.url||'')+'" placeholder="https://your-subdomain.omnidite.com/path/to/feed.json">'+
- '<p class="helper">Allowed host: omnidite.com or a subdomain. Use a read-only feed with no access tokens in its URL and no confidential data. Desk never sends cookies or auth headers. This is not an automatic connection to Omnidite Pulse; you must provide the endpoint.</p>'+
+ view('Omnidite Pulse feed','Use the local Pulse monitor or a sanitized HTTPS status JSON endpoint on your Omnidite domain.',
+ '<form id="v05PulseForm"><label class="label">Pulse feed URL</label><input class="modal-input" type="url" name="url" maxlength="1000" value="'+esc(old.url||'')+'" placeholder="http://127.0.0.1:4173/api/providers">'+
+ '<p class="helper">Local option: http://127.0.0.1:4173/api/providers or localhost on port 4173 (exact path only). Alternatively use HTTPS on omnidite.com or a subdomain. Pulse must be running on your PC for local updates. Permissions are opt-in and no cookies or credentials are sent. Never include tokens in feed URLs.</p>'+
  '<label class="sync-label"><input type="checkbox" name="auto" '+(old.auto?'checked':'')+'> Refresh at most every 15 minutes while the dashboard is open</label>'+
  '<div class="modal-actions"><button class="button primary">Save feed settings</button>'+btn('Back','pulse')+'</div></form>');
 }
@@ -107,8 +109,8 @@ function pulseSummary(){
 }
 function pulse(){
  view('Omnidite Pulse monitoring','A single read-only view for configured service status and usage thresholds.',
- '<div class="modal-actions">'+btn('⚙ Configure feed','pulse-settings')+btn('↻ Refresh feed','pulse-refresh')+btn('Import status JSON','pulse-import')+'</div>'+
- '<p class="helper">You can import an existing Omnidite Pulse JSON snapshot or configure an HTTPS feed. Values without a current timestamp are not treated as live.</p>'+
+ '<div class="modal-actions">'+btn('⚡ Connect local Pulse','pulse-local')+btn('⚙ Configure feed','pulse-settings')+btn('↻ Refresh feed','pulse-refresh')+btn('Import status JSON','pulse-import')+'</div>'+
+ '<p class="helper">Local connection requires Pulse running at http://localhost:4173 and a Chrome site-access permission once. You can also import JSON or configure an HTTPS Omnidite feed. Values without a current timestamp are not treated as live.</p>'+
  '<div class="desk-collection">'+pulseSummary()+'</div>');
 }
 function normalizePulse(input,source){
@@ -130,17 +132,18 @@ function checkPulseAlerts(cache){
   for(const m of p.metrics){if(typeof m.value==='number'&&m.limit!==null&&m.limit>0&&m.value/m.limit>=0.8)alertRecord(p.name,m.label+' reached '+Math.round(m.value/m.limit*100)+'% of reported limit','warning');}
  }
 }
-async function refreshPulse(silent=false){
+async function refreshPulse(silent=false,force=false){
  const url=S().pulseSettings?.url;
- if(!pulseAllowed(url)){if(!silent)alert('Enter an HTTPS feed under omnidite.com in Feed settings.');return;}
+ if(!pulseAllowed(url)){if(!silent)alert('Configure a localhost:4173/api/providers feed or an HTTPS omnidite.com feed.');return;}
  const last=S().pulseCache?.checkedAt;
- if(last&&Date.now()-last<(silent?900000:60000)){if(!silent)alert('Feed checked recently. Wait a minute before refreshing.');return;}
+ if(!force&&last&&Date.now()-last<(silent?900000:60000)){if(!silent)alert('Feed checked recently. Wait a minute before refreshing.');return;}
  try{
-  const u=new URL(url),origin=u.origin+'/*';
+  const u=new URL(url),origin=pulsePermissionOrigin(u);
   // Host permission is granted to this Omnidite origin, never all sites.
   if(silent){if(!isActive()||!(await chrome.permissions.contains({origins:[origin]})))return;}
   else await askHost(origin);
-  const json=await getJson(url);
+  // Multiple provider collectors may take longer than a single external API request.
+  const json=await getJson(url,u.protocol==='http:'?60000:20000);
   const cache=normalizePulse(json,u.origin);
   S().pulseCache=cache;checkPulseAlerts(cache);api.save();updateBadge();
   if(!silent)pulse();
@@ -181,6 +184,13 @@ document.addEventListener('click',e=>{
  if(a==='github-delete'&&confirm('Remove monitored repository?')){S().githubRepos=S().githubRepos.filter(x=>x!==b.dataset.repo);if(S().githubSelected===b.dataset.repo)S().githubSelected=S().githubRepos[0]||'';api.save();github();}
  if(a==='github-refresh')refreshGithub();
  if(a==='pulse')pulse();if(a==='pulse-settings')pulseSettings();if(a==='pulse-refresh')refreshPulse();
+ if(a==='pulse-local'){
+  // Save the exact local URL, then invoke the Chrome permission request immediately from this click.
+  const previous=S().pulseSettings||{url:'',auto:false};
+  S().pulseSettings={url:LOCAL_PULSE,auto:previous.auto};
+  api.save();
+  refreshPulse(false,true);
+ }
  if(a==='pulse-import')$('#deskPulseImport')?.click();
 });
 document.addEventListener('submit',e=>{
@@ -192,7 +202,7 @@ document.addEventListener('submit',e=>{
   S().githubSelected=repo;api.save();github();
  }else {
   const url=f.elements.url.value.trim();
-  if(url&&!pulseAllowed(url)){alert('Feed must use HTTPS on omnidite.com or a subdomain, with no username or password.');return;}
+  if(url&&!pulseAllowed(url)){alert('Feed must use the exact local Pulse endpoint on port 4173 or HTTPS on omnidite.com (no credentials in the URL).');return;}
   S().pulseSettings={url,auto:!!f.elements.auto.checked};api.save();pulse();
  }
 });
