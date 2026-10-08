@@ -3,10 +3,10 @@
 'use strict';
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
 const SYNC_META='od_v2_meta', CHUNK='od_v2_chunk_';
-const TYPES=['links','tasks','notes','clock','focus','agenda','countdown','habits','metric','quote'];
+const TYPES=['links','tasks','notes','clock','weather','focus','agenda','countdown','habits','metric','quote'];
 const META={
  links:['↗','Link launcher','Your project shortcuts'],tasks:['✓','Task list','Daily priorities'],notes:['▤','Notes','Keep ideas handy'],
- clock:['◷','World clocks','Singapore, Houston and UTC'],focus:['◴','Focus timer','25-minute deep work'],
+ clock:['◷','World clocks','Analog and digital city clocks'],weather:['☁','Live weather','Current, hourly and 7-day forecasts'],focus:['◴','Focus timer','Custom-length deep work'],
  agenda:['▦','Local agenda','Upcoming events and reminders'],countdown:['⌛','Countdown','Count down to a milestone'],
  habits:['◉','Habit tracker','Daily check-ins'],metric:['▥','Metric tracker','Track a running total'],
  quote:['✦','Inspiration','Thoughtful quotes']};
@@ -22,7 +22,7 @@ const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:
   mk('links','My projects',{links:[{label:'Omnidite',url:'https://omnidite.com'},{label:'Providence',url:'https://providence.omnidite.com'},{label:'TTT-OS',url:'https://ttt-os.vercel.app'},{label:'GitHub',url:'https://github.com/BULLS192/Omnidite-Desk'}]}),
   mk('links','Quick launch',{links:[{label:'Vercel',url:'https://vercel.com/dashboard'},{label:'Supabase',url:'https://supabase.com/dashboard'},{label:'ChatGPT',url:'https://chatgpt.com'},{label:'Google Drive',url:'https://drive.google.com'}]}),
   mk('tasks','Today’s priorities',{tasks:[{id:uid(),text:'Personalize your workspace',done:false}]}),
-  mk('notes','Scratchpad',{text:''}),mk('clock'),mk('focus',undefined,{seconds:1500,until:null})
+  mk('notes','Scratchpad',{text:''}),mk('clock'),mk('weather'),mk('focus',undefined,{seconds:1500,until:null,duration:1500})
  ]),defaultPage('projects','Projects',[mk('links','Development environments',{links:[{label:'GitHub',url:'https://github.com/BULLS192'},{label:'Vercel',url:'https://vercel.com/dashboard'},{label:'Supabase',url:'https://supabase.com/dashboard'}]}),mk('metric','Weekly milestones',{value:0,unit:' completed',step:1})]),
  defaultPage('personal','Personal',[mk('agenda'),mk('habits'),mk('countdown','Next milestone',{target:'2026-12-31',label:'Year-end milestone'})])
  ]});
@@ -40,7 +40,9 @@ function sanitizeModule(x,ids){
  if(x.type==='links')out.config.links=(Array.isArray(c.links)?c.links:[]).slice(0,30).filter(l=>validUrl(String(l?.url||''))).map(l=>({label:cleanText(l.label||'Link',80),url:cleanText(l.url,1000)}));
  if(x.type==='tasks'||x.type==='habits')out.config[x.type==='tasks'?'tasks':'habits']=(Array.isArray(c.tasks||c.habits)?c.tasks||c.habits:[]).slice(0,80).filter(t=>t&&typeof t.text==='string').map(t=>({id:cleanText(t.id||uid(),90),text:cleanText(t.text,200),done:!!t.done,day:cleanText(t.day||'',12)}));
  if(x.type==='notes')out.config.text=cleanText(c.text,12000);
- if(x.type==='focus')out.config={seconds:Number.isFinite(c.seconds)?Math.min(86400,Math.max(0,c.seconds)):1500,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null};
+ if(x.type==='focus'){const duration=Number.isFinite(c.duration)?Math.min(14400,Math.max(60,Math.round(c.duration))):1500;out.config={duration,seconds:Number.isFinite(c.seconds)?Math.min(14400,Math.max(0,Math.round(c.seconds))):duration,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null};}
+ if(x.type==='clock')out.config={cities:sanitizeCities(c.cities,'clock')};
+ if(x.type==='weather')out.config={cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
  if(x.type==='agenda')out.config.events=(Array.isArray(c.events)?c.events:[]).slice(0,75).filter(e=>e&&e.title&&e.when).map(e=>({id:cleanText(e.id||uid(),90),title:cleanText(e.title,140),when:cleanText(e.when,25)}));
  if(x.type==='countdown')out.config={target:/^\d{4}-\d{2}-\d{2}$/.test(c.target||'')?c.target:'2026-12-31',label:cleanText(c.label||'Milestone',80)};
  if(x.type==='metric')out.config={value:Number.isFinite(Number(c.value))?Math.min(1e9,Math.max(-1e9,Number(c.value))):0,unit:cleanText(c.unit||'',40),step:Number.isFinite(Number(c.step))?Math.min(1e6,Math.max(.01,Number(c.step))):1};
@@ -127,11 +129,12 @@ function pageDialog(edit=false){const p=page();show(`<form id="pageForm" class="
 const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],['It always seems impossible until it’s done.','Nelson Mandela'],['Simplicity is the ultimate sophistication.','Often attributed to Leonardo da Vinci'],['The best way out is always through.','Robert Frost']];
 function content(m){const c=m.config;
  switch(m.type){
- case 'links':return `<p class="module-sub">QUICK ACCESS · ${c.links.length} LINKS</p><div class="linkgrid">${c.links.map(l=>`<a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${esc(l.label[0]?.toUpperCase()||'↗')}</span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>`).join('')||'<p class="empty-note">Edit to add a link.</p>'}</div>`;
+ case 'links':return renderLinkModule(m);
  case 'tasks':return `<p class="module-sub">${c.tasks.filter(x=>x.done).length} / ${c.tasks.length} COMPLETED</p><form class="task-input-row" data-add-task="${esc(m.id)}"><input name="text" placeholder="Add a task…" maxlength="200" required><button>＋</button></form>${c.tasks.map(t=>`<div class="taskrow ${t.done?'done':''}"><input type="checkbox" data-toggle-task="${esc(m.id)}" data-id="${esc(t.id)}" ${t.done?'checked':''}><span class="tasktext">${esc(t.text)}</span><button class="delete-task" data-action="delete-task" data-mid="${esc(m.id)}" data-tid="${esc(t.id)}">×</button></div>`).join('')}`;
  case 'notes':return `<p class="module-sub">AUTO SAVED</p><textarea class="notebox" data-note="${esc(m.id)}" maxlength="12000" placeholder="Capture an idea…">${esc(c.text)}</textarea>`;
- case 'clock':return `<p class="module-sub">LIVE WORLD CLOCKS</p><div class="worldclocks">${[['Asia/Singapore','SINGAPORE'],['America/Chicago','HOUSTON'],['UTC','UTC']].map(([tz,label])=>`<div class="clockrow"><span class="clock-label">${label}</span><span class="clock-time" data-zone="${tz}">--:--</span></div>`).join('')}</div>`;
- case 'focus':return `<p class="module-sub">FOCUS SPRINT</p><div class="focus-display" data-timer="${esc(m.id)}">25:00</div><p class="focus-hint">25-minute work interval</p><div class="focus-controls"><button class="smallbutton" data-action="focus-toggle" data-mid="${esc(m.id)}">${c.until?'Pause':'Start'}</button><button class="smallbutton" data-action="focus-reset" data-mid="${esc(m.id)}">Reset</button></div>`;
+ case 'clock':return renderWorldClocks(m);
+  case 'weather':return renderWeatherModule(m);
+ case 'focus':return renderFocusModule(m);
  case 'agenda':return `<p class="module-sub">PERSONAL AGENDA · LOCAL EVENTS</p><form class="agenda-form" data-add-event="${esc(m.id)}"><input class="modal-input" name="title" placeholder="Event title" maxlength="140" required><input class="modal-input" type="datetime-local" name="when" required><button class="smallbutton">Add event</button></form><div class="agenda-items">${c.events.slice().sort((a,b)=>a.when.localeCompare(b.when)).map(e=>`<div class="agenda-event"><span>${esc(new Date(e.when).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span><strong>${esc(e.title)}</strong><button class="delete-task" data-action="delete-event" data-mid="${esc(m.id)}" data-tid="${esc(e.id)}">×</button></div>`).join('')||'<p class="empty-note">No events. Add one above.</p>'}</div>`;
  case 'countdown':return `<p class="module-sub">${esc(c.label)}</p><div class="count-number" data-countdown="${esc(m.id)}">—</div><div class="focus-hint">DAYS UNTIL ${esc(c.target)}</div>`;
  case 'habits':{const today=new Date().toLocaleDateString('en-CA');return `<p class="module-sub">TODAY'S CHECK-IN</p><form class="task-input-row" data-add-habit="${esc(m.id)}"><input name="text" placeholder="Add a habit…" maxlength="200" required><button>＋</button></form>${c.habits.map(h=>`<div class="taskrow ${h.day===today?'done':''}"><input type="checkbox" data-toggle-habit="${esc(m.id)}" data-id="${esc(h.id)}" ${h.day===today?'checked':''}><span class="tasktext">${esc(h.text)}</span><button class="delete-task" data-action="delete-habit" data-mid="${esc(m.id)}" data-tid="${esc(h.id)}">×</button></div>`).join('')}`;}
@@ -206,14 +209,15 @@ function render(){
  $('#pageNav').innerHTML=nav;$('#mobilePages').innerHTML=`${state.pages.map(p=>`<button class="page-pill ${p.id===state.activePage?'selected':''}" data-page="${esc(p.id)}">${esc(p.title)}</button>`).join('')}<button class="page-pill" data-global="new-page">＋</button>`;
  $('#moduleCount').textContent=page().modules.length;
  $('#grid').innerHTML=page().modules.map(moduleHtml).join('')||'<div class="empty-grid"><h2>No widgets yet</h2><p>Build your workspace with the widget library.</p><button class="button primary" data-global="add">＋ Add module</button></div>';
+  refreshWeather();
  update();
 }
 function update(){const now=new Date();$('#localDate').textContent=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'}).format(now).toUpperCase();
- document.querySelectorAll('[data-zone]').forEach(el=>{try{el.textContent=new Intl.DateTimeFormat('en-US',{timeZone:el.dataset.zone,hour:'2-digit',minute:'2-digit',hour12:false}).format(now);}catch{el.textContent='--:--';}});
+ updateWorldClocks(now);
  document.querySelectorAll('[data-timer]').forEach(el=>{const c=moduleFor(el.dataset.timer)?.config;if(!c)return;const secs=c.until?Math.max(0,Math.ceil((c.until-Date.now())/1000)):c.seconds;el.textContent=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;});
  document.querySelectorAll('[data-countdown]').forEach(el=>{const c=moduleFor(el.dataset.countdown)?.config;if(!c)return;const target=new Date(c.target+'T00:00:00');el.textContent=Number.isNaN(target.getTime())?'—':Math.max(0,Math.ceil((target-Date.now())/86400000));});
 }
-function add(type){if(!TYPES.includes(type))return;const def={links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}};page().modules.push(mk(type,undefined,def[type]||{}));close();change();}
+function add(type){if(!TYPES.includes(type))return;const def={links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}};page().modules.push(mk(type,undefined,def[type]||{}));close();change();}
 function removeWidget(id){for(const p of state.pages)p.modules=p.modules.filter(m=>m.id!==id);change();}
 function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='omnidite-desk-v0.2-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 // Drag handles reorder within active page; widget body controls stay interactive.
@@ -236,8 +240,8 @@ document.addEventListener('click',e=>{
  if(action==='delete-task'){m.config.tasks=m.config.tasks.filter(t=>t.id!==tid);change();}
  if(action==='delete-habit'){m.config.habits=m.config.habits.filter(t=>t.id!==tid);change();}
  if(action==='delete-event'){m.config.events=m.config.events.filter(t=>t.id!==tid);change();}
- if(action==='focus-toggle'){if(m.config.until){m.config.seconds=Math.max(0,Math.ceil((m.config.until-Date.now())/1000));m.config.until=null;}else m.config.until=Date.now()+(m.config.seconds||1500)*1000;change();}
- if(action==='focus-reset'){m.config={seconds:1500,until:null};change();}
+ if(action==='focus-toggle'){if(m.config.until){m.config.seconds=Math.max(0,Math.ceil((m.config.until-Date.now())/1000));m.config.until=null;}else{if(!m.config.seconds)m.config.seconds=m.config.duration||1500;m.config.until=Date.now()+m.config.seconds*1000;}change();}
+ if(action==='focus-reset'){m.config.seconds=m.config.duration||1500;m.config.until=null;change();}
  if(action==='metric-add'||action==='metric-sub'){m.config.value+=m.config.step*(action==='metric-add'?1:-1);change();}
 });
 document.addEventListener('submit',e=>{const f=e.target;
