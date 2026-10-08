@@ -81,10 +81,10 @@ body{color:var(--desk-ink);background:radial-gradient(ellipse 1000px 650px at 74
 }
 .button:hover,.smallbutton:hover,.page-edit:hover{filter:none;transform:translateY(-1px);border-color:var(--accent)}
 .button.primary:hover,.searchbar button:hover{filter:brightness(1.09)}
-.content{max-width:1530px;padding:42px clamp(24px,4.5vw,70px) 40px}
+.content{max-width:1530px;padding:33px clamp(24px,4.5vw,70px) 40px}
 .content>.eyebrow{display:flex;align-items:center;font-size:10px;letter-spacing:.17em;color:var(--desk-tertiary)}
 .content>.eyebrow .live-dot{background:var(--accent);width:7px;height:7px;box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 17%,transparent)}
-.hero-row{min-height:126px;margin:4px 0 7px;gap:18px}
+.hero-row{min-height:110px;margin:4px 0 7px;gap:18px}
 .hero-row h1{font-size:clamp(29px,3.25vw,45px);letter-spacing:-.042em;line-height:1.13;font-weight:720;margin:15px 0 11px}
 .lede{color:var(--desk-secondary);font-size:13px;line-height:1.55;margin-bottom:15px}
 .hero-decoration{width:160px;height:114px;opacity:.45}
@@ -124,7 +124,7 @@ body{color:var(--desk-ink);background:radial-gradient(ellipse 1000px 650px at 74
 .desk-tools-more .desk-quick-actions .smallbutton{padding:9px 11px;font-size:11px}
 .desk-ops-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:23px 0 0}
 .desk-ops-tile{
- min-height:128px;text-align:left;justify-content:flex-start;gap:7px;position:relative;overflow:hidden;
+ min-height:112px;text-align:left;justify-content:flex-start;gap:7px;position:relative;overflow:hidden;
  background:var(--desk-surface);border:1px solid var(--desk-outline);border-radius:var(--desk-radius);
  padding:17px 17px 15px;color:var(--desk-ink);box-shadow:var(--desk-shadow);
  transition:background .18s,border-color .18s,transform .18s;
@@ -154,7 +154,7 @@ body{color:var(--desk-ink);background:radial-gradient(ellipse 1000px 650px at 74
 .desk-update-bar .smallbutton{background:var(--desk-surface-soft);border-color:var(--desk-outline);color:var(--desk-secondary)}
 .desk-update-bar .smallbutton:hover{color:var(--desk-ink)}
 .update-help{background:var(--desk-surface-soft);border-color:var(--desk-outline);color:var(--desk-secondary);margin:7px 0}
-.sectionhead{margin:35px 0 18px;align-items:center}
+.sectionhead{margin:28px 0 15px;align-items:center}
 .sectionhead h2{font-size:23px;font-weight:730;letter-spacing:-.045em;color:var(--desk-ink)}
 .sectionhead p{line-height:2;color:var(--desk-tertiary)}
 .page-edit{margin-left:3px;background:transparent;border-color:var(--desk-outline);color:var(--desk-secondary);padding:6px 9px}
@@ -295,3 +295,18 @@ body.side-mode .desk-update-bar{padding:11px}
  .button,.smallbutton,.page-edit,.nav-link,.module,.desk-ops-tile,.desk-tools-more summary::after{transition:none!important}
  .button:hover,.smallbutton:hover,.page-edit:hover,.desk-ops-tile:hover{transform:none}
 }
+
+/* Compact Side Panel: surface the first actual widget sooner. */
+body.side-mode .content{padding-top:15px}
+body.side-mode .hero-row{margin:3px 0 3px}
+body.side-mode .hero-row h1{font-size:22px;line-height:1.17;margin:7px 0 6px}
+body.side-mode .lede{margin:0 0 8px;font-size:11px}
+body.side-mode .desk-primary-actions{margin-top:10px}
+body.side-mode .desk-primary-actions .smallbutton{padding:8px 10px}
+body.side-mode .desk-tools-more{margin-top:4px}
+body.side-mode .desk-tools-more summary{padding:6px 9px}
+body.side-mode .desk-ops-strip{margin-top:9px}
+body.side-mode .desk-ops-tile{min-height:97px;padding:11px}
+body.side-mode .desk-ops-tile strong{margin-top:1px;font-size:13px}
+body.side-mode .desk-update-bar{margin-top:11px;padding:8px 10px}
+body.side-mode .sectionhead{margin:22px 0 13px}
