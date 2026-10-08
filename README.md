@@ -1,4 +1,4 @@
-# Omnidite Desk v0.5.5 — design review preview (V0.5.4 stable)
+# Omnidite Desk v0.5.5 — functional design preview (V0.5.4 stable)
 
 ## V0.5.5 — Visual refinement preview (not yet released)
 
@@ -12,6 +12,19 @@ The `design/desk-v055-visual-refresh` branch is a **visual review candidate**, d
 - **No changes** to Chrome extension ID, Google OAuth client, manifest permissions beyond version, Pulse, persistence, widget storage, or native updater.
 
 Acceptance gate: static and feature CI, **manual wide New Tab + narrow Side Panel visual review**, current wallpaper and light/dark review, and explicit approval before merging into `main`. As a design preview it should not be installed via Desk's normal one-click updater yet.
+
+## V0.5.5 — Apple-inspired layout and calendar functionality (design preview, not released)
+
+**Functional additions on PR #13:**
+
+- World Clock, Weather (all cities in Now), Quick Launch links, Tasks, Habits, and Local Agenda each have independent **1–6 internal columns** configured from **Edit widget → Items per row**. Use the small `▦ N` control in a widget header to cycle columns. Set **outer widget width** to 12/12 for five clocks/weather cities across on a sufficiently wide screen. The layout responds to *widget width*, not merely browser width; narrow panels stack safely.
+- Every multi-item widget provides visible **↑ ↓ ordering controls** (including clocks, weather cities, launch shortcuts, task items, habits and agenda events). Existing item data and IDs remain unchanged when moved. Calendar events continue to be date-sorted because they are time-based.
+- Google Calendar has a real **Month / Week / Day**, previous/next/Today navigation, date selection, per-day agenda, and upcoming events. Configuration/import moves into collapsible detail panels. Same existing read-only Google OAuth scope and locally stored event cache. The Calendar API looks back 35 days and ahead 120 days (up to 500 events total); this is a finite offline snapshot, not unlimited history or exhaustive recurring-event pagination.
+- Focus Timer: **Gentle chime, Soft piano-like tones, Classic bell, Digital beep, Silent**, volume, Preview, and optional uploaded MP3/WAV/OGG up to 1 MB. Uploaded audio remains in Chrome-local storage keyed per widget, outside Chrome Sync and JSON backups. WebAudio alarm playback happens while Desk is open; Chrome may suppress sound in suspended/background views. Not a guaranteed OS-level background alarm.
+- Apple-inspired design: calmer surfaces, compact navigation, consistent cards, status and Side Panel, built on V0.5.4 Google Calendar and Pulse. No additional extension permissions or external audio/CDN calls.
+- **User acceptance required** before release: drag/resize widgets and adjust inner columns, reorder city/task/link items, verify Google Month/Week/Day against real events, preview/play timer sound, upload a sample sound, test local cache persistence and Google/Pulse after extension reload. All screenshots use deliberately fabricated example events and weather.
+
+**Not implemented yet:** World stock markets. Future scope: user-chosen exchanges and time zones (SGX, NYSE, Nasdaq, LSE, HKEX, SSE), open/closed session clocks, indices/watchlists, source freshness, licensing and rate limits. No investment/trading permissions in this visual pass.
 
 ## V0.5.4 — Live Google Calendar
 
