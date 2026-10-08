@@ -15,7 +15,7 @@ const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36)
 const clone=v=>JSON.parse(JSON.stringify(v));
 const $=(s,x=document)=>x.querySelector(s);
 const validUrl=s=>{try {const u=new URL(s); return ['http:','https:'].includes(u.protocol)&&!!u.hostname;}catch{return false;}};
-const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda'].includes(type)?6:4,height:0,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}}[type]||{}),...config}});
+const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda'].includes(type)?6:4,height:0,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},clock:{cities:defaultClockCities()},weather:{cities:defaultWeatherCities(),view:'now',selected:'sg'},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}}[type]||{}),...config}});
 const defaultPage=(id,title,modules)=>({id,title,modules});
 const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),pages:[
  defaultPage('overview','Overview',[
