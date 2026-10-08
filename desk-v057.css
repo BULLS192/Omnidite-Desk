@@ -108,3 +108,13 @@
  .desk-grid-presets{grid-template-columns:1fr 1fr}
 }
 body.side-mode .desk-snap-mode,body.side-mode .desk-grid-settings{font-size:10px;padding:6px}
+
+/* Show snap footprint only in fixed-cell mode. */
+.desk-grid-footprint{display:none;white-space:nowrap}
+.modules[data-sizing="snap"]>.module .desk-grid-footprint{
+ display:inline-flex;align-items:center;justify-content:center;
+ font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;
+ background:color-mix(in srgb,var(--accent) 12%,var(--desk-surface-soft));
+ border:1px solid color-mix(in srgb,var(--accent) 28%,var(--desk-outline));
+ color:var(--desk-secondary);padding:3px 6px;border-radius:7px;
+}
