@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Omnidite Desk — Personal Dashboard",
   "short_name": "Omnidite Desk",
-  "version": "0.5.2",
-  "description": "Omnidite Desk personal dashboard with local Pulse monitoring, optional Windows background-service controls and productivity workspaces.",
+  "version": "0.5.3",
+  "description": "Desk with background Omnidite Pulse controls supporting restricted Windows startup fallback.",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
