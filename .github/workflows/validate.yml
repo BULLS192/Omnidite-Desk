@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '22'
       - name: Generate fake-data sample pages
-        run: node tools/generate-design-review.mjs
+        run: node tools/generate-design-review.mjs && node tools/generate-functional-previews.mjs
       - name: Capture desktop and Side Panel visual review
         shell: bash
         run: |
@@ -37,6 +37,10 @@ jobs:
           sleep 1
           "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=2000 --window-size=1600,1050 --screenshot="$PWD/preview-desktop.png" http://127.0.0.1:8765/design-review-desktop.html
           "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=2000 --window-size=440,1000 --screenshot="$PWD/preview-sidepanel.png" http://127.0.0.1:8765/design-review-sidepanel.html
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=2000 --window-size=1600,1240 --screenshot="$PWD/preview-widgets-five-across.png" http://127.0.0.1:8765/design-review-widgets.html
+          "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=2000 --window-size=1150,1200 --screenshot="$PWD/preview-google-calendar.png" http://127.0.0.1:8765/design-review-calendar.html
+          test -s preview-widgets-five-across.png
+          test -s preview-google-calendar.png
           test -s preview-desktop.png
           test -s preview-sidepanel.png
       - name: Attach sample screenshots and offline HTML previews
@@ -46,6 +50,10 @@ jobs:
           path: |
             preview-desktop.png
             preview-sidepanel.png
+            preview-widgets-five-across.png
+            preview-google-calendar.png
+            design-review-widgets.html
+            design-review-calendar.html
             design-review-desktop.html
             design-review-sidepanel.html
             styles.css
