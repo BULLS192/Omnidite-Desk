@@ -3,10 +3,10 @@
 'use strict';
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
 const SYNC_META='od_v2_meta', CHUNK='od_v2_chunk_';
-const TYPES=['links','tasks','notes','clock','focus','agenda','countdown','habits','metric','quote'];
+const TYPES=['links','tasks','notes','clock','weather','focus','agenda','countdown','habits','metric','quote'];
 const META={
  links:['↗','Link launcher','Your project shortcuts'],tasks:['✓','Task list','Daily priorities'],notes:['▤','Notes','Keep ideas handy'],
- clock:['◷','World clocks','Singapore, Houston and UTC'],focus:['◴','Focus timer','25-minute deep work'],
+ clock:['◷','World clocks','Analog and digital city clocks'],weather:['☁','Live weather','Current, hourly and 7-day forecasts'],focus:['◴','Focus timer','Custom-length deep work'],
  agenda:['▦','Local agenda','Upcoming events and reminders'],countdown:['⌛','Countdown','Count down to a milestone'],
  habits:['◉','Habit tracker','Daily check-ins'],metric:['▥','Metric tracker','Track a running total'],
  quote:['✦','Inspiration','Thoughtful quotes']};
@@ -15,14 +15,14 @@ const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36)
 const clone=v=>JSON.parse(JSON.stringify(v));
 const $=(s,x=document)=>x.querySelector(s);
 const validUrl=s=>{try {const u=new URL(s); return ['http:','https:'].includes(u.protocol)&&!!u.hostname;}catch{return false;}};
-const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda'].includes(type)?6:4,height:0,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}}[type]||{}),...config}});
+const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4,height:0,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},clock:{cities:defaultClockCities()},weather:{cities:defaultWeatherCities(),view:'now',selected:'sg'},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}}[type]||{}),...config}});
 const defaultPage=(id,title,modules)=>({id,title,modules});
 const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),pages:[
  defaultPage('overview','Overview',[
   mk('links','My projects',{links:[{label:'Omnidite',url:'https://omnidite.com'},{label:'Providence',url:'https://providence.omnidite.com'},{label:'TTT-OS',url:'https://ttt-os.vercel.app'},{label:'GitHub',url:'https://github.com/BULLS192/Omnidite-Desk'}]}),
   mk('links','Quick launch',{links:[{label:'Vercel',url:'https://vercel.com/dashboard'},{label:'Supabase',url:'https://supabase.com/dashboard'},{label:'ChatGPT',url:'https://chatgpt.com'},{label:'Google Drive',url:'https://drive.google.com'}]}),
   mk('tasks','Today’s priorities',{tasks:[{id:uid(),text:'Personalize your workspace',done:false}]}),
-  mk('notes','Scratchpad',{text:''}),mk('clock'),mk('focus',undefined,{seconds:1500,until:null})
+  mk('notes','Scratchpad',{text:''}),mk('clock'),mk('weather'),mk('focus',undefined,{seconds:1500,until:null,duration:1500})
  ]),defaultPage('projects','Projects',[mk('links','Development environments',{links:[{label:'GitHub',url:'https://github.com/BULLS192'},{label:'Vercel',url:'https://vercel.com/dashboard'},{label:'Supabase',url:'https://supabase.com/dashboard'}]}),mk('metric','Weekly milestones',{value:0,unit:' completed',step:1})]),
  defaultPage('personal','Personal',[mk('agenda'),mk('habits'),mk('countdown','Next milestone',{target:'2026-12-31',label:'Year-end milestone'})])
  ]});
@@ -40,7 +40,9 @@ function sanitizeModule(x,ids){
  if(x.type==='links')out.config.links=(Array.isArray(c.links)?c.links:[]).slice(0,30).filter(l=>validUrl(String(l?.url||''))).map(l=>({label:cleanText(l.label||'Link',80),url:cleanText(l.url,1000)}));
  if(x.type==='tasks'||x.type==='habits')out.config[x.type==='tasks'?'tasks':'habits']=(Array.isArray(c.tasks||c.habits)?c.tasks||c.habits:[]).slice(0,80).filter(t=>t&&typeof t.text==='string').map(t=>({id:cleanText(t.id||uid(),90),text:cleanText(t.text,200),done:!!t.done,day:cleanText(t.day||'',12)}));
  if(x.type==='notes')out.config.text=cleanText(c.text,12000);
- if(x.type==='focus')out.config={seconds:Number.isFinite(c.seconds)?Math.min(86400,Math.max(0,c.seconds)):1500,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null};
+ if(x.type==='focus'){const duration=Number.isFinite(c.duration)?Math.min(14400,Math.max(60,Math.round(c.duration))):1500;out.config={duration,seconds:Number.isFinite(c.seconds)?Math.min(14400,Math.max(0,Math.round(c.seconds))):duration,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null};}
+ if(x.type==='clock')out.config={cities:sanitizeCities(c.cities,'clock')};
+ if(x.type==='weather')out.config={cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
  if(x.type==='agenda')out.config.events=(Array.isArray(c.events)?c.events:[]).slice(0,75).filter(e=>e&&e.title&&e.when).map(e=>({id:cleanText(e.id||uid(),90),title:cleanText(e.title,140),when:cleanText(e.when,25)}));
  if(x.type==='countdown')out.config={target:/^\d{4}-\d{2}-\d{2}$/.test(c.target||'')?c.target:'2026-12-31',label:cleanText(c.label||'Milestone',80)};
  if(x.type==='metric')out.config={value:Number.isFinite(Number(c.value))?Math.min(1e9,Math.max(-1e9,Number(c.value))):0,unit:cleanText(c.unit||'',40),step:Number.isFinite(Number(c.step))?Math.min(1e6,Math.max(.01,Number(c.step))):1};
@@ -121,17 +123,370 @@ function settings(){show(`<div class="modal-pad">${header('Desk settings','Perso
  <label class="sync-label"><input type="checkbox" id="syncToggle" ${syncEnabled?'checked':''}> Enable Chrome Sync (opt-in)</label>
  <p class="helper">Requires Chrome signed in with extension sync enabled and the same Omnidite Desk extension ID on both computers. Data, including notes and tasks, may be uploaded to your Chrome Sync account. Last-write-wins; don't edit simultaneously on two devices. Max ~72 KB of raw dashboard data.</p>
  <div class="modal-actions"><button type="button" data-modal="push-sync" class="button ghost" ${!syncEnabled?'disabled':''}>↑ Sync now</button><button type="button" data-modal="pull-sync" class="button ghost" ${!syncEnabled?'disabled':''}>↓ Pull latest</button></div><p id="syncStatus" class="helper">${esc(lastSync)}</p>
- <hr class="settings-divider"><div class="eyebrow">BACKUPS</div><p class="helper">Store backups somewhere safe before resetting or removing the extension. Code on GitHub does not contain your personal data.</p>
+ <hr class="settings-divider"><div class="eyebrow">BACKGROUNDS</div><p class="helper">Upload or import wallpaper folders. Images remain only on this device.</p><button type="button" class="smallbutton" data-modal="backgrounds">Manage backgrounds</button><hr class="settings-divider"><div class="eyebrow">BACKUPS</div><p class="helper">Store backups somewhere safe before resetting or removing the extension. Code on GitHub does not contain your personal data.</p>
  <div class="modal-actions"><button type="button" class="button ghost" data-modal="export">↓ Export JSON</button><button type="button" class="button ghost" data-modal="import">↑ Import JSON</button><button type="button" class="button ghost danger" data-modal="reset">Reset</button></div></div>`);}
 function pageDialog(edit=false){const p=page();show(`<form id="pageForm" class="modal-pad" data-edit="${edit?'yes':'no'}">${header(edit?'Edit workspace':'New workspace',edit?'Rename this page or remove it.':'Create another dashboard page for a different focus.')}<label class="label">Workspace title</label><input name="title" class="modal-input" required maxlength="45" value="${edit?esc(p.title):''}" placeholder="e.g. Operations"><div class="modal-actions"><button class="button primary" type="submit">${edit?'Save name':'Create workspace'}</button>${edit&&state.pages.length>1?'<button type="button" class="button ghost danger" data-modal="delete-page">Delete workspace</button>':''}</div></form>`);}
 const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],['It always seems impossible until it’s done.','Nelson Mandela'],['Simplicity is the ultimate sophistication.','Often attributed to Leonardo da Vinci'],['The best way out is always through.','Robert Frost']];
+
+ const citySearchResults=new Map();
+ function defaultClockCities(){return [
+  {id:'sg',name:'Singapore',country:'Singapore',timezone:'Asia/Singapore',latitude:1.3521,longitude:103.8198},
+  {id:'hou',name:'Houston',country:'United States',timezone:'America/Chicago',latitude:29.7604,longitude:-95.3698},
+  {id:'utc',name:'UTC',country:'Reference',timezone:'UTC',latitude:0,longitude:0}
+ ];}
+ function defaultWeatherCities(){return [
+  {id:'sg',name:'Singapore',country:'Singapore',timezone:'Asia/Singapore',latitude:1.3521,longitude:103.8198},
+  {id:'hou',name:'Houston',country:'United States',timezone:'America/Chicago',latitude:29.7604,longitude:-95.3698}
+ ];}
+ function sanitizeCities(value,kind){
+  const raw=Array.isArray(value)?value:(kind==='clock'?defaultClockCities():defaultWeatherCities());
+  return raw.slice(0,kind==='clock'?24:15).filter(c=>c&&typeof c==='object').map(c=>{
+   const timezone=String(c.timezone||'UTC');
+   try{new Intl.DateTimeFormat('en-US',{timeZone:timezone});}catch{return null;}
+   const latitude=Number(c.latitude),longitude=Number(c.longitude);
+   if(!Number.isFinite(latitude)||Math.abs(latitude)>90||!Number.isFinite(longitude)||Math.abs(longitude)>180)return null;
+   return {id:cleanText(String(c.id||uid()),90),name:cleanText(c.name||'City',80),
+    country:cleanText(c.country||'',80),timezone:cleanText(timezone,90),latitude,longitude};
+  }).filter(Boolean);
+ }
+ function cityPicker(m){
+  return `<form class="city-search" data-city-search="${esc(m.id)}">
+   <input name="city" type="search" minlength="2" maxlength="100" placeholder="Search for a city…" aria-label="City name" required>
+   <button class="smallbutton" type="submit">Find city</button></form>
+   <div class="city-results" data-city-results="${esc(m.id)}" role="status" aria-live="polite"></div>`;
+ }
+ function timeOffset(date,zone){
+  try{const label=new Intl.DateTimeFormat('en-US',{timeZone:zone,timeZoneName:'shortOffset'}).formatToParts(date).find(x=>x.type==='timeZoneName')?.value||'GMT';
+   const match=label.match(/^(?:GMT|UTC)([+-])(\d{1,2})(?::(\d{2}))?$/);
+   if(!match)return 0;
+   return (match[1]==='-'?-1:1)*(Number(match[2])*60+Number(match[3]||0));
+  }catch{return 0;}
+ }
+ function offsetLabel(date,zone){
+  const mins=timeOffset(date,zone)+date.getTimezoneOffset();
+  const abs=Math.abs(mins);const hours=Math.floor(abs/60),minutes=abs%60;
+  return (mins>=0?'+':'−')+hours+(minutes?':'+String(minutes).padStart(2,'0'):'')+'h from you';
+ }
+ function renderWorldClocks(m){
+  const cities=m.config.cities||[];
+  return `<p class="module-sub">ANALOG + DIGITAL · ${cities.length} CITIES · RELATIVE TO YOUR DEVICE TIME</p>
+   <div class="worldclocks">${cities.map(c=>`<div class="clock-city" data-clock-city="${esc(c.timezone)}">
+    <div class="analog-face" aria-hidden="true"><span class="analog-tick tick-12"></span><span class="analog-tick tick-3"></span><span class="analog-tick tick-6"></span><span class="analog-tick tick-9"></span>
+     <i class="hand hour-hand"></i><i class="hand minute-hand"></i><i class="hand second-hand"></i><b class="clock-pin"></b></div>
+    <div class="clock-information"><div class="clock-city-name">${esc(c.name)} <span>${esc(c.country)}</span></div>
+    <div class="clock-time" data-clock-time="${esc(c.timezone)}">--:--:--</div>
+    <div class="clock-date" data-clock-date="${esc(c.timezone)}">—</div>
+    <div class="clock-diff" data-clock-offset="${esc(c.timezone)}">—</div></div>
+    <button class="city-remove" title="Remove city" aria-label="Remove ${esc(c.name)}" data-city-remove="${esc(c.id)}" data-city-mid="${esc(m.id)}">×</button>
+    </div>`).join('')||'<p class="empty-note">Search for a city below to add your first clock.</p>'}</div>${cityPicker(m)}`;
+ }
+ function updateWorldClocks(now){
+  const localOffset=now.getTimezoneOffset();
+  document.querySelectorAll('[data-clock-city]').forEach(el=>{
+   const zone=el.dataset.clockCity;
+   try{
+    const parts=new Intl.DateTimeFormat('en-GB',{timeZone:zone,hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now);
+    const n=t=>Number(parts.find(x=>x.type===t)?.value||0);
+    const h=n('hour'),m=n('minute'),s=n('second');
+    const tm=el.querySelector('[data-clock-time]'),dt=el.querySelector('[data-clock-date]'),off=el.querySelector('[data-clock-offset]');
+    if(tm)tm.textContent=parts.filter(p=>['hour','minute','second','literal'].includes(p.type)).map(p=>p.value).join('');
+    if(dt)dt.textContent=new Intl.DateTimeFormat('en-US',{timeZone:zone,weekday:'short',year:'numeric',month:'short',day:'numeric'}).format(now);
+    if(off)off.textContent=offsetLabel(now,zone);
+    for(const [selector,degrees] of [['.hour-hand',(h%12+m/60)*30],['.minute-hand',(m+s/60)*6],['.second-hand',s*6]]){
+     const hand=el.querySelector(selector);if(hand)hand.style.transform=`translate(-50%,-100%) rotate(${degrees}deg)`;
+    }
+   }catch{const tm=el.querySelector('[data-clock-time]');if(tm)tm.textContent='Time unavailable';}
+  });
+ }
+ async function findCities(mid,query){
+  const resultEl=document.querySelector(`[data-city-results="${CSS.escape(mid)}"]`);if(!resultEl)return;
+  resultEl.textContent='Searching cities…';
+  try{
+   const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(query)+'&count=8&language=en&format=json';
+   const response=await fetch(url,{signal:AbortSignal.timeout(12000)});if(!response.ok)throw Error('City search unavailable');
+   const data=await response.json();
+   const list=(data.results||[]).filter(c=>c.timezone&&Number.isFinite(c.latitude)&&Number.isFinite(c.longitude)).map(c=>({
+    id:String(c.id),name:String(c.name),country:String([c.admin1,c.country].filter(Boolean).join(', ')),timezone:String(c.timezone),latitude:c.latitude,longitude:c.longitude
+   }));
+   citySearchResults.set(mid,list);
+   // Ignore stale results when a workspace has been changed.
+   const el=document.querySelector(`[data-city-results="${CSS.escape(mid)}"]`);if(!el)return;
+   el.innerHTML=list.length?list.map((c,i)=>`<button class="city-result" type="button" data-city-add="${i}" data-city-mid="${esc(mid)}"><strong>${esc(c.name)}</strong><small>${esc(c.country)} · ${esc(c.timezone)}</small><span>＋</span></button>`).join(''):'<p class="empty-note">No matching cities. Try adding a country after a comma.</p>';
+  }catch(e){const el=document.querySelector(`[data-city-results="${CSS.escape(mid)}"]`);if(el)el.textContent='Could not search cities. Check your connection and try again.';}
+ }
+ document.addEventListener('submit',e=>{
+  const form=e.target.closest('[data-city-search]');if(!form)return;
+  e.preventDefault();findCities(form.dataset.citySearch,form.elements.city.value.trim());
+ });
+ document.addEventListener('click',e=>{
+  const add=e.target.closest('[data-city-add]'),del=e.target.closest('[data-city-remove]');
+  if(add){
+   const mid=add.dataset.cityMid,m=moduleFor(mid);if(!m||!['clock','weather'].includes(m.type))return;
+   const city=citySearchResults.get(mid)?.[Number(add.dataset.cityAdd)];if(!city)return;
+   if((m.config.cities||[]).some(c=>c.id===city.id||c.timezone===city.timezone&&c.name===city.name))return;
+   if(m.config.cities.length>=(m.type==='clock'?24:15)){alert('Maximum cities reached for this widget.');return;}
+   m.config.cities.push({...city});
+   if(m.type==='weather')m.config.selected=city.id;
+   change();return;
+  }
+  if(del){
+   const m=moduleFor(del.dataset.cityMid);if(!m||!m.config.cities)return;
+   m.config.cities=m.config.cities.filter(c=>c.id!==del.dataset.cityRemove);
+   if(m.type==='weather'&&!m.config.cities.some(c=>c.id===m.config.selected))m.config.selected=m.config.cities[0]?.id||'';
+   change();
+  }
+ });
+
+
+ const weatherCache=new Map(),weatherInFlight=new Map();
+ function weatherCondition(code,day=true){
+  if(code===0)return [day?'☀️':'🌙','Clear'];
+  if([1,2].includes(code))return ['🌤️','Partly cloudy'];
+  if(code===3)return ['☁️','Overcast'];
+  if([45,48].includes(code))return ['🌫️','Fog'];
+  if([51,53,55,56,57].includes(code))return ['🌦️','Drizzle'];
+  if([61,63,65,66,67,80,81,82].includes(code))return ['🌧️','Rain'];
+  if([71,73,75,77,85,86].includes(code))return ['❄️','Snow'];
+  if([95,96,99].includes(code))return ['⛈️','Thunderstorm'];
+  return ['🌡️','Conditions'];
+ }
+ function temperature(n){return Number.isFinite(n)?Math.round(n)+'°C':'—';}
+ function renderWeatherModule(m){
+  const c=m.config,cs=c.cities||[];
+  return `<p class="module-sub">LIVE CONDITIONS · UPDATED ABOUT EVERY 15 MINUTES · OPEN-METEO</p>
+   <div class="weather-city-bar">${cs.map(city=>`<button class="weather-city-pill ${c.selected===city.id?'selected':''}" type="button" data-weather-select="${esc(city.id)}" data-weather-mid="${esc(m.id)}">${esc(city.name)}</button>`).join('')}</div>
+   <div class="weather-tabs">${[['now','Now'],['hourly','Hourly'],['daily','7 days']].map(([v,label])=>`<button type="button" class="${c.view===v?'selected':''}" data-weather-view="${v}" data-weather-mid="${esc(m.id)}">${label}</button>`).join('')}</div>
+   <div class="weather-content" data-weather-content="${esc(m.id)}"><p class="empty-note">Loading live forecasts…</p></div>
+   <div class="weather-city-management">${cityPicker(m)}<div class="weather-remove-list">${cs.map(city=>`<span>${esc(city.name)} <button type="button" data-city-remove="${esc(city.id)}" data-city-mid="${esc(m.id)}" aria-label="Remove ${esc(city.name)}">×</button></span>`).join('')}</div></div>`;
+ }
+ function weatherRequest(city){
+  const key=city.latitude.toFixed(4)+','+city.longitude.toFixed(4);
+  const old=weatherCache.get(key);
+  if(old&&Date.now()-old.at<15*60*1000)return Promise.resolve(old.data);
+  if(weatherInFlight.has(key))return weatherInFlight.get(key);
+  const url=new URL('https://api.open-meteo.com/v1/forecast');
+  url.searchParams.set('latitude',city.latitude);
+  url.searchParams.set('longitude',city.longitude);
+  url.searchParams.set('timezone',city.timezone);
+  url.searchParams.set('forecast_days','7');
+  url.searchParams.set('current','temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m');
+  url.searchParams.set('hourly','temperature_2m,precipitation_probability,weather_code');
+  url.searchParams.set('daily','weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max');
+  const work=fetch(url.toString(),{signal:AbortSignal.timeout(15000)}).then(async r=>{
+   if(!r.ok)throw Error('Weather service HTTP '+r.status);
+   const data=await r.json();
+   if(!data.current||!data.hourly||!data.daily)throw Error('Incomplete forecast');
+   weatherCache.set(key,{at:Date.now(),data});return data;
+  }).catch(e=>{if(old)return old.data;throw e;}).finally(()=>weatherInFlight.delete(key));
+  weatherInFlight.set(key,work);return work;
+ }
+ function weatherTile(city,data){
+  const w=data.current||{},[symbol,label]=weatherCondition(w.weather_code,!!w.is_day);
+  return `<div class="weather-now"><div class="weather-main"><div class="weather-symbol">${symbol}</div><div><strong>${esc(city.name)}</strong><div class="weather-reading">${temperature(w.temperature_2m)}</div><div class="weather-desc">${label}</div></div></div>
+   <div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div></div>`;
+ }
+ function weatherForecast(data,view){
+  if(view==='hourly'){
+   const h=data.hourly||{},current=(data.current?.time||'').slice(0,13);
+   const rows=(h.time||[]).map((t,i)=>({t,i})).filter(x=>x.t.slice(0,13)>=current).slice(0,24);
+   return `<div class="forecast-list">${rows.map(({t,i})=>{
+    const [sym,label]=weatherCondition(h.weather_code?.[i]);const hour=t.slice(11,16);
+    return `<div class="forecast-row"><span>${esc(t.slice(5,10))} ${esc(hour)}</span><span title="${esc(label)}">${sym}</span><strong>${temperature(h.temperature_2m?.[i])}</strong><small>☂ ${Number.isFinite(h.precipitation_probability?.[i])?h.precipitation_probability[i]+'%':'—'}</small></div>`;
+   }).join('')}</div>`;
+  }
+  const d=data.daily||{};
+  return `<div class="forecast-list">${(d.time||[]).slice(0,7).map((date,i)=>{
+   const [sym,label]=weatherCondition(d.weather_code?.[i]);
+   const readable=new Date(date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+   return `<div class="forecast-row"><span>${esc(readable)}</span><span title="${esc(label)}">${sym}</span><strong>${temperature(d.temperature_2m_max?.[i])} / ${temperature(d.temperature_2m_min?.[i])}</strong><small>☂ ${Number.isFinite(d.precipitation_probability_max?.[i])?d.precipitation_probability_max[i]+'%':'—'}</small></div>`;
+  }).join('')}</div>`;
+ }
+ async function refreshWeather(){
+  for(const m of page().modules.filter(x=>x.type==='weather')){
+   const panel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);if(!panel)continue;
+   const cities=m.config.cities||[];
+   if(!cities.length){panel.innerHTML='<p class="empty-note">Search for cities below to start tracking live weather.</p>';continue;}
+   const selected=cities.find(x=>x.id===m.config.selected)||cities[0];
+   const view=m.config.view||'now';
+   try{
+    if(view==='now'){
+     const all=await Promise.allSettled(cities.map(weatherRequest));
+     const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
+     if(!current||!livePanel||current.config.view!==view)return;
+     livePanel.innerHTML=`<div class="weather-now-grid">${all.map((res,i)=>res.status==='fulfilled'?weatherTile(cities[i],res.value):`<div class="weather-error">${esc(cities[i].name)}: weather unavailable</div>`).join('')}</div>`;
+    }else{
+     const data=await weatherRequest(selected);
+     const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
+     if(!current||!livePanel||current.config.view!==view||(current.config.selected||cities[0].id)!==selected.id)return;
+     livePanel.innerHTML=`<div class="weather-forecast-head"><strong>${esc(selected.name)}</strong><span>${view==='hourly'?'Next 24 hours':'Next 7 days'}</span></div>`+weatherForecast(data,view);
+    }
+   }catch(e){const currentPanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);if(currentPanel)currentPanel.innerHTML='<p class="weather-error">Weather unavailable. Check your connection and try again.</p>';}
+  }
+ }
+ document.addEventListener('click',e=>{
+  const tab=e.target.closest('[data-weather-view]'),city=e.target.closest('[data-weather-select]');
+  if(tab){const m=moduleFor(tab.dataset.weatherMid);if(m){m.config.view=tab.dataset.weatherView;change();}}
+  if(city){const m=moduleFor(city.dataset.weatherMid);if(m){m.config.selected=city.dataset.weatherSelect;change();}}
+ });
+ setInterval(()=>{if(page().modules.some(m=>m.type==='weather'))refreshWeather();},15*60*1000);
+
+
+ function siteFavicon(url){
+  if(typeof chrome==='undefined'||!chrome.runtime?.getURL)return '';
+  try{const u=new URL(chrome.runtime.getURL('/_favicon/'));u.searchParams.set('pageUrl',url);u.searchParams.set('size','32');return u.toString();}catch{return '';}
+ }
+ function renderLinkModule(m){
+  const list=m.config.links||[];
+  return `<p class="module-sub">QUICK ACCESS · ${list.length} LINKS</p><div class="linkgrid">${list.map(l=>{
+   const icon=siteFavicon(l.url);
+   return `<a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${icon?`<img class="site-favicon" src="${esc(icon)}" alt="" loading="lazy">`:''}<span class="launch-initial">${esc(l.label[0]?.toUpperCase()||'↗')}</span></span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>`;
+  }).join('')||'<p class="empty-note">Edit to add a link.</p>'}</div>`;
+ }
+ function renderFocusModule(m){
+  const c=m.config,minutes=Math.round((c.duration||1500)/60);
+  return `<p class="module-sub">FOCUS SPRINT · CHOOSE YOUR DURATION</p><div class="focus-display" data-timer="${esc(m.id)}">--:--</div>
+   <div class="focus-presets">${[15,25,45,60].map(v=>`<button type="button" class="${minutes===v?'selected':''}" data-focus-preset="${v}" data-focus-mid="${esc(m.id)}">${v} min</button>`).join('')}</div>
+   <form class="focus-custom" data-focus-custom="${esc(m.id)}"><label for="focus-minutes-${esc(m.id)}">Custom minutes</label><input id="focus-minutes-${esc(m.id)}" name="minutes" aria-label="Custom focus minutes" type="number" min="1" max="240" step="1" value="${minutes}" required><button class="smallbutton">Set</button></form>
+   <div class="focus-controls"><button class="smallbutton" data-action="focus-toggle" data-mid="${esc(m.id)}">${c.until?'Pause':'Start'}</button><button class="smallbutton" data-action="focus-reset" data-mid="${esc(m.id)}">Reset</button></div>`;
+ }
+ function setFocusDuration(mid,mins){
+  const m=moduleFor(mid);if(!m||m.type!=='focus')return;
+  const n=Math.round(Number(mins));if(!Number.isFinite(n)||n<1||n>240){alert('Choose a timer between 1 and 240 minutes.');return;}
+  m.config.duration=n*60;m.config.seconds=n*60;m.config.until=null;change();
+ }
+ document.addEventListener('submit',e=>{
+  const form=e.target.closest('[data-focus-custom]');if(!form)return;
+  e.preventDefault();setFocusDuration(form.dataset.focusCustom,form.elements.minutes.value);
+ });
+ document.addEventListener('click',e=>{
+  const preset=e.target.closest('[data-focus-preset]');if(preset)setFocusDuration(preset.dataset.focusMid,preset.dataset.focusPreset);
+ });
+ document.addEventListener('error',e=>{
+  if(e.target?.classList?.contains('site-favicon'))e.target.style.display='none';
+ },true);
+
+
+ const wallpaperKey='odWallpapersPrefs';
+ let wallpaperPrefs={selected:null,rotate:false,interval:15},wallpaperUrl=null,wallpaperPreviews=[],wallpaperLastSwitch=Date.now();
+ function wallpaperDatabase(){
+  return new Promise((resolve,reject)=>{
+   const request=indexedDB.open('omnidite-desk-wallpapers',1);
+   request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('images'))request.result.createObjectStore('images',{keyPath:'id'});};
+   request.onsuccess=()=>resolve(request.result);
+   request.onerror=()=>reject(request.error||Error('Wallpaper storage unavailable'));
+  });
+ }
+ async function wallpaperStore(method,payload){
+  const db=await wallpaperDatabase();
+  return new Promise((resolve,reject)=>{
+   const tx=db.transaction('images',method==='list'||method==='get'?'readonly':'readwrite');
+   const store=tx.objectStore('images'),request=method==='list'?store.getAll():method==='get'?store.get(payload):method==='delete'?store.delete(payload):store.put(payload);
+   request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+   tx.oncomplete=()=>db.close();tx.onabort=()=>db.close();
+  });
+ }
+ function clearWallpaperPreviews(){for(const url of wallpaperPreviews)URL.revokeObjectURL(url);wallpaperPreviews=[];}
+ async function saveWallpaperPrefs(){await local.set(wallpaperKey,wallpaperPrefs);}
+ async function applyWallpaper(){
+  if(wallpaperUrl){URL.revokeObjectURL(wallpaperUrl);wallpaperUrl=null;}
+  const id=wallpaperPrefs.selected;
+  if(!id){document.body.classList.remove('has-wallpaper');document.body.style.backgroundImage='';return;}
+  try{
+   const item=await wallpaperStore('get',id);
+   if(!item){document.body.classList.remove('has-wallpaper');document.body.style.backgroundImage='';return;}
+   wallpaperUrl=URL.createObjectURL(item.blob);
+   document.body.style.backgroundImage=`linear-gradient(90deg,rgba(6,13,26,.82),rgba(6,13,26,.68)),url("${wallpaperUrl}")`;
+   document.body.classList.add('has-wallpaper');
+  }catch(e){console.warn('Wallpaper unavailable',e);}
+ }
+ async function wallpaperGallery(){
+  try{
+   const list=await wallpaperStore('list');
+   clearWallpaperPreviews();
+   const cards=list.map(item=>{
+    const url=URL.createObjectURL(item.blob);wallpaperPreviews.push(url);
+    return `<div class="wallpaper-tile ${wallpaperPrefs.selected===item.id?'selected':''}">
+     <button type="button" data-wallpaper-action="select" data-wallpaper-id="${esc(item.id)}" title="Use this background"><img src="${esc(url)}" alt="${esc(item.name)}"><span>${esc(item.name)}</span></button>
+     <button type="button" class="wallpaper-delete" data-wallpaper-action="delete" data-wallpaper-id="${esc(item.id)}" title="Remove image">×</button></div>`;
+   }).join('');
+   show(`<div class="modal-pad">${header('Desk backgrounds','Choose your own image or import a folder of wallpapers.')}
+    <p class="helper">Stored only on this computer. Folder import makes a local copy; select the folder again to add new images.</p>
+    <div class="modal-actions"><button type="button" class="smallbutton" data-wallpaper-action="upload">＋ Upload images</button>
+    <button type="button" class="smallbutton" data-wallpaper-action="folder">▣ Import folder</button>
+    <button type="button" class="button ghost" data-wallpaper-action="clear">Default background</button></div>
+    <div class="wallpaper-options"><label class="sync-label"><input id="wallpaperRotation" type="checkbox" ${wallpaperPrefs.rotate?'checked':''}> Cycle backgrounds automatically</label>
+    <label>Change every <select id="wallpaperInterval" class="modal-input">${[5,15,30,60].map(v=>`<option value="${v}" ${wallpaperPrefs.interval===v?'selected':''}>${v} minutes</option>`).join('')}</select></label></div>
+    <div class="wallpaper-grid">${cards||'<p class="empty-note">No wallpapers yet. Upload images or import a folder to get started.</p>'}</div>
+    <p class="helper">${list.length} backgrounds saved locally · up to 60 images. Large images are optimized for the dashboard.</p></div>`);
+  }catch(e){show(`<div class="modal-pad">${header('Desk backgrounds','Image storage is unavailable.')}<p class="helper">${esc(e.message)}</p></div>`);}
+ }
+ async function shrinkWallpaper(file){
+  const image=await createImageBitmap(file);
+  const ratio=Math.min(1,1920/Math.max(image.width,image.height));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(image.width*ratio));canvas.height=Math.max(1,Math.round(image.height*ratio));
+  canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);image.close();
+  return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error('Could not optimize image')),'image/jpeg',.82));
+ }
+ async function importWallpapers(files){
+  const selected=[...files].filter(f=>f.type.startsWith('image/')||/\.(png|jpe?g|webp|bmp|gif)$/i.test(f.name)).slice(0,60);
+  if(!selected.length){alert('No supported image files found.');return;}
+  try{
+   const existing=await wallpaperStore('list'),remaining=Math.max(0,60-existing.length);
+   if(!remaining){alert('60-image gallery is full. Delete images before importing more.');return;}
+   let saved=0;
+   for(const file of selected.slice(0,remaining)){
+    if(file.size>25*1024*1024)continue;
+    try{
+     const blob=await shrinkWallpaper(file);
+     const id=uid();await wallpaperStore('put',{id,name:cleanText(file.name,100),blob,added:Date.now()});saved++;
+     if(!wallpaperPrefs.selected)wallpaperPrefs.selected=id;
+    }catch(e){console.warn('Skipped image:',file.name,e);}
+   }
+   await saveWallpaperPrefs();await applyWallpaper();await wallpaperGallery();
+   if(!saved)alert('No images could be imported. Try JPG, PNG or WebP files.');
+  }catch(e){alert('Could not save wallpapers: '+e.message);}
+ }
+ async function nextWallpaper(){
+  const list=await wallpaperStore('list');if(list.length<2)return;
+  const index=list.findIndex(item=>item.id===wallpaperPrefs.selected);
+  wallpaperPrefs.selected=list[(index+1)%list.length].id;wallpaperLastSwitch=Date.now();
+  await saveWallpaperPrefs();await applyWallpaper();
+ }
+ async function setupWallpapers(){
+  try{
+   const stored=await local.get(wallpaperKey);
+   if(stored&&typeof stored==='object')wallpaperPrefs={selected:typeof stored.selected==='string'?stored.selected:null,rotate:!!stored.rotate,interval:[5,15,30,60].includes(stored.interval)?stored.interval:15};
+   await applyWallpaper();
+  }catch(e){console.warn('Wallpaper initialization failed',e);}
+ }
+ modal.addEventListener('click',async e=>{
+  const button=e.target.closest('[data-wallpaper-action]');if(!button)return;
+  const action=button.dataset.wallpaperAction,id=button.dataset.wallpaperId;
+  if(action==='upload')return $('#wallpaperFile').click();
+  if(action==='folder')return $('#wallpaperFolder').click();
+  if(action==='select'){wallpaperPrefs.selected=id;wallpaperPrefs.rotate=false;}
+  if(action==='clear'){wallpaperPrefs.selected=null;wallpaperPrefs.rotate=false;}
+  if(action==='delete'){await wallpaperStore('delete',id);if(wallpaperPrefs.selected===id)wallpaperPrefs.selected=null;}
+  await saveWallpaperPrefs();await applyWallpaper();await wallpaperGallery();
+ });
+ modal.addEventListener('change',async e=>{
+  if(e.target.id==='wallpaperRotation'){wallpaperPrefs.rotate=e.target.checked;wallpaperLastSwitch=Date.now();await saveWallpaperPrefs();}
+  if(e.target.id==='wallpaperInterval'){wallpaperPrefs.interval=Number(e.target.value);wallpaperLastSwitch=Date.now();await saveWallpaperPrefs();}
+ });
+ for(const picker of ['wallpaperFile','wallpaperFolder']){
+  document.getElementById(picker)?.addEventListener('change',async e=>{if(e.target.files?.length)await importWallpapers(e.target.files);e.target.value='';});
+ }
+ setInterval(()=>{if(wallpaperPrefs.rotate&&Date.now()-wallpaperLastSwitch>=wallpaperPrefs.interval*60000)nextWallpaper().catch(console.warn);},60000);
+
 function content(m){const c=m.config;
  switch(m.type){
- case 'links':return `<p class="module-sub">QUICK ACCESS · ${c.links.length} LINKS</p><div class="linkgrid">${c.links.map(l=>`<a class="launch" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="launch-icon">${esc(l.label[0]?.toUpperCase()||'↗')}</span><span class="launch-name">${esc(l.label)}</span><span class="launch-arrow">↗</span></a>`).join('')||'<p class="empty-note">Edit to add a link.</p>'}</div>`;
+ case 'links':return renderLinkModule(m);
  case 'tasks':return `<p class="module-sub">${c.tasks.filter(x=>x.done).length} / ${c.tasks.length} COMPLETED</p><form class="task-input-row" data-add-task="${esc(m.id)}"><input name="text" placeholder="Add a task…" maxlength="200" required><button>＋</button></form>${c.tasks.map(t=>`<div class="taskrow ${t.done?'done':''}"><input type="checkbox" data-toggle-task="${esc(m.id)}" data-id="${esc(t.id)}" ${t.done?'checked':''}><span class="tasktext">${esc(t.text)}</span><button class="delete-task" data-action="delete-task" data-mid="${esc(m.id)}" data-tid="${esc(t.id)}">×</button></div>`).join('')}`;
  case 'notes':return `<p class="module-sub">AUTO SAVED</p><textarea class="notebox" data-note="${esc(m.id)}" maxlength="12000" placeholder="Capture an idea…">${esc(c.text)}</textarea>`;
- case 'clock':return `<p class="module-sub">LIVE WORLD CLOCKS</p><div class="worldclocks">${[['Asia/Singapore','SINGAPORE'],['America/Chicago','HOUSTON'],['UTC','UTC']].map(([tz,label])=>`<div class="clockrow"><span class="clock-label">${label}</span><span class="clock-time" data-zone="${tz}">--:--</span></div>`).join('')}</div>`;
- case 'focus':return `<p class="module-sub">FOCUS SPRINT</p><div class="focus-display" data-timer="${esc(m.id)}">25:00</div><p class="focus-hint">25-minute work interval</p><div class="focus-controls"><button class="smallbutton" data-action="focus-toggle" data-mid="${esc(m.id)}">${c.until?'Pause':'Start'}</button><button class="smallbutton" data-action="focus-reset" data-mid="${esc(m.id)}">Reset</button></div>`;
+ case 'clock':return renderWorldClocks(m);
+  case 'weather':return renderWeatherModule(m);
+ case 'focus':return renderFocusModule(m);
  case 'agenda':return `<p class="module-sub">PERSONAL AGENDA · LOCAL EVENTS</p><form class="agenda-form" data-add-event="${esc(m.id)}"><input class="modal-input" name="title" placeholder="Event title" maxlength="140" required><input class="modal-input" type="datetime-local" name="when" required><button class="smallbutton">Add event</button></form><div class="agenda-items">${c.events.slice().sort((a,b)=>a.when.localeCompare(b.when)).map(e=>`<div class="agenda-event"><span>${esc(new Date(e.when).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</span><strong>${esc(e.title)}</strong><button class="delete-task" data-action="delete-event" data-mid="${esc(m.id)}" data-tid="${esc(e.id)}">×</button></div>`).join('')||'<p class="empty-note">No events. Add one above.</p>'}</div>`;
  case 'countdown':return `<p class="module-sub">${esc(c.label)}</p><div class="count-number" data-countdown="${esc(m.id)}">—</div><div class="focus-hint">DAYS UNTIL ${esc(c.target)}</div>`;
  case 'habits':{const today=new Date().toLocaleDateString('en-CA');return `<p class="module-sub">TODAY'S CHECK-IN</p><form class="task-input-row" data-add-habit="${esc(m.id)}"><input name="text" placeholder="Add a habit…" maxlength="200" required><button>＋</button></form>${c.habits.map(h=>`<div class="taskrow ${h.day===today?'done':''}"><input type="checkbox" data-toggle-habit="${esc(m.id)}" data-id="${esc(h.id)}" ${h.day===today?'checked':''}><span class="tasktext">${esc(h.text)}</span><button class="delete-task" data-action="delete-habit" data-mid="${esc(m.id)}" data-tid="${esc(h.id)}">×</button></div>`).join('')}`;}
@@ -206,14 +561,15 @@ function render(){
  $('#pageNav').innerHTML=nav;$('#mobilePages').innerHTML=`${state.pages.map(p=>`<button class="page-pill ${p.id===state.activePage?'selected':''}" data-page="${esc(p.id)}">${esc(p.title)}</button>`).join('')}<button class="page-pill" data-global="new-page">＋</button>`;
  $('#moduleCount').textContent=page().modules.length;
  $('#grid').innerHTML=page().modules.map(moduleHtml).join('')||'<div class="empty-grid"><h2>No widgets yet</h2><p>Build your workspace with the widget library.</p><button class="button primary" data-global="add">＋ Add module</button></div>';
+  refreshWeather();
  update();
 }
 function update(){const now=new Date();$('#localDate').textContent=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'}).format(now).toUpperCase();
- document.querySelectorAll('[data-zone]').forEach(el=>{try{el.textContent=new Intl.DateTimeFormat('en-US',{timeZone:el.dataset.zone,hour:'2-digit',minute:'2-digit',hour12:false}).format(now);}catch{el.textContent='--:--';}});
+ updateWorldClocks(now);
  document.querySelectorAll('[data-timer]').forEach(el=>{const c=moduleFor(el.dataset.timer)?.config;if(!c)return;const secs=c.until?Math.max(0,Math.ceil((c.until-Date.now())/1000)):c.seconds;el.textContent=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;});
  document.querySelectorAll('[data-countdown]').forEach(el=>{const c=moduleFor(el.dataset.countdown)?.config;if(!c)return;const target=new Date(c.target+'T00:00:00');el.textContent=Number.isNaN(target.getTime())?'—':Math.max(0,Math.ceil((target-Date.now())/86400000));});
 }
-function add(type){if(!TYPES.includes(type))return;const def={links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}};page().modules.push(mk(type,undefined,def[type]||{}));close();change();}
+function add(type){if(!TYPES.includes(type))return;const def={links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}};page().modules.push(mk(type,undefined,def[type]||{}));close();change();}
 function removeWidget(id){for(const p of state.pages)p.modules=p.modules.filter(m=>m.id!==id);change();}
 function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='omnidite-desk-v0.2-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 // Drag handles reorder within active page; widget body controls stay interactive.
@@ -230,14 +586,14 @@ document.addEventListener('pointerup',()=>{if(!resize)return;resize=null;documen
 document.addEventListener('pointercancel',()=>{if(resize){resize=null;document.body.classList.remove('resizing');change(false);}});
 document.addEventListener('click',e=>{
  const pg=e.target.closest('[data-page]');if(pg){state.activePage=pg.dataset.page;change();return;}
- const gl=e.target.closest('[data-global]');if(gl){const a=gl.dataset.global;if(a==='add')gallery();if(a==='customize')settings();if(a==='new-page')pageDialog(false);if(a==='edit-page')pageDialog(true);return;}
+ const gl=e.target.closest('[data-global]');if(gl){const a=gl.dataset.global;if(a==='add')gallery();if(a==='customize')settings();if(a==='backgrounds')wallpaperGallery();if(a==='new-page')pageDialog(false);if(a==='edit-page')pageDialog(true);return;}
  const b=e.target.closest('[data-action]');if(!b)return;const {action,mid,tid}=b.dataset,m=moduleFor(mid);
  if(action==='edit')return editModule(mid);if(!m)return;
  if(action==='delete-task'){m.config.tasks=m.config.tasks.filter(t=>t.id!==tid);change();}
  if(action==='delete-habit'){m.config.habits=m.config.habits.filter(t=>t.id!==tid);change();}
  if(action==='delete-event'){m.config.events=m.config.events.filter(t=>t.id!==tid);change();}
- if(action==='focus-toggle'){if(m.config.until){m.config.seconds=Math.max(0,Math.ceil((m.config.until-Date.now())/1000));m.config.until=null;}else m.config.until=Date.now()+(m.config.seconds||1500)*1000;change();}
- if(action==='focus-reset'){m.config={seconds:1500,until:null};change();}
+ if(action==='focus-toggle'){if(m.config.until){m.config.seconds=Math.max(0,Math.ceil((m.config.until-Date.now())/1000));m.config.until=null;}else{if(!m.config.seconds)m.config.seconds=m.config.duration||1500;m.config.until=Date.now()+m.config.seconds*1000;}change();}
+ if(action==='focus-reset'){m.config.seconds=m.config.duration||1500;m.config.until=null;change();}
  if(action==='metric-add'||action==='metric-sub'){m.config.value+=m.config.step*(action==='metric-add'?1:-1);change();}
 });
 document.addEventListener('submit',e=>{const f=e.target;
@@ -261,7 +617,7 @@ modal.addEventListener('click',async e=>{
  if(a==='remove-row'){b.closest('.editlink')?.remove();return;}
  if(a==='delete-widget'){if(confirm('Delete this widget and its content?')){removeWidget(b.dataset.id);close();}return;}
  if(a==='delete-page'){if(state.pages.length<=1)return;if(confirm('Delete this workspace and ALL its widgets?')){state.pages=state.pages.filter(p=>p.id!==state.activePage);state.activePage=state.pages[0].id;close();change();}return;}
- if(a==='export')return exportBackup();if(a==='import')return $('#importFile').click();
+ if(a==='backgrounds')return wallpaperGallery();if(a==='export')return exportBackup();if(a==='import')return $('#importFile').click();
  if(a==='reset'){if(confirm('Reset all workspaces, widgets, notes and settings? Export a backup first.')){state=starter();close();change();}return;}
  if(a==='push-sync')return pushSync();if(a==='pull-sync')return pullSync(true,true).catch(x=>status(x.message,true));
 });
@@ -288,7 +644,21 @@ async function initialize(){
   if(!stored&&old)await local.set(V2,state);
   if(syncEnabled){try{await pullSync(true,!stored&&!old);status('Chrome Sync on');}catch(e){status('Sync unavailable: '+e.message,true);}}
  }catch(e){status('Could not load saved data: '+e.message,true);}
+ // Seed the new weather module once for existing v0.2 workspaces; keep all user data.
+ try{
+  if(!(await local.get('odV022WeatherSeeded'))){
+   if(!state.pages.some(p=>p.modules.some(m=>m.type==='weather'))){
+    const home=state.pages.find(p=>p.id==='overview')||state.pages[0];
+    home.modules.push(mk('weather'));
+    state.updatedAt=Date.now();
+    await local.set(V2,state);
+    if(syncEnabled)scheduleSync();
+   }
+   await local.set('odV022WeatherSeeded',true);
+  }
+ }catch(e){console.warn('Weather module migration skipped:',e);}
  render();
+ setupWallpapers();
  if(supportsExt&&chrome.storage?.onChanged){chrome.storage.onChanged.addListener((changes,area)=>{if(area==='sync'&&syncEnabled&&changes[SYNC_META]&&!applyingRemote){clearTimeout(saveTimer);pullSync().catch(e=>status('Sync read failed: '+e.message,true));} if(area==='local'&&changes[V2]&&!applyingRemote){const remote=changes[V2].newValue;if(remote&&remote.updatedAt>state.updatedAt){try{state=normalize(remote);render();}catch{}}}});}
  setInterval(update,1000);
 }

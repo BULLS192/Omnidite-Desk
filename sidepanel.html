@@ -15,6 +15,7 @@
       <div class="nav-heading">WORKSPACES</div><div id="pageNav" class="page-nav"></div><button class="nav-link add-page" data-global="new-page"><span>＋</span> New workspace</button><div class="nav-heading modules-label">DESK TOOLS</div>
       <button class="nav-link" data-global="add"><span>⊞</span> Add a module <span class="nav-kbd">+</span></button>
       <button class="nav-link" data-global="customize"><span>⚙</span> Customize</button>
+      <button class="nav-link" data-global="backgrounds"><span>▧</span> Backgrounds</button>
       <div class="sidebar-bottom"><span class="live-dot"></span> LOCAL-FIRST · PRIVATE<br><span class="fineprint">No cloud account required</span></div>
     </aside>
     <main class="main">
@@ -27,7 +28,7 @@
         </div>
       </header>
       <div class="content">
-        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.2.1</div>
+        <div class="eyebrow"><span class="live-dot"></span> PERSONAL COMMAND CENTER · VERSION 0.2.2</div>
         <section id="deskUpdateBar" class="desk-update-bar" aria-label="Software updates">
           <span class="update-indicator" aria-hidden="true">↻</span>
           <div class="update-description"><strong>OMNIDITE DESK UPDATES</strong><span id="deskUpdateStatus" role="status" aria-live="polite">Check GitHub for new Desk features.</span></div>
@@ -47,12 +48,14 @@
         </form>
         <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
         <div id="grid" class="modules" aria-live="polite"></div>
-        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.2.1</span></div>
+        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK / 0.2.2</span></div>
       </div>
     </main>
   </div>
   <dialog id="modal" aria-labelledby="modalTitle"><div id="modalInner"></div></dialog>
   <input id="importFile" type="file" accept="application/json,.json" hidden>
+  <input id="wallpaperFile" type="file" accept="image/*" multiple hidden>
+  <input id="wallpaperFolder" type="file" accept="image/*" webkitdirectory multiple hidden>
   <script src="app.js" defer></script>
 </body>
 </html>
