@@ -1,4 +1,4 @@
-/* Omnidite Desk v0.2.2 — vanilla JS, strict MV3 CSP, no analytics. */
+/* Omnidite Desk v0.3.0 — vanilla JS, strict MV3 CSP, no analytics. */
 (() => {
 'use strict';
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
@@ -17,7 +17,8 @@ const $=(s,x=document)=>x.querySelector(s);
 const validUrl=s=>{try {const u=new URL(s); return ['http:','https:'].includes(u.protocol)&&!!u.hostname;}catch{return false;}};
 const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4,height:0,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},clock:{cities:defaultClockCities()},weather:{cities:defaultWeatherCities(),view:'now',selected:'sg'},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}}[type]||{}),...config}});
 const defaultPage=(id,title,modules)=>({id,title,modules});
-const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),pages:[
+const defaultProjects=()=>[['Omnidite','https://omnidite.com'],['Providence','https://providence.omnidite.com'],['TTT-OS','https://ttt-os.vercel.app'],['Atlas',''],['SGBuddy',''],['F.R.E.Y.A.','']].map(([name,url])=>({id:uid(),name,url,status:'Tracked'}));
+const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),projects:defaultProjects(),captures:[],layoutSnapshots:[],pages:[
  defaultPage('overview','Overview',[
   mk('links','My projects',{links:[{label:'Omnidite',url:'https://omnidite.com'},{label:'Providence',url:'https://providence.omnidite.com'},{label:'TTT-OS',url:'https://ttt-os.vercel.app'},{label:'GitHub',url:'https://github.com/BULLS192/Omnidite-Desk'}]}),
   mk('links','Quick launch',{links:[{label:'Vercel',url:'https://vercel.com/dashboard'},{label:'Supabase',url:'https://supabase.com/dashboard'},{label:'ChatGPT',url:'https://chatgpt.com'},{label:'Google Drive',url:'https://drive.google.com'}]}),
@@ -36,7 +37,7 @@ function sanitizeModule(x,ids){
  if(!x||!TYPES.includes(x.type)) return null;
  const id=typeof x.id==='string'&&/^[\w-]{1,90}$/.test(x.id)&&!ids.has(x.id)?x.id:uid(); ids.add(id);
  const c=x.config&&typeof x.config==='object'&&!Array.isArray(x.config)?x.config:{};
- const out={id,type:x.type,title:cleanText(x.title||META[x.type][1],80),cols:[3,4,6,8,9,12].includes(x.cols)?x.cols:({small:4,wide:6,full:12}[x.width]||4),height:Number.isFinite(x.height)?Math.min(900,Math.max(0,Math.round(x.height))):0,config:{}};
+ const out={id,type:x.type,title:cleanText(x.title||META[x.type][1],80),cols:Number.isInteger(x.cols)&&x.cols>=1&&x.cols<=12?x.cols:({small:4,wide:6,full:12}[x.width]||4),height:Number.isFinite(x.height)?Math.min(1000,Math.max(0,Math.round(x.height))):0,config:{}};
  if(x.type==='links')out.config.links=(Array.isArray(c.links)?c.links:[]).slice(0,30).filter(l=>validUrl(String(l?.url||''))).map(l=>({label:cleanText(l.label||'Link',80),url:cleanText(l.url,1000)}));
  if(x.type==='tasks'||x.type==='habits')out.config[x.type==='tasks'?'tasks':'habits']=(Array.isArray(c.tasks||c.habits)?c.tasks||c.habits:[]).slice(0,80).filter(t=>t&&typeof t.text==='string').map(t=>({id:cleanText(t.id||uid(),90),text:cleanText(t.text,200),done:!!t.done,day:cleanText(t.day||'',12)}));
  if(x.type==='notes')out.config.text=cleanText(c.text,12000);
@@ -58,7 +59,10 @@ function normalize(obj){
   return {id,title:cleanText(p.title||'Workspace',45),modules:p.modules.slice(0,80).map(x=>sanitizeModule(x,ids)).filter(Boolean)};
  });
  if(!pages.length)pages.push(defaultPage('overview','Overview',[]));
- return {version:2,brand:cleanText(obj.brand||'Omnidite Desk',55),searchEngine:['google','duckduckgo','bing'].includes(obj.searchEngine)?obj.searchEngine:'google',theme:['midnight','slate','light'].includes(obj.theme)?obj.theme:'midnight',accent:/^#[0-9a-fA-F]{6}$/.test(obj.accent||'')?obj.accent:'#4a8df5',activePage:pages.some(p=>p.id===obj.activePage)?obj.activePage:pages[0].id,updatedAt:Number.isFinite(obj.updatedAt)?obj.updatedAt:Date.now(),pages};
+ const projects=(Array.isArray(obj.projects)?obj.projects:defaultProjects()).slice(0,60).filter(x=>x&&typeof x.name==='string').map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,80),url:validUrl(x.url)?cleanText(x.url,1000):'',status:cleanText(x.status||'Tracked',40)}));
+  const captures=(Array.isArray(obj.captures)?obj.captures:[]).slice(0,40).filter(x=>x&&typeof x.title==='string').map(x=>({id:cleanText(x.id||uid(),90),title:cleanText(x.title,140),url:validUrl(x.url)?cleanText(x.url,1000):'',note:cleanText(x.note||'',1100),project:cleanText(x.project||'',90),createdAt:Number.isFinite(x.createdAt)?x.createdAt:Date.now()}));
+  const layoutSnapshots=(Array.isArray(obj.layoutSnapshots)?obj.layoutSnapshots:[]).slice(0,12).filter(x=>x&&typeof x.name==='string'&&Array.isArray(x.widgets)).map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,70),pageId:cleanText(x.pageId||'',90),widgets:x.widgets.slice(0,80).filter(w=>w&&typeof w.id==='string').map(w=>({id:cleanText(w.id,90),cols:Number.isInteger(w.cols)?Math.max(1,Math.min(12,w.cols)):4,height:Number.isFinite(w.height)?Math.max(0,Math.min(1000,w.height)):0}))}));
+  return {projects,captures,layoutSnapshots,version:2,brand:cleanText(obj.brand||'Omnidite Desk',55),searchEngine:['google','duckduckgo','bing'].includes(obj.searchEngine)?obj.searchEngine:'google',theme:['midnight','slate','light'].includes(obj.theme)?obj.theme:'midnight',accent:/^#[0-9a-fA-F]{6}$/.test(obj.accent||'')?obj.accent:'#4a8df5',activePage:pages.some(p=>p.id===obj.activePage)?obj.activePage:pages[0].id,updatedAt:Number.isFinite(obj.updatedAt)?obj.updatedAt:Date.now(),pages};
 }
 function status(message,error=false){lastSync=message;const e=$('#syncStatus');if(e){e.textContent=message;e.classList.toggle('error',error);}}
 async function persist(sync=true){state.updatedAt=Date.now();try{await local.set(V2,state);}catch(e){status('Local save failed: '+e.message,true);return;} if(sync&&syncEnabled)scheduleSync();}
@@ -107,7 +111,7 @@ function linkRow(l={label:'',url:''}){return `<div class="editlink"><input class
 function editModule(id){const m=moduleFor(id);if(!m)return;
  show(`<form class="modal-pad" id="editForm" data-id="${esc(id)}">${header('Edit widget','Change its name, size, options, or workspace.')}<label class="label">Title</label><input class="modal-input" name="title" maxlength="80" required value="${esc(m.title)}">
  <label class="label">Workspace</label><select class="modal-input" name="page">${state.pages.map(p=>`<option value="${esc(p.id)}" ${p.modules.includes(m)?'selected':''}>${esc(p.title)}</option>`).join('')}</select>
- <label class="label">Width</label><select class="modal-input" name="cols">${[3,4,6,8,9,12].map(n=>`<option value="${n}" ${m.cols===n?'selected':''}>${n}/12 columns</option>`).join('')}</select>
+ <label class="label">Width</label><select class="modal-input" name="cols">${Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${m.cols===n?'selected':''}>${n}/12 columns</option>`).join('')}</select>
  ${m.type==='links'?`<label class="label">Links</label><div id="editLinks">${m.config.links.map(linkRow).join('')}</div><button type="button" class="smallbutton" data-modal="add-link">＋ Add link</button>`:''}
  ${m.type==='countdown'?`<label class="label">Deadline</label><input class="modal-input" type="date" name="target" value="${esc(m.config.target)}"><label class="label">Label</label><input class="modal-input" name="label" value="${esc(m.config.label)}">`:''}
  ${m.type==='metric'?`<label class="label">Unit</label><input class="modal-input" name="unit" value="${esc(m.config.unit)}"><label class="label">Increment step</label><input class="modal-input" type="number" step="any" name="step" value="${esc(m.config.step)}">`:''}
@@ -495,7 +499,7 @@ function content(m){const c=m.config;
  }
  return '';
 }
-function moduleHtml(m){return `<section class="module" style="--span:${m.cols};${m.height?`min-height:${m.height}px;`:''}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools"><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget">⚙</button><span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
+function moduleHtml(m){return `<section class="module" style="--span:${m.cols};${m.height?`min-height:${m.height}px;`:''}" data-module="${esc(m.id)}"><header class="module-header"><span class="module-icon">${META[m.type][0]}</span><span class="module-title">${esc(m.title)}</span><div class="module-tools"><button class="tiny move-widget" data-action="move-up" data-mid="${esc(m.id)}" title="Move widget earlier" aria-label="Move widget earlier">↑</button><button class="tiny move-widget" data-action="move-down" data-mid="${esc(m.id)}" title="Move widget later" aria-label="Move widget later">↓</button><button class="tiny" data-action="edit" data-mid="${esc(m.id)}" title="Edit widget">⚙</button><span class="tiny draghandle" draggable="true" data-drag="${esc(m.id)}" title="Drag to move widget">⠿</span></div></header><div class="module-body">${content(m)}</div><div class="size-grip" data-resize="${esc(m.id)}" title="Drag horizontally and vertically to resize" aria-label="Resize widget"></div></section>`;}
 
 // An explicit user click triggers Git via a *locally registered* native host.
 // The host accepts only "status" and "update" and hard-codes the official Git remote.
@@ -571,7 +575,7 @@ function update(){const now=new Date();$('#localDate').textContent=new Intl.Date
 }
 function add(type){if(!TYPES.includes(type))return;const def={links:{links:[]},tasks:{tasks:[]},notes:{text:''},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''}};page().modules.push(mk(type,undefined,def[type]||{}));close();change();}
 function removeWidget(id){for(const p of state.pages)p.modules=p.modules.filter(m=>m.id!==id);change();}
-function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='omnidite-desk-v0.2-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='omnidite-desk-v0.3-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 // Drag handles reorder within active page; widget body controls stay interactive.
 let dragged=null;
 document.addEventListener('dragstart',e=>{const h=e.target.closest('[data-drag]');if(!h)return;dragged=h.dataset.drag; e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragged);h.closest('.module')?.classList.add('dragging');});
@@ -580,8 +584,8 @@ document.addEventListener('dragleave',e=>{const m=e.target.closest('[data-module
 document.addEventListener('drop',e=>{const dest=e.target.closest('[data-module]');document.querySelectorAll('.drop-target').forEach(x=>x.classList.remove('drop-target'));if(!dest||!dragged||dest.dataset.module===dragged)return;e.preventDefault();const arr=page().modules;const i=arr.findIndex(x=>x.id===dragged),j=arr.findIndex(x=>x.id===dest.dataset.module);if(i<0||j<0)return;arr.splice(j,0,arr.splice(i,1)[0]);change();});
 document.addEventListener('dragend',()=>{dragged=null;document.querySelectorAll('.dragging,.drop-target').forEach(x=>x.classList.remove('dragging','drop-target'));});
 let resize=null;
-document.addEventListener('pointerdown',e=>{const h=e.target.closest('[data-resize]');if(!h||e.button!==0)return;e.preventDefault();const m=moduleFor(h.dataset.resize);if(!m)return;const rect=h.closest('.module').getBoundingClientRect(),grid=$('#grid').getBoundingClientRect();resize={id:m.id,x:e.clientX,y:e.clientY,cols:m.cols,height:rect.height,step:grid.width/12,pointer:e.pointerId};h.setPointerCapture(e.pointerId);document.body.classList.add('resizing');});
-document.addEventListener('pointermove',e=>{if(!resize)return;const m=moduleFor(resize.id),el=document.querySelector(`[data-module="${CSS.escape(resize.id)}"]`);if(!m||!el)return;const diff=e.clientX-resize.x;const goal=resize.cols+Math.round(diff/Math.max(1,resize.step));m.cols=[3,4,6,8,9,12].reduce((best,n)=>Math.abs(n-goal)<Math.abs(best-goal)?n:best,3);m.height=Math.min(900,Math.max(190,Math.round(resize.height+(e.clientY-resize.y))));el.style.setProperty('--span',m.cols);el.style.minHeight=m.height+'px';});
+document.addEventListener('pointerdown',e=>{const h=e.target.closest('[data-resize]');if(!h||e.button!==0)return;e.preventDefault();const m=moduleFor(h.dataset.resize);if(!m)return;const rect=h.closest('.module').getBoundingClientRect(),grid=$('#grid').getBoundingClientRect();resize={id:m.id,x:e.clientX,y:e.clientY,cols:m.cols,height:rect.height,step:(grid.width+16)/12,pointer:e.pointerId};h.setPointerCapture(e.pointerId);document.body.classList.add('resizing');});
+document.addEventListener('pointermove',e=>{if(!resize)return;const m=moduleFor(resize.id),el=document.querySelector(`[data-module="${CSS.escape(resize.id)}"]`);if(!m||!el)return;const diff=e.clientX-resize.x;const goal=resize.cols+Math.round(diff/Math.max(1,resize.step));m.cols=Math.max(1,Math.min(12,goal));m.height=Math.min(1000,Math.max(160,Math.round(resize.height+(e.clientY-resize.y))));el.style.setProperty('--span',m.cols);el.style.minHeight=m.height+'px';});
 document.addEventListener('pointerup',()=>{if(!resize)return;resize=null;document.body.classList.remove('resizing');change(false);});
 document.addEventListener('pointercancel',()=>{if(resize){resize=null;document.body.classList.remove('resizing');change(false);}});
 document.addEventListener('click',e=>{
@@ -589,6 +593,7 @@ document.addEventListener('click',e=>{
  const gl=e.target.closest('[data-global]');if(gl){const a=gl.dataset.global;if(a==='add')gallery();if(a==='customize')settings();if(a==='backgrounds')wallpaperGallery();if(a==='new-page')pageDialog(false);if(a==='edit-page')pageDialog(true);return;}
  const b=e.target.closest('[data-action]');if(!b)return;const {action,mid,tid}=b.dataset,m=moduleFor(mid);
  if(action==='edit')return editModule(mid);if(!m)return;
+  if(action==='move-up'||action==='move-down'){const arr=page().modules;const ix=arr.indexOf(m),to=ix+(action==='move-up'?-1:1);if(ix>=0&&to>=0&&to<arr.length){arr.splice(to,0,arr.splice(ix,1)[0]);change();}return;}
  if(action==='delete-task'){m.config.tasks=m.config.tasks.filter(t=>t.id!==tid);change();}
  if(action==='delete-habit'){m.config.habits=m.config.habits.filter(t=>t.id!==tid);change();}
  if(action==='delete-event'){m.config.events=m.config.events.filter(t=>t.id!==tid);change();}
@@ -662,5 +667,6 @@ async function initialize(){
  if(supportsExt&&chrome.storage?.onChanged){chrome.storage.onChanged.addListener((changes,area)=>{if(area==='sync'&&syncEnabled&&changes[SYNC_META]&&!applyingRemote){clearTimeout(saveTimer);pullSync().catch(e=>status('Sync read failed: '+e.message,true));} if(area==='local'&&changes[V2]&&!applyingRemote){const remote=changes[V2].newValue;if(remote&&remote.updatedAt>state.updatedAt){try{state=normalize(remote);render();}catch{}}}});}
  setInterval(update,1000);
 }
+window.DeskBridge={getState:()=>state,save:()=>change(),show,close,esc,uid,validUrl,page,addWidget:add,openGallery:gallery};
 initialize();
 })();
