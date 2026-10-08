@@ -33,10 +33,12 @@ const chrome={
  }
 };
 const start=new Date(Date.now()+86400000).toISOString();
+const nextDayLocal=new Date(Date.now()+86400000);
+const allDayStart=[nextDayLocal.getFullYear(),String(nextDayLocal.getMonth()+1).padStart(2,'0'),String(nextDayLocal.getDate()).padStart(2,'0')].join('-');
 const responses={
  list:{items:[{id:'primary@example.com',summary:'Primary',primary:true,selected:true,accessRole:'owner'},{id:'team@example.com',summary:'Team Work',primary:false,selected:false,accessRole:'reader'}]},
  primary:{items:[{id:'a1',summary:'Customer meeting',start:{dateTime:start},htmlLink:'https://calendar.google.com/calendar/event?eid=abc'},{id:'notneeded',status:'cancelled',summary:'Cancelled',start:{dateTime:start}},{id:'nope',summary:'Wrong link',start:{dateTime:start},htmlLink:'javascript:alert(1)'}]},
- team:{items:[{id:'t1',summary:'Team event',start:{date:'2026-11-10'},htmlLink:'https://www.google.com/calendar/event?eid=team'}]}
+ team:{items:[{id:'t1',summary:'Team event',start:{date:allDayStart},htmlLink:'https://www.google.com/calendar/event?eid=team'}]}
 };
 const fakeFetch=async (url,options)=>{
  const s=String(url);network.push({url:s,options});
