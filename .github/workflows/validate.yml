@@ -12,6 +12,17 @@ jobs:
         with:
           node-version: '22'
       - name: Syntax validation
-        run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check background.js
+        run: node --check app.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check background.js
       - name: Manifest and assets checks
-        run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs
+        run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs
+  native-host-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile the native messaging helper with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $exe = Join-Path $env:RUNNER_TEMP 'OmniditeDeskHost.exe'
+          Add-Type -Path 'native-host/DeskNativeHost.cs' -ReferencedAssemblies @('System.Web.Extensions.dll') -OutputAssembly $exe -OutputType ConsoleApplication -ErrorAction Stop
+          if (-not (Test-Path -LiteralPath $exe)) { throw 'Native helper compilation failed.' }
+          Write-Host 'PASS: C# native host compiles on Windows'
