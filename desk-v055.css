@@ -480,3 +480,10 @@ body.side-mode .desk-calendar-toolbar{gap:12px}
 body.side-mode .desk-calendar-modes{width:100%;justify-content:space-between}
 body.side-mode .desk-calendar-modes button{flex:1}
 body.side-mode .desk-calendar-event-time{flex-basis:64px}
+
+
+/* Inner widget drag handles: direct reorder plus accessible arrow fallback. */
+.desk-item-handle{display:inline-grid;place-items:center;min-width:24px;min-height:24px;color:var(--desk-tertiary);cursor:grab;touch-action:none;user-select:none;font-size:15px}
+.desk-item-handle:active{cursor:grabbing;color:var(--accent)}
+.desk-item-order{gap:4px}
+.desk-item-drop-target{outline:2px solid var(--accent)!important;outline-offset:-2px;background:color-mix(in srgb,var(--accent) 12%,var(--desk-surface-soft))!important}
