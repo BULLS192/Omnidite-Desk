@@ -10,7 +10,8 @@ if(JSON.stringify(manifest.host_permissions)!==JSON.stringify(expectedHosts))thr
 if(JSON.stringify(manifest.optional_permissions)!=='["tabs"]')throw Error('Unexpected optional permissions');
 if(JSON.stringify(manifest.optional_host_permissions)!=='["https://api.github.com/*","https://*.omnidite.com/*","http://localhost/*","http://127.0.0.1/*","https://www.googleapis.com/*"]')throw Error('Unexpected optional host permissions');
 if(JSON.stringify(manifest.oauth2?.scopes)!=='["https://www.googleapis.com/auth/calendar.readonly"]')throw Error('Google Calendar requires strictly read-only OAuth scope');
-if(!manifest.oauth2?.client_id?.endsWith('.apps.googleusercontent.com'))throw Error('Missing Google Chrome Extension OAuth client ID placeholder');
+if(!/^\d{8,}-[a-z0-9_-]+\.apps\.googleusercontent\.com$/i.test(manifest.oauth2?.client_id||''))throw Error('Missing valid Chrome Extension OAuth client ID');
+if(manifest.oauth2.client_id.includes('YOUR_GOOGLE_CLIENT_ID'))throw Error('Google OAuth placeholder must be replaced before release');
 if(!manifest.key||manifest.key.length<150)throw Error('Stable public key missing');
 for(const p of ['index.html','sidepanel.html']){
  const html=read(p);for(const token of ['pageNav','pageHeading','grid','app.js'])if(!html.includes(token))throw Error(`${p}: missing ${token}`);
@@ -32,4 +33,4 @@ for(const token of ['normalizeOperations','workSessions','calendarEvents','pulse
 for(const token of ['newSession','taskForm','contentForm','captureActiveTab','calendar','renderSearch'])if(!read('desk-v04.js').includes(token))throw Error('Missing V0.4 feature: '+token);
 for(const token of ['refreshGithub','refreshPulse','pulseAllowed','normalizePulse','operationalAlerts'])if(!read('desk-v05.js').includes(token))throw Error('Missing V0.5 feature: '+token);
 for(const token of ['chrome.identity.getAuthToken','calendar.readonly','local.get','calendarUrl','dateMs','disconnect'])if(!read('desk-google-calendar.js').includes(token))throw Error('Google Calendar integration missing '+token);
-console.log('PASS: MV3 V0.5.4 (pending Google OAuth client ID), limited required permissions, opt-in tabs and hosts, updater, productivity and read-only monitoring');
+console.log('PASS: MV3 V0.5.4 (configured Google OAuth client ID), limited required permissions, opt-in tabs and hosts, updater, productivity and read-only monitoring');
