@@ -30,8 +30,8 @@ async function askHost(origin){
  const granted=await chrome.permissions.request({origins:[origin]});
  if(!granted)throw Error('Permission for the selected monitoring host was declined.');
 }
-async function getJson(url){
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+async function getJson(url,timeoutMs=12000){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
  try{
   const res=await fetch(url,{method:'GET',cache:'no-store',credentials:'omit',redirect:'error',signal:controller.signal,headers:{Accept:'application/json'}});
   if(!res.ok)throw Error('HTTP '+res.status);
@@ -142,7 +142,8 @@ async function refreshPulse(silent=false,force=false){
   // Host permission is granted to this Omnidite origin, never all sites.
   if(silent){if(!isActive()||!(await chrome.permissions.contains({origins:[origin]})))return;}
   else await askHost(origin);
-  const json=await getJson(url);
+  // Multiple provider collectors may take longer than a single external API request.
+  const json=await getJson(url,u.protocol==='http:'?60000:20000);
   const cache=normalizePulse(json,u.origin);
   S().pulseCache=cache;checkPulseAlerts(cache);api.save();updateBadge();
   if(!silent)pulse();
