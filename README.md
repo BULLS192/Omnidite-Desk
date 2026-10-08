@@ -3,9 +3,9 @@
 **No web hosting, Vercel builds, backend, third-party script loaders, API keys, or Chrome Web Store publication required.** Uses Manifest V3 and Chrome's built-in New Tab override / Side Panel.
 
 
-## V0.4/V0.5 development (feature branch only)
+## V0.4/V0.5 release (main, October 8, 2026)
 
-Development branch: feature/desk-v0.5-productivity-operations, based on the V0.3 foundation. No V0.5 files are released to main; the Windows updater still tracks main.
+V0.5 is released on `main` through merged PR #3 (V0.3) and PR #8 (V0.4/V0.5). The Windows on-page updater tracks `main`. Export a JSON backup in your existing installation before updating. The original extension ID and normal local-state keys are preserved.
 
 ### V0.4 — Productivity
 
@@ -30,7 +30,7 @@ Development branch: feature/desk-v0.5-productivity-operations, based on the V0.3
 - Optional host permissions: https://api.github.com/* and https://*.omnidite.com/*, requested upon monitoring.
 - Do not put passwords, tokens or sensitive information in Pulse feed URLs, saved research or imported JSON.
 - Saved sessions/calendar/events increase extension storage usage; Chrome Sync has quotas. Export local backups before testing or switching versions.
-- This build needs GitHub automated checks and an actual Windows Chrome New Tab/Side Panel acceptance pass before release. No claim of live Google Calendar OAuth or an automatically connected authenticated Pulse backend.
+- The GitHub validation suite passed. The user reported 6/6 Windows Chrome feature smoke checks passing in an isolated test profile (dashboard, command/projects/research, tasks/content, tab sessions, GitHub consent, and persistence). Production-profile migration, wallpaper permissions, Chrome Sync and the native updater still require an on-device post-update check. Live Google Calendar OAuth and an authenticated Pulse backend are **not** included.
 - Run: node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs
 
 ## What's new in V0.3
@@ -40,9 +40,9 @@ Development branch: feature/desk-v0.5-productivity-operations, based on the V0.3
 - **Quick research capture**: manually save a link, title, note and associated project. Search, edit and delete items via Research library.
 - **Layout studio**: Compact, Balanced and Wide presets; up to 12 snapshots; drag or move tiles; all 12 desktop grid widths; single-column compact mode.
 - **Existing features preserved**: v0.2.3 live connected Google Drive/OneDrive local wallpaper folders, weather, clocks, widgets, storage/Chrome Sync, native updater and backups.
-- **Checks**: `node tools/check.mjs && node tools/v03-smoke.mjs`; verify Chrome New Tab, side panel, folder permissions and native updates on Windows before merging.
+- **Checks**: `node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs` plus the successful Windows feature test report. Check imported data, connected folders and Chrome Sync as appropriate after updating.
 
-Development is on `feature/desk-v0.3-foundation`. Export a backup before manually loading a test branch. Existing **Update now** follows `main` and will not install this branch until it is released.
+V0.3 is part of the merged V0.5 release. Export a backup before clicking **Check updates → Update now** in your existing Desk, and confirm the dashboard displays V0.5.0 afterward.
 
 ## What's in v0.2
 
@@ -128,7 +128,7 @@ Chrome extensions cannot execute Git or write their own source code directly, so
 **Uninstall:** Remove the `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.omnidite.desk_updater` registry key and the locally compiled `native-host/OmniditeDeskHost.exe`. Removing the extension alone does not unregister the host.
 
 
-Repository: **https://github.com/BULLS192/Omnidite-Desk**. The full v0.2 source is already committed to `main` with a GitHub Actions **validation-only** workflow (no hosting or deployment).
+Repository: **https://github.com/BULLS192/Omnidite-Desk**. The V0.5 source is committed to `main` with a GitHub Actions **validation-only** workflow (no hosting or deployment).
 
 **Recommended: clone for continuous updates.** On your Windows PC, open PowerShell in the parent directory where you keep coding projects:
 
@@ -163,8 +163,8 @@ git pull --ff-only origin main
 
 ### Security/privacy
 
-Extension permissions are `storage`, `sidePanel`, `nativeMessaging` and `favicon`. Host access is limited to Open-Meteo weather and geocoding endpoints. No general website browsing permission is requested. No telemetry. Only valid `http(s)` URLs in the launcher. Widget strings are escaped before HTML rendering, and the extension does not execute remote scripts. Never commit exported backup files to GitHub; the repository is **public**.
+Required extension permissions are `storage`, `sidePanel`, `nativeMessaging` and `favicon`; required host access is limited to Open-Meteo weather and geocoding endpoints. V0.5 adds optional `tabs` and scoped GitHub/Omnidite host permissions, requested only when using those features. No telemetry. Only valid `http(s)` URLs in the launcher. Widget strings are escaped before HTML rendering, and the extension does not execute remote scripts. Never commit exported backup files to GitHub; the repository is **public**.
 
 ### Browser testing
 
-Source-level and browser-interaction smoke checks were completed on the generated package. Run `node tools/check.mjs && node tools/v03-smoke.mjs` for static and basic interaction checks. Windows native-host registration and Chrome reload must also be validated on the actual Windows machine. Real-world Chrome Sync between accounts/devices remains to be validated on your own signed-in installations.
+Source-level and browser-interaction smoke checks were completed on the generated package. Run `node tools/check.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs` for source, static and mocked interaction checks. Windows native-host registration and Chrome reload must also be validated on the actual Windows machine. Real-world Chrome Sync between accounts/devices remains to be validated on your own signed-in installations.
