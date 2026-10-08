@@ -373,11 +373,18 @@ body.side-mode .sectionhead{margin:22px 0 13px}
 .focus-audio-note{font-size:10px;line-height:1.5;color:var(--desk-tertiary);margin:0}
 .focus-complete{font-size:12px;color:#89d9b9;font-weight:700;margin:9px 0}
 :root[data-theme="light"] .focus-complete{color:#177957}
-@media(max-width:1200px){
+/* Responsive to the actual widget width, not the entire browser viewport.
+   Thus a full-width World Clock can display five or six cities across. */
+.module{container-type:inline-size}
+@container (max-width:740px){
  .desk-inner-grid[data-columns="4"],.desk-inner-grid[data-columns="5"],.desk-inner-grid[data-columns="6"]{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
-@media(max-width:900px){
+@container (max-width:490px){
  .desk-inner-grid[data-columns="3"],.desk-inner-grid[data-columns="4"],.desk-inner-grid[data-columns="5"],.desk-inner-grid[data-columns="6"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@container (max-width:310px){
+ .desk-inner-grid[data-columns]{grid-template-columns:minmax(0,1fr)}
+ .worldclocks.desk-inner-grid .clock-city{flex-direction:row;text-align:left}
 }
 @media(max-width:550px){
  .desk-inner-grid[data-columns]{grid-template-columns:minmax(0,1fr)}
