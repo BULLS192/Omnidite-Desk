@@ -1,4 +1,21 @@
-# Omnidite Desk v0.5.3
+# Omnidite Desk v0.5.4 (Google Calendar OAuth staging)
+
+## V0.5.4 — Live Google Calendar (development branch, not released)
+
+Omnidite Desk now has an opt-in, read-only Google Calendar viewer in **Productivity → Calendar** (New Tab and Side Panel). It supports selecting up to six calendars from the signed-in Chrome-profile Google account, viewing the next 7/14/30 days, manual refresh, stale timestamps, and disconnect. It does **not** create, edit, delete or invite events. The previous `.ics` importer is preserved and displayed as a separate offline snapshot.
+
+**Google Cloud onboarding requirement (not yet supplied):**
+
+1. Open `chrome://extensions` for your existing Omnidite Desk and copy its stable extension ID. Or use the **Copy extension ID** action on the new calendar setup screen.
+2. In [Google Cloud Console](https://console.cloud.google.com/), create or select a project (e.g. Omnidite Desk). Enable the **Google Calendar API** for that project.
+3. In **Google Auth Platform**, configure the OAuth brand / audience and add the Google account as a **test user** if the app is in Testing mode.
+4. In **Clients**, create OAuth Client ID of application type **Chrome Extension** and paste the extension ID in its configuration. **Do not** create a Web application client, use an API key, or provide a client secret.
+5. Supply the **public OAuth client ID** (ending with `.apps.googleusercontent.com`) for the maintainers to place in `manifest.json` under `oauth2.client_id`. Do not commit access tokens, client secrets, downloaded OAuth JSON or exported private calendar data.
+6. Following update to a configured release, click **Connect Google account**, grant the Chrome host access and read-only calendar consent, then select calendars. Current branch has a deliberately inactive OAuth placeholder and cannot connect to a real account until step 5 is completed.
+
+**Implementation details and limits:** Chrome Identity `getAuthToken` holds access tokens. Manifest OAuth scope is only `https://www.googleapis.com/auth/calendar.readonly`, and optional host access is only `https://www.googleapis.com/*`. No backend, Pulse integration or credentials in URLs. Calendar event data lives under its own **Chrome local storage** key rather than Desk's synced/backed-up application state; it contains only calendar names, event titles, start times and Google Calendar links. Requests omit attendees, descriptions and locations. Refresh occurs only when opened and stale or when explicitly clicked, never via hidden background polling. API errors preserve the previous cached snapshot. **Disconnect** clears the local cache and removes the last Chrome Identity token from the cache; permissions already granted on the Google Account must be revoked separately in Google Account settings if complete revocation is desired.
+
+Current stage: source and mocked Google API/OAuth checks in a development PR. **Not a verified live Google OAuth connection** until client registration, on-device Chrome consent, and real Google Calendar API testing are completed. Chrome's identity API typically authenticates the Google account attached to the Chrome profile; this iteration supports many calendars within that account, not arbitrary multiple Google accounts simultaneously.
 
 ## V0.5.3 — Startup fallback for restricted Windows PCs
 
