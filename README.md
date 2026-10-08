@@ -1,4 +1,17 @@
-# Omnidite Desk v0.5.4 — Google Calendar
+# Omnidite Desk v0.5.5 — design review preview (V0.5.4 stable)
+
+## V0.5.5 — Visual refinement preview (not yet released)
+
+The `design/desk-v055-visual-refresh` branch is a **visual review candidate**, deliberately isolated from installed V0.5.4 on `main`. It provides:
+
+- Cleaner hero, search-first layout, and four at-a-glance cards: next Google Calendar event, GitHub, Pulse and local alerts.
+- Calendar glance reads **only existing local Google event cache**; it makes no Google API calls and never handles OAuth tokens. Selecting the tile opens the existing Google Calendar screen.
+- Four primary action buttons and a `More tools & status` disclosure that retains all existing shortcuts, system badges and Pulse controls.
+- A compact but always-accessible on-page updater below the at-a-glance row.
+- Updated widget design, restrained navy/cobalt panels, spacing, typography, refined hexagonal O treatment, responsive Side Panel, and consistent Midnight/Slate/Light/wallpaper support. Reduced-motion preferences are respected.
+- **No changes** to Chrome extension ID, Google OAuth client, manifest permissions beyond version, Pulse, persistence, widget storage, or native updater.
+
+Acceptance gate: static and feature CI, **manual wide New Tab + narrow Side Panel visual review**, current wallpaper and light/dark review, and explicit approval before merging into `main`. As a design preview it should not be installed via Desk's normal one-click updater yet.
 
 ## V0.5.4 — Live Google Calendar
 
