@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Net;
 using System.Collections.Generic;
+using Microsoft.Win32;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
@@ -156,8 +157,75 @@ internal static class DeskNativeHost
         catch { return false; }
     }
 
+
+    private static object RunStartupPulse(string action)
+    {
+        string root;
+        using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Omnidite\Pulse"))
+        {
+            if (key == null || !string.Equals(key.GetValue("Mode") as string, "StartupFolder", StringComparison.Ordinal))
+                return null;
+            root = key.GetValue("InstallRoot") as string;
+        }
+        if (string.IsNullOrEmpty(root)) throw new InvalidOperationException("Pulse Startup-folder registration has no installation directory.");
+        root = Path.GetFullPath(root);
+        string script = Path.Combine(root, "windows", "Local-Pulse.ps1");
+        if (!File.Exists(script) || !File.Exists(Path.Combine(root, "server.mjs")))
+            throw new InvalidOperationException("Pulse Startup-folder scripts are missing. Update the Pulse repository and reinstall background startup.");
+        if (script.Contains("\"") || script.Contains("\n") || script.Contains("\r"))
+            throw new InvalidOperationException("Invalid Pulse installation directory.");
+        // The browser controls only this fixed action; the registered directory
+        // must be a Git clone of the official Pulse repository.
+        string remote = Git(root, "remote get-url origin", 10000);
+        bool official = remote.Equals("https://github.com/BULLS192/omnidite-pulse.git", StringComparison.OrdinalIgnoreCase)
+            || remote.Equals("https://github.com/BULLS192/omnidite-pulse", StringComparison.OrdinalIgnoreCase)
+            || remote.Equals("git@github.com:BULLS192/omnidite-pulse.git", StringComparison.OrdinalIgnoreCase);
+        if (!official) throw new InvalidOperationException("The local Pulse checkout has an unexpected Git remote.");
+        string verb = action == "pulseStart" ? "Start"
+            : action == "pulseStop" ? "Stop"
+            : action == "pulseRestart" ? "Restart" : "Status";
+        var psi = new ProcessStartInfo("powershell.exe",
+            "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"" + script + "\" -Action " + verb)
+        {
+            WorkingDirectory = root,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        using (var p = Process.Start(psi))
+        {
+            var stdout = p.StandardOutput.ReadToEndAsync();
+            var stderr = p.StandardError.ReadToEndAsync();
+            if (!p.WaitForExit(20000))
+            {
+                try { p.Kill(); } catch { }
+                throw new TimeoutException("Local Pulse control request timed out.");
+            }
+            Task.WaitAll(stdout, stderr);
+            if (p.ExitCode != 0)
+                throw new InvalidOperationException("Local Pulse control failed: " + Short(stderr.Result.Trim() == "" ? stdout.Result : stderr.Result));
+            const string marker = "OMNIDITE_PULSE_RESULT:";
+            string response = stdout.Result;
+            int index = response.LastIndexOf(marker, StringComparison.Ordinal);
+            if (index < 0) throw new InvalidOperationException("Local Pulse control returned no status data.");
+            string json = response.Substring(index + marker.Length).Trim();
+            var data = Json.DeserializeObject(json) as Dictionary<string, object>;
+            if (data == null || !data.ContainsKey("running"))
+                throw new InvalidOperationException("Local Pulse control returned an invalid status.");
+            bool running = Convert.ToBoolean(data["running"]);
+            string message = data.ContainsKey("message") ? Short(Convert.ToString(data["message"])) : "Pulse status checked.";
+            bool managed = data.ContainsKey("managed") && Convert.ToBoolean(data["managed"]);
+            return new { ok = true, status = running ? "online" : "offline",
+                installed = true, running = running, managed = managed,
+                mode = "startup", message = message };
+        }
+    }
+
     private static object RunPulse(string action)
     {
+        object startup = RunStartupPulse(action);
+        if (startup != null) return startup;
         bool installed = ScheduledTask("/Query", true).Success;
         if (!installed)
             return new { ok = action == "pulseStatus", status = "not_installed", installed = false,
