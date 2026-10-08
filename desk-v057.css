@@ -1,0 +1,110 @@
+/* Omnidite Desk V0.5.7 — phone-style snapped widget footprints.
+   Free sizing is untouched and automatically restored when Snap is disabled. */
+.modules[data-sizing="snap"]{
+ display:grid;
+ grid-template-columns:repeat(var(--snap-visible-columns,6),minmax(0,1fr));
+ grid-auto-rows:var(--snap-cell-height,104px);
+ grid-auto-flow:row dense;
+ gap:12px;
+ align-items:start;
+}
+.modules[data-sizing="snap"]>.module{
+ grid-column:span var(--effective-span,2)!important;
+ grid-row:span var(--grid-h,3)!important;
+ min-height:0!important;
+ max-height:none!important;
+ height:100%!important;
+ align-self:stretch!important;
+ overflow:hidden;
+}
+.modules[data-sizing="snap"]>.module .module-body{
+ flex:1 1 auto;
+ min-height:0;
+ overflow-y:auto;
+ overflow-x:hidden;
+ scrollbar-width:thin;
+ padding-bottom:22px;
+}
+.modules[data-sizing="snap"]>.module .module-header{
+ flex:0 0 auto;
+}
+.modules[data-sizing="snap"]>.module .size-grip{
+ opacity:.85;
+}
+.modules[data-sizing="snap"]>.module:focus-within{
+ outline-offset:2px;
+}
+.desk-snap-mode{
+ border:1px solid var(--desk-outline);
+ background:var(--desk-surface);
+ color:var(--desk-secondary);
+ font-size:11px;
+ font-weight:700;
+ padding:7px 11px;
+ border-radius:9px;
+ min-height:30px;
+ white-space:nowrap;
+}
+.desk-snap-mode[aria-pressed="true"]{
+ background:color-mix(in srgb,var(--accent) 14%,var(--desk-surface));
+ color:var(--desk-ink);
+ border-color:color-mix(in srgb,var(--accent) 50%,var(--desk-outline));
+}
+.desk-snap-mode:hover{border-color:var(--accent);color:var(--desk-ink)}
+.desk-snap-mode:focus-visible,.desk-grid-settings:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.desk-grid-settings{
+ font-size:11px;
+ color:var(--desk-secondary);
+ background:var(--desk-surface);
+ border:1px solid var(--desk-outline);
+ border-radius:9px;
+ padding:7px 11px;
+ min-height:30px;
+ white-space:nowrap;
+}
+.desk-grid-settings:hover{border-color:var(--accent);color:var(--desk-ink)}
+.desk-grid-settings[hidden],.desk-layout-mode[hidden]{display:none!important}
+.desk-snap-editor{
+ border:1px solid var(--desk-outline);
+ background:var(--desk-surface-soft);
+ border-radius:12px;
+ padding:1px 12px 14px;
+ margin-top:12px;
+}
+.desk-grid-presets{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:7px;
+ margin:12px 0;
+}
+.desk-grid-presets button{
+ min-width:0;
+ white-space:normal;
+ text-align:center;
+}
+.desk-grid-dimensions{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:12px;
+ margin-top:10px;
+}
+.desk-grid-dimensions label{
+ font-size:11px;
+ font-weight:600;
+ color:var(--desk-secondary);
+ display:grid;
+ gap:6px;
+}
+.modules[data-sizing="snap"]>.module[data-grid-w="1"] .module-header{
+ flex-wrap:wrap;
+ gap:4px;
+}
+.modules[data-sizing="snap"]>.module[data-grid-w="1"] .module-title{
+ font-size:11px;
+ overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+ .desk-snap-mode,.desk-grid-settings{font-size:10px;padding:6px 8px}
+ .desk-grid-presets{grid-template-columns:1fr 1fr}
+}
+body.side-mode .desk-snap-mode,body.side-mode .desk-grid-settings{font-size:10px;padding:6px}
