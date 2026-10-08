@@ -4,6 +4,10 @@
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
 const SYNC_META='od_v2_meta', CHUNK='od_v2_chunk_';
 const TYPES=['links','tasks','notes','clock','weather','focus','agenda','countdown','habits','metric','quote'];
+const LIST_TYPES=new Set(['links','tasks','clock','weather','agenda','habits']);
+const layoutColumns=v=>Number.isInteger(v)&&v>=1&&v<=6?v:1;
+const itemOrderButtons=(mid,i,total)=>'<span class="desk-item-order"><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="-1" aria-label="Move item earlier" '+(i===0?'disabled':'')+'>↑</button><button type="button" class="desk-order-button" data-action="item-move" data-mid="'+esc(mid)+'" data-item-index="'+i+'" data-move-direction="1" aria-label="Move item later" '+(i===total-1?'disabled':'')+'>↓</button></span>';
+const widgetGrid=(m,cls)=>'class="'+cls+' desk-inner-grid" data-columns="'+layoutColumns(m.config.columns)+'"';
 const META={
  links:['↗','Link launcher','Your project shortcuts'],tasks:['✓','Task list','Daily priorities'],notes:['▤','Notes','Keep ideas handy'],
  clock:['◷','World clocks','Analog and digital city clocks'],weather:['☁','Live weather','Current, hourly and 7-day forecasts'],focus:['◴','Focus timer','Custom-length deep work'],
@@ -38,12 +42,13 @@ function sanitizeModule(x,ids){
  const id=typeof x.id==='string'&&/^[\w-]{1,90}$/.test(x.id)&&!ids.has(x.id)?x.id:uid(); ids.add(id);
  const c=x.config&&typeof x.config==='object'&&!Array.isArray(x.config)?x.config:{};
  const out={id,type:x.type,title:cleanText(x.title||META[x.type][1],80),cols:Number.isInteger(x.cols)&&x.cols>=1&&x.cols<=12?x.cols:({small:4,wide:6,full:12}[x.width]||4),height:Number.isFinite(x.height)?Math.min(1000,Math.max(0,Math.round(x.height))):0,config:{}};
+ if(LIST_TYPES.has(x.type))out.config.columns=layoutColumns(c.columns);
  if(x.type==='links')out.config.links=(Array.isArray(c.links)?c.links:[]).slice(0,30).filter(l=>validUrl(String(l?.url||''))).map(l=>({label:cleanText(l.label||'Link',80),url:cleanText(l.url,1000)}));
  if(x.type==='tasks'||x.type==='habits')out.config[x.type==='tasks'?'tasks':'habits']=(Array.isArray(c.tasks||c.habits)?c.tasks||c.habits:[]).slice(0,80).filter(t=>t&&typeof t.text==='string').map(t=>({id:cleanText(t.id||uid(),90),text:cleanText(t.text,200),done:!!t.done,day:cleanText(t.day||'',12)}));
  if(x.type==='notes')out.config.text=cleanText(c.text,12000);
- if(x.type==='focus'){const duration=Number.isFinite(c.duration)?Math.min(14400,Math.max(60,Math.round(c.duration))):1500;out.config={duration,seconds:Number.isFinite(c.seconds)?Math.min(14400,Math.max(0,Math.round(c.seconds))):duration,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null};}
- if(x.type==='clock')out.config={cities:sanitizeCities(c.cities,'clock')};
- if(x.type==='weather')out.config={cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
+ if(x.type==='focus'){const duration=Number.isFinite(c.duration)?Math.min(14400,Math.max(60,Math.round(c.duration))):1500;out.config={duration,seconds:Number.isFinite(c.seconds)?Math.min(14400,Math.max(0,Math.round(c.seconds))):duration,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null,sound:['chime','soft','bell','digital','none','custom'].includes(c.sound)?c.sound:'chime',volume:Number.isFinite(c.volume)?Math.min(100,Math.max(0,Math.round(c.volume))):70};}
+ if(x.type==='clock')out.config={...out.config,cities:sanitizeCities(c.cities,'clock')};
+ if(x.type==='weather')out.config={...out.config,cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
  if(x.type==='agenda')out.config.events=(Array.isArray(c.events)?c.events:[]).slice(0,75).filter(e=>e&&e.title&&e.when).map(e=>({id:cleanText(e.id||uid(),90),title:cleanText(e.title,140),when:cleanText(e.when,25)}));
  if(x.type==='countdown')out.config={target:/^\d{4}-\d{2}-\d{2}$/.test(c.target||'')?c.target:'2026-12-31',label:cleanText(c.label||'Milestone',80)};
  if(x.type==='metric')out.config={value:Number.isFinite(Number(c.value))?Math.min(1e9,Math.max(-1e9,Number(c.value))):0,unit:cleanText(c.unit||'',40),step:Number.isFinite(Number(c.step))?Math.min(1e6,Math.max(.01,Number(c.step))):1};
@@ -167,6 +172,7 @@ function editModule(id){const m=moduleFor(id);if(!m)return;
  show(`<form class="modal-pad" id="editForm" data-id="${esc(id)}">${header('Edit widget','Change its name, size, options, or workspace.')}<label class="label">Title</label><input class="modal-input" name="title" maxlength="80" required value="${esc(m.title)}">
  <label class="label">Workspace</label><select class="modal-input" name="page">${state.pages.map(p=>`<option value="${esc(p.id)}" ${p.modules.includes(m)?'selected':''}>${esc(p.title)}</option>`).join('')}</select>
  <label class="label">Width</label><select class="modal-input" name="cols">${Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${m.cols===n?'selected':''}>${n}/12 columns</option>`).join('')}</select>
+ ${LIST_TYPES.has(m.type)?`<label class="label">Items per row</label><select class="modal-input" name="innerColumns">${Array.from({length:6},(_,i)=>i+1).map(n=>`<option value="${n}" ${layoutColumns(m.config.columns)===n?'selected':''}>${n} ${n===1?'item':'items'} per row</option>`).join('')}</select><p class="helper">Make the widget wider to fit more items; narrow panels stack them automatically.</p>`:''}
  ${m.type==='links'?`<label class="label">Links</label><div id="editLinks">${m.config.links.map(linkRow).join('')}</div><button type="button" class="smallbutton" data-modal="add-link">＋ Add link</button>`:''}
  ${m.type==='countdown'?`<label class="label">Deadline</label><input class="modal-input" type="date" name="target" value="${esc(m.config.target)}"><label class="label">Label</label><input class="modal-input" name="label" value="${esc(m.config.label)}">`:''}
  ${m.type==='metric'?`<label class="label">Unit</label><input class="modal-input" name="unit" value="${esc(m.config.unit)}"><label class="label">Increment step</label><input class="modal-input" type="number" step="any" name="step" value="${esc(m.config.step)}">`:''}
@@ -859,7 +865,14 @@ document.addEventListener('click',e=>{
  const b=e.target.closest('[data-action]');if(!b)return;const {action,mid,tid}=b.dataset,m=moduleFor(mid);
  if(action==='edit')return editModule(mid);if(!m)return;
   if(action==='move-up'||action==='move-down'){const arr=page().modules;const ix=arr.indexOf(m),to=ix+(action==='move-up'?-1:1);if(ix>=0&&to>=0&&to<arr.length){arr.splice(to,0,arr.splice(ix,1)[0]);change();}return;}
- if(action==='delete-task'){m.config.tasks=m.config.tasks.filter(t=>t.id!==tid);change();}
+ if(action==='item-move'){
+    const collection=m.type==='clock'||m.type==='weather'?'cities':m.type==='agenda'?'events':m.type==='links'?'links':m.type;
+    const arr=m.config?.[collection];if(!Array.isArray(arr))return;
+    const btn=e.target.closest('[data-action]'),ix=Number(btn.dataset.itemIndex),shift=Number(btn.dataset.moveDirection);
+    if(!Number.isInteger(ix)||ix<0||ix>=arr.length||![-1,1].includes(shift)||ix+shift<0||ix+shift>=arr.length)return;
+    [arr[ix],arr[ix+shift]]=[arr[ix+shift],arr[ix]];change();return;
+  }
+  if(action==='delete-task'){m.config.tasks=m.config.tasks.filter(t=>t.id!==tid);change();}
  if(action==='delete-habit'){m.config.habits=m.config.habits.filter(t=>t.id!==tid);change();}
  if(action==='delete-event'){m.config.events=m.config.events.filter(t=>t.id!==tid);change();}
  if(action==='focus-toggle'){if(m.config.until){m.config.seconds=Math.max(0,Math.ceil((m.config.until-Date.now())/1000));m.config.until=null;}else{if(!m.config.seconds)m.config.seconds=m.config.duration||1500;m.config.until=Date.now()+m.config.seconds*1000;}change();}
@@ -899,7 +912,7 @@ modal.addEventListener('change',async e=>{if(e.target.id==='syncToggle'){
 modal.addEventListener('submit',e=>{const f=e.target;if(!['editForm','settingsForm','pageForm'].includes(f.id))return;e.preventDefault();
  if(f.id==='settingsForm'){state.brand=cleanText(f.elements.brand.value.trim()||'Omnidite Desk',55);state.searchEngine=f.elements.searchEngine.value;state.theme=f.elements.theme.value;state.accent=f.elements.accent.value;}
  if(f.id==='editForm'){
-  const m=moduleFor(f.dataset.id);if(!m)return;m.title=cleanText(f.elements.title.value.trim()||META[m.type][1],80);m.cols=Number(f.elements.cols.value);
+  const m=moduleFor(f.dataset.id);if(!m)return;m.title=cleanText(f.elements.title.value.trim()||META[m.type][1],80);m.cols=Number(f.elements.cols.value);if(LIST_TYPES.has(m.type))m.config.columns=layoutColumns(Number(f.elements.innerColumns?.value));
   const dest=state.pages.find(p=>p.id===f.elements.page.value);const src=state.pages.find(p=>p.modules.includes(m));if(dest&&src!==dest){src.modules=src.modules.filter(x=>x.id!==m.id);dest.modules.push(m);}
   if(m.type==='links'){const links=[...f.querySelectorAll('.editlink')].map(r=>({label:$('.link-label',r).value.trim(),url:$('.link-url',r).value.trim()})).filter(x=>x.label||x.url);if(links.some(l=>!l.label||!validUrl(l.url))){alert('Every shortcut needs a label and a valid http/https URL.');return;}m.config.links=links.slice(0,30);}
   if(m.type==='countdown'){m.config.target=f.elements.target.value;m.config.label=cleanText(f.elements.label.value,80);}
