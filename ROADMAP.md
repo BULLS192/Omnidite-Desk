@@ -35,6 +35,14 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Automated checks and browser screenshot comparison passed; PR #14 merged.
 - [ ] Complete on-device Chrome verification of height resizing and compact stacking after update.
 
+## V0.5.8 — Widgets-first homepage
+
+- [x] Put editable modules and widget grid at the start of New Tab and Side Panel pages.
+- [x] Remove oversized welcome hero to expose widget content immediately.
+- [x] Keep Search, shortcuts, Calendar/Pulse/Alerts, and updater in a section below widgets.
+- [x] Add hierarchy and element-identity regression checks for both HTML entry points.
+- [ ] Verify real browser screenshots, layout responsiveness and user acceptance before release.
+
 ## V0.5.7 — Snap-to-grid sizing (released on main in PR #15)
 
 - [x] Separate Free resize vs Snap to grid mode, preserving both sets of dimensions.
