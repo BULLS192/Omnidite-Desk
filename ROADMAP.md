@@ -102,11 +102,21 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 
 ## Current release state — October 9, 2026
 
-- **Stable main:** V0.5.9 with NEA Singapore regional PSI and international modeled AQI, widgets-first layout, live read-only Google Calendar, local Pulse and Chrome's fixed extension identity. Release V0.5.10 is staged as a local diagnostics/recovery patch.
-- User Chrome acceptance is **not automatically demonstrated by CI**. Verify latest version, local backup/export/import, world clocks, weather/AQI, wallpaper folder, Chrome Sync, Calendar OAuth, Pulse controls, Snap/Free resize and updater after installing.
-- Existing issue #4 and other old issues remain as historical release gates; revisit them before closing. Do **not** imply incomplete manual tests passed.
-- Older merged feature branches are candidates for deletion after confirming they contain no unique changes; no automatic branch deletion.
-- Native updater currently supports only main. V0.6 will introduce secure explicit Beta switching using a fixed remote branch, with a one-time Windows host-helper recompilation due to the existing updater's fixed action allowlist.
+- **Stable main:** V0.7.0 (after release cut; user Chrome upgrade acceptance pending). It includes official NEA PSI, global AQI, widget layouts, Calendar, Pulse, Health, Stable/Beta updater and the modal-close form correction.
+- **Beta:** V0.6.2 maintenance and all four V0.7 widget waves plus browser QA are integrated and ready for promotion; Beta must be synchronized with main after the release merge.
+- One-time native host recompile may be required for Beta switching. The installed Chrome profile, wallpaper folder, Calendar OAuth, Pulse and Chrome Sync must be user-tested. GitHub Actions do not substitute for real-device acceptance.
+- Existing roadmap/issues for V0.3–V0.5 are historical; preserve them until reviewed. No unreviewed branch cleanup.
+- Stable promotion must be a merge containing the latest main, never a forced reset, and must preserve the installed extension ID and data schema.
+
+## V0.7 — Four optional dashboard modules
+
+- [x] Global markets: regular continuous sessions and DST-aware countdown; holiday calendar uncertainty clearly marked; never present indicative hours as live exchange connectivity.
+- [x] Currency/FX: dated official reference rates, amount conversion, pair selection, cache/fallback; no trading.
+- [x] Weather & air alerts: user-selectable threshold, live data freshness, distinguish official Singapore PSI from modeled AQI, no push claims.
+- [x] Daily snapshot: local tasks and deadlines, cached Calendar/Pulse and weather summaries, no hidden network or data upload.
+- [x] Beta waves merged separately through PRs #22–#25; automated feature CI and native helper checks passed.
+- [x] V0.7 combined Node regression, Windows native compile, and headless Chromium New Tab/Side Panel QA passed; Stable promotion through release PR.
+- [ ] Windows Chrome manual acceptance of live source providers, New Tab/Side Panel, resizing, OAuth, Sync and update channels.
 
 ## V0.5.10 — Stability & Recovery
 
@@ -116,7 +126,7 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Automated diagnostics smoke checks and existing regression CI.
 - [ ] User Windows Chrome acceptance after one-click update; especially backup/import, Chrome Sync, desktop/sidepanel and connected accounts.
 
-## V0.6.0 — Safe Stable/Beta updater (release candidate)
+## V0.6.0 — Safe Stable/Beta updater (released)
 
 - [x] Explicit Stable/`main` and Beta/`beta` UI with fixed allowed actions and safe confirmed channel changes.
 - [x] Read-only channel status, fast-forward Git updates, dirty/diverged branch refusal and fixed official remote.
@@ -125,7 +135,7 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Chrome extension ID, widget state, Google OAuth and Pulse native host protocol preserved.
 - [x] Automated JS channel/legacy tests, CI manifest consistency and Windows C# helper compilation.
 - [ ] User Windows Chrome manual acceptance: install release using legacy helper, recompile native helper once, switch Beta/Stable, verify local widgets/Sync/Calendar/Pulse, and confirm a dirty Git checkout blocks changes.
-- [ ] After stable release, initialize official `beta` from main; Beta should not contain unreviewed code or any user data.
+- [x] Initialized dedicated Beta from Stable. After each Stable promotion, merge main into beta to preserve the ancestry safety invariant.
 
 ## V1.0 — F.R.E.Y.A. intelligence (future)
 - [ ] Connect to a user-controlled F.R.E.Y.A. Core / Third Brain service through a documented, secure interface.

@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const manifest=JSON.parse(read('manifest.json'));
-const files=['index.html','sidepanel.html','app.js','air-quality.js','desk-health.js','desk-health.css','desk-update-channels.js','desk-update-channels.css','desk-v03.js','desk-v04.js','desk-v05.js','desk-v052.js','desk-google-calendar.js','styles.css','desk-v03.css','desk-v045.css','desk-v055.css','desk-v055.js','desk-v056.css','desk-compact.js','desk-v057.css','desk-v058.css','desk-grid.js','desk-focus-audio.js','background.js','icons/icon16.png','icons/icon48.png','icons/icon128.png'];
+const files=['index.html','sidepanel.html','app.js','air-quality.js','desk-health.js','desk-health.css','desk-update-channels.js','desk-update-channels.css','desk-v07.js','desk-v07-alerts.js','desk-v07-snapshot.js','desk-v07.css','desk-v03.js','desk-v04.js','desk-v05.js','desk-v052.js','desk-google-calendar.js','styles.css','desk-v03.css','desk-v045.css','desk-v055.css','desk-v055.js','desk-v056.css','desk-compact.js','desk-v057.css','desk-v058.css','desk-grid.js','desk-focus-audio.js','background.js','icons/icon16.png','icons/icon48.png','icons/icon128.png'];
 for(const f of files) if(!fs.existsSync(new URL('../'+f,import.meta.url)))throw Error(`Missing file: ${f}`);
-if(manifest.manifest_version!==3||manifest.version!=='0.6.1')throw Error('Unexpected extension version');
+if(manifest.manifest_version!==3||manifest.version!=='0.7.0')throw Error('Unexpected extension version');
 if(JSON.stringify(manifest.permissions)!=='["storage","sidePanel","nativeMessaging","favicon","identity"]')throw Error('Unexpected permissions');
-const expectedHosts=['https://geocoding-api.open-meteo.com/*','https://api.open-meteo.com/*','https://air-quality-api.open-meteo.com/*','https://api-open.data.gov.sg/*'];
+const expectedHosts=['https://geocoding-api.open-meteo.com/*','https://api.open-meteo.com/*','https://air-quality-api.open-meteo.com/*','https://api-open.data.gov.sg/*','https://api.frankfurter.dev/*'];
 if(JSON.stringify(manifest.host_permissions)!==JSON.stringify(expectedHosts))throw Error('Unexpected weather API hosts');
 if(JSON.stringify(manifest.optional_permissions)!=='["tabs"]')throw Error('Unexpected optional permissions');
 if(JSON.stringify(manifest.optional_host_permissions)!=='["https://api.github.com/*","https://*.omnidite.com/*","http://localhost/*","http://127.0.0.1/*","https://www.googleapis.com/*"]')throw Error('Unexpected optional host permissions');
@@ -41,11 +41,12 @@ for(const token of ['[data-theme="slate"]','[data-theme="light"]','body.has-wall
 
 for(const p of ['index.html','sidepanel.html']){
  const html=read(p);
- for(const t of ['id="deskLayoutMode"','data-global="toggle-layout"','OMNIDITE DESK · V0.6.1','class="desk-version-pill"','id="deskSnapMode"','id="deskGridSettings"']){
+ for(const t of ['id="deskLayoutMode"','data-global="toggle-layout"','OMNIDITE DESK · V0.7.0','class="desk-version-pill"','id="deskSnapMode"','id="deskGridSettings"']){
   if(!html.includes(t))throw Error(p+': missing visible V0.5.6 version or compact toggle: '+t);
  }
  if(html.includes('0.5.5 DESIGN PREVIEW'))throw Error(p+': stale design preview label');
 }
+for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-v07.js')||!read(p).includes('desk-v07.css')||!read(p).includes('desk-v07-alerts.js')||!read(p).includes('desk-v07-snapshot.js'))throw Error(p+' missing V0.7 runtime');
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('air-quality.js'))throw Error(p+' missing air quality adapter');
 for(const token of ['api-open.data.gov.sg','air-quality-api.open-meteo.com','psi_twenty_fourly','pm25_one_hourly'])if(!read('air-quality.js').includes(token.replace('psi_twenty_fourly','psi_twenty_four_hourly')))throw Error('Missing air data: '+token);
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-google-calendar.js'))throw Error(p+' missing read-only Google Calendar script');
@@ -64,4 +65,4 @@ for(const token of ['normalizeOperations','workSessions','calendarEvents','pulse
 for(const token of ['newSession','taskForm','contentForm','captureActiveTab','calendar','renderSearch'])if(!read('desk-v04.js').includes(token))throw Error('Missing V0.4 feature: '+token);
 for(const token of ['refreshGithub','refreshPulse','pulseAllowed','normalizePulse','operationalAlerts'])if(!read('desk-v05.js').includes(token))throw Error('Missing V0.5 feature: '+token);
 for(const token of ['chrome.identity.getAuthToken','calendar.readonly','local.get','calendarUrl','dateMs','disconnect'])if(!read('desk-google-calendar.js').includes(token))throw Error('Google Calendar integration missing '+token);
-console.log('PASS: MV3 V0.6.1 widgets-first home + live PSI/AQI (configured Google OAuth client ID), limited required permissions, opt-in tabs and hosts, updater, productivity and read-only monitoring');
+console.log('PASS: MV3 V0.7.0 widgets-first home + live PSI/AQI (configured Google OAuth client ID), limited required permissions, opt-in tabs and hosts, updater, productivity and read-only monitoring');

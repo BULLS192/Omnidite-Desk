@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Omnidite Desk — Personal Dashboard",
   "short_name": "Omnidite Desk",
-  "version": "0.6.1",
-  "description": "Omnidite Desk with widgets-first layout, live Calendar, Weather + PSI/AQI, and local Pulse.",
+  "version": "0.7.0",
+  "description": "Omnidite Desk with configurable widgets, Calendar, Pulse, PSI/AQI, market hours and daily FX reference rates.",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
@@ -34,7 +34,8 @@
     "https://geocoding-api.open-meteo.com/*",
     "https://api.open-meteo.com/*",
     "https://air-quality-api.open-meteo.com/*",
-    "https://api-open.data.gov.sg/*"
+    "https://api-open.data.gov.sg/*",
+    "https://api.frankfurter.dev/*"
   ],
   "optional_permissions": [
     "tabs"

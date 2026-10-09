@@ -1,0 +1,51 @@
+/* Desk V0.7 opt-in market/FX widgets */
+.v07-market-list{display:grid;gap:6px;margin:10px 0}
+.v07-market-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:10px;padding:10px 12px;background:rgba(72,107,155,.10);border:1px solid rgba(110,153,202,.19);border-radius:9px;align-items:center}
+.v07-market-row>div{display:grid;gap:3px;min-width:0}.v07-market-row>div:last-child{text-align:right}
+.v07-market-row strong{font-size:12px}.v07-market-row span,.v07-market-row small{font-size:10px;color:var(--muted,#a4b5cd);overflow-wrap:anywhere}
+.v07-market-row[data-session=scheduled]{border-color:rgba(88,194,143,.4)}
+.v07-market-row[data-session=scheduled] .v07-market-state{color:#80ddac}
+.v07-disclaimer{font-size:10px;color:var(--muted,#a4b5cd);line-height:1.5;margin:12px 0 4px}
+.v07-disclaimer a{color:#96c4ff}
+.v07-options summary{cursor:pointer;font-size:11px;font-weight:650;color:var(--accent,#81b4ff)}
+.v07-picks{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}.v07-picks label{font-size:11px;white-space:nowrap}
+.v07-fx-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;margin-top:10px}
+.v07-fx-form label{display:grid;gap:5px;font-size:10px;color:var(--muted,#b4c6da)}
+.v07-fx-form input,.v07-fx-form select{min-width:0;width:100%;box-sizing:border-box}
+.v07-fx-form button{align-self:end;height:37px}.v07-fx-result{margin-top:12px;min-height:57px}
+.v07-fx-value{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.v07-fx-value strong{font-size:20px;color:var(--accent,#93bbfd)}
+.v07-fx-value span,.v07-fx-result small{font-size:10px;color:var(--muted,#a4b5cd)}
+@media(max-width:500px){.v07-market-row{grid-template-columns:1fr}.v07-market-row>div:last-child{text-align:left}}
+
+/* V0.7 weather and haze alerts */
+.v07-alert-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:11px}
+.v07-alert-form label{display:grid;gap:5px;color:var(--muted,#b4c6da);font-size:10px;min-width:0}
+.v07-alert-form label:first-child{grid-column:1/-1}
+.v07-alert-form select{width:100%;min-width:0}
+.v07-alert-form small{font-size:9px;font-weight:400}
+.v07-alert-form button{align-self:end;min-height:36px}
+.v07-alert-output{margin-top:12px;font-size:12px}
+.v07-alert-item,.v07-alert-calm{padding:10px 12px;margin-bottom:6px;border-radius:9px;border:1px solid rgba(240,169,83,.5);background:rgba(255,193,92,.1);line-height:1.45}
+.v07-alert-item[data-stale=true]{opacity:.7;border-style:dashed}
+.v07-alert-calm{border-color:rgba(104,180,147,.3);background:rgba(80,145,115,.08)}
+.v07-alert-stamp{font-size:10px;color:var(--muted,#adc0d8);margin:8px 0}
+@media(max-width:480px){.v07-alert-form{grid-template-columns:1fr}.v07-alert-form label:first-child{grid-column:auto}}
+
+/* V0.7 daily snapshot */
+.v07-snapshot-options{display:flex;align-items:end;gap:9px;margin:8px 0 15px;flex-wrap:wrap}
+.v07-snapshot-options label{display:grid;gap:4px;font-size:10px;color:var(--muted,#abbdd2)}
+.v07-snapshot-options select{min-width:112px}
+.v07-snapshot-options button{min-height:35px}
+.v07-snapshot-kpis{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.v07-snapshot-kpis>span{display:flex;flex-direction:column;padding:8px 12px;gap:4px;background:rgba(102,136,177,.14);border:1px solid rgba(111,153,204,.25);border-radius:9px;font-size:10px;color:var(--muted,#aac2db);flex:1;min-width:80px}
+.v07-snapshot-kpis strong{font-size:19px;color:var(--accent,#9bbeff)}
+.v07-snapshot-section{border-top:1px solid rgba(121,156,197,.2);margin-top:14px;padding-top:12px}
+.v07-snapshot-section h3{margin:0 0 8px;font-size:12px}
+.v07-snapshot-section>small{font-size:10px;display:block;color:var(--muted,#aec0d6);margin-top:5px}
+.v07-snapshot-entry{display:flex;gap:8px;justify-content:space-between;padding:8px 0;font-size:11px;border-bottom:1px solid rgba(121,156,197,.11);min-width:0}
+.v07-snapshot-entry strong{overflow-wrap:anywhere;max-width:62%}
+.v07-snapshot-entry span{font-size:10px;color:var(--muted,#b2c3d7);text-align:right;overflow-wrap:anywhere}
+.v07-snapshot-empty{font-size:11px;color:var(--muted,#b2c3d7)}
+.v07-snapshot-weather{font-size:12px}
+.v07-snapshot-weather .air-preview{margin-top:6px}

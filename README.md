@@ -1,3 +1,47 @@
+# Omnidite Desk V0.7.0 — Four Optional Widgets (Stable Release)
+
+**What is new:** four optional widgets under **Add module**: **World markets**, **Currency & FX**, **Weather & air alerts**, and **Daily snapshot**. All use the existing widget layout/resize system and remain local-first. They are **not inserted automatically**, so existing workspace order and settings are preserved.
+
+- **World markets:** SGX, NYSE, Nasdaq, LSE, HKEX and SSE time-zone/DST-aware continuous trading-session schedules and indicative countdowns. Exchange holidays, early closures and halts are not checked; these are **not live exchange status claims**.
+- **FX:** select pair and amount. Dated, published central-bank/reference rates through [Frankfurter](https://frankfurter.dev/), cached up to six hours while Desk is open. Prices are **not live bid/ask quotes** and don't represent bank/card spreads. Frankfurter public endpoint adds a narrowly scoped host permission.
+- **Weather & air alerts:** adjustable NEA Singapore 24-hour PSI / modeled international US/European AQI thresholds, rain probability, and forecast storm indicators; updates on-page about every 15 minutes while Desk is open. **No push notification or official hazard-alert claim**. Source freshness and stale values are marked.
+- **Daily snapshot:** upcoming local tasks/deadlines, selected read-only cached Google Calendar events (or imported .ics), GitHub/Pulse cached status, and public weather/air readings; choose 1, 3 or 7-day horizon. No new AI, user data uploads, Calendar OAuth scope or backend.
+- **Stability:** inherits V0.6.2 QA/roadmap refresh, V0.6.1 modal form fix and secure Stable/Beta updater. Preserves stable Chrome extension ID, local data, backup and Chrome Sync storage schema.
+
+**Install:** use Desk → **Check updates → Update now**, then Add module to opt into each widget. A one-time native updater helper refresh is required **only** to switch Stable/Beta, not to install Stable releases. If the Chrome profile prompts for `api.frankfurter.dev` access, it is for the new optional FX rate feed.
+
+**Validation:** automated feature/regression tests, Windows C# native-helper compile and headless Chromium New Tab/Side Panel rendering with fabricated data passed before Stable promotion. Manual Windows Chrome New Tab, Side Panel, live data/CORS, permissions, Calendar/Pulse, wallpaper, widget persistence and Stable/Beta switching still need user verification. This release must not be described as fully device-tested until those checks are completed.
+
+---
+
+## V0.7 Beta Wave 3 — Daily snapshot widget
+
+**Daily snapshot** is a fourth optional module. It combines locally saved project-linked/planner and widget tasks, overdue/due-soon counts, next 1/3/7 days of calendar appointments, cached GitHub/Pulse health, and weather + air quality in one card. Google Calendar is **read-only from Chrome's existing local cache**, without additional OAuth or API requests. If disconnected it uses the imported .ics snapshot, clearly labeled. Weather uses existing Open-Meteo and NEA sources while the widget is visible, with no new host permissions. Nothing about your tasks, appointments or projects is sent to an AI service. Connected readings are labeled as cached/stale; no push alerts or background monitoring promised.
+
+---
+
+## V0.7 Beta Wave 2 — Weather & air quality alert widget
+
+A third optional module, **Weather & air alerts**, reads an existing Weather widget's configured cities (with Singapore available by default). Choose a location, an index-appropriate threshold (NEA 24h PSI, modeled US AQI or modeled European AQI), and rain probability sensitivity. It shows threshold breaches and modeled thunderstorm indications **only while Desk is open**. It does not claim official push warnings, OS notifications or complete weather safety. Data is fetched through existing NEA and Open-Meteo hosts, with 15-minute cache and explicit stale marks. No permissions, backend or accounts added.
+
+---
+
+# V0.7 Beta Wave 1 — Global Markets and FX widgets
+
+Two optional modules are available via **Add module**: **World markets** (SGX, NYSE, NASDAQ, LSE, HKEX, SSE) and **Currency & FX** (dated published reference rates from Frankfurter). Neither changes existing widgets. Market local hours and countdowns use IANA timezones and DST; **exchange holidays/early closes aren't covered, and scheduled hours must not be mistaken for verified open status**. FX is updated at most about every six hours in a Chrome page, includes publication date and stale fallback, and is **not** a live bid/ask rate. A narrowly scoped Frankfurter host permission is added. All source/state remains in Chrome; no account, credentials, or purchase.
+
+This is Beta; Chrome installation acceptance and source-provider availability are not certified by mocked CI. Other V0.7 modules follow in later Beta waves.
+
+---
+
+# Omnidite Desk V0.6.2 — Beta maintenance release
+
+**Scope:** non-destructive reliability and release hygiene. Updates visible version labels and the automated QA baseline; retains user storage format, extension key, OAuth permissions, native helper protocol, wallpaper folders, and all V0.6.1 functionality. The earlier form-close fix remains in place. Release qualification includes the existing full CI tests, Chrome extension manifest checks, and Windows helper compilation. **Manual Windows Chrome acceptance is pending.** No old feature branches were merged or deleted.
+
+This release is staged to Beta first. Stable remains V0.6.1 until V0.7 acceptance and promotion.
+
+---
+
 # Desk V0.6.1 — Fix form errors when closing dialogs
 
 **Fix:** The shared modal header's ✕ close button explicitly uses `type="button"`, preventing Chrome from treating it as a form submission inside Edit Widget, Edit Workspace and other dialogs. Previously, if the required title input was empty and the user clicked ✕, Chrome sometimes logged `An invalid form control with name='title' is not focusable` after the dialog became hidden. The fix does not change saved data, form validation for actual Save buttons, updater channels, extension ID or OAuth integrations. Added an automated regression test checking this invariant across Desk dialog headers.
