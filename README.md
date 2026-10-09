@@ -1,3 +1,11 @@
+# Omnidite Desk V0.6.2 — Beta maintenance release
+
+**Scope:** non-destructive reliability and release hygiene. Updates visible version labels and the automated QA baseline; retains user storage format, extension key, OAuth permissions, native helper protocol, wallpaper folders, and all V0.6.1 functionality. The earlier form-close fix remains in place. Release qualification includes the existing full CI tests, Chrome extension manifest checks, and Windows helper compilation. **Manual Windows Chrome acceptance is pending.** No old feature branches were merged or deleted.
+
+This release is staged to Beta first. Stable remains V0.6.1 until V0.7 acceptance and promotion.
+
+---
+
 # Desk V0.6.1 — Fix form errors when closing dialogs
 
 **Fix:** The shared modal header's ✕ close button explicitly uses `type="button"`, preventing Chrome from treating it as a form submission inside Edit Widget, Edit Workspace and other dialogs. Previously, if the required title input was empty and the user clicked ✕, Chrome sometimes logged `An invalid form control with name='title' is not focusable` after the dialog became hidden. The fix does not change saved data, form validation for actual Save buttons, updater channels, extension ID or OAuth integrations. Added an automated regression test checking this invariant across Desk dialog headers.
