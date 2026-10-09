@@ -1,3 +1,11 @@
+# Desk V0.6.1 — Fix form errors when closing dialogs
+
+**Fix:** The shared modal header's ✕ close button explicitly uses `type="button"`, preventing Chrome from treating it as a form submission inside Edit Widget, Edit Workspace and other dialogs. Previously, if the required title input was empty and the user clicked ✕, Chrome sometimes logged `An invalid form control with name='title' is not focusable` after the dialog became hidden. The fix does not change saved data, form validation for actual Save buttons, updater channels, extension ID or OAuth integrations. Added an automated regression test checking this invariant across Desk dialog headers.
+
+Install via **Desk Updates → Check updates → Update now** on Stable, then reload Chrome as normal. Existing Chrome extension errors may be historical; you can clear them from `chrome://extensions` after updating to confirm they don't recur.
+
+---
+
 # Omnidite Desk V0.6.0 — Secure Stable/Beta updates
 
 The existing **Updates** panel on New Tab and Side Panel now offers **Stable** and **Beta**, plus fixed GitHub changes links, safe channel-switch actions and native helper compatibility detection. Stable is `main`; Beta is the repository's dedicated `beta` branch. All Git paths, remote and actions are hard-coded in the signed-in user's local native helper; the webpage cannot specify a repository, ref, file path or shell command. This remains a local unpacked Chrome extension, without Vercel or a separate web host.
