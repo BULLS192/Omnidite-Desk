@@ -20,16 +20,28 @@ assert.equal(siteFavicon('https://providence.omnidite.com'),expected);
 assert.equal(siteFavicon('https://providence.omnidite.com/region?focus=singapore'),expected);
 assert.notEqual(siteFavicon('https://fake-providence.omnidite.com'),expected,'Do not pin on lookalike hosts');
 assert.notEqual(siteFavicon('https://providence.omnidite.com.evil.example'),expected,'Do not pin on spoofed hosts');
+const bulls=chrome.runtime.getURL('assets/bulls-icon.png');
+for(const url of [
+  'https://kevinbullsyap.com',
+  'https://www.kevinbullsyap.com/about',
+  'https://kevinbullsyap.vercel.app',
+  'https://kevinbullsyap-git-main-oa-192.vercel.app',
+  'https://kevinbullsyap-git-feature-bulls-v2-phase-1-oa-192.vercel.app',
+])assert.equal(siteFavicon(url),bulls,'The approved BULL.S icon should be local on '+url);
+for(const spoof of ['https://fake-kevinbullsyap.com','https://kevinbullsyap.com.evil.example'])
+  assert.notEqual(siteFavicon(spoof),bulls,'No pinned icon on spoofed domains');
 assert.equal(siteFavicon('javascript:alert(1)'),'','Never accept unsafe schemes');
 assert.match(siteFavicon('https://omnidite.com'),/^chrome-extension:\/\/desk-test\/_favicon\//);
 
 const html=renderLinkModule({
   id:'my-projects',config:{links:[
     {label:'Providence',url:'https://providence.omnidite.com'},
+    {label:'BULL.S',url:'https://kevinbullsyap.com'},
     {label:'Omnidite',url:'https://omnidite.com'},
   ]}
 });
 assert.ok(html.includes('class="site-favicon" src="'+expected+'"'),'Existing My Projects link should show bundled mark');
+assert.ok(html.includes('class="site-favicon" src="'+bulls+'"'),'Saved BULL.S project link should show the approved bundled icon');
 assert.ok(html.includes('pageUrl=https%3A%2F%2Fomnidite.com'),'Other projects should continue using Chrome favicons');
 
 const image=fs.readFileSync(new URL('assets/providence-mark.webp',root));
@@ -40,5 +52,11 @@ const githubBlob=crypto.createHash('sha1')
   .update(Buffer.from('blob '+image.length+'\0')).update(image).digest('hex');
 assert.equal(githubBlob,'2af74748bb1544095d52c5cf4cfc3f78cafce24f',
   'Use exact approved Providence mark, not an arbitrary logo or changed image');
+const bullsImage=fs.readFileSync(new URL('assets/bulls-icon.png',root));
+assert.ok(bullsImage.length>1000&&bullsImage.length<100000,'BULL.S icon should be a compact bundled image');
+assert.equal(bullsImage.subarray(0,8).toString('hex'),'89504e470d0a1a0a','BULL.S icon should be a valid PNG');
+const bullsBlob=crypto.createHash('sha1').update(Buffer.from('blob '+bullsImage.length+'\\0')).update(bullsImage).digest('hex');
+assert.equal(bullsBlob,'c3d03c623c006f7e24cddbe86a441f5c0b0ae604','Use the exact owner-approved BULL.S PNG from the website repository');
+console.log('PASS: Desk bundles the exact approved BULL.S icon on saved production and preview links');
 console.log('PASS: Desk renders the approved Providence emblem from a local bundled asset');
 console.log('PASS: other project favicons, safe host matching, and existing link actions are preserved');
