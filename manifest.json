@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Omnidite Desk — Personal Dashboard",
   "short_name": "Omnidite Desk",
-  "version": "0.7.0",
-  "description": "Omnidite Desk with configurable widgets, Calendar, Pulse, PSI/AQI, market hours and daily FX reference rates.",
+  "version": "0.8.0",
+  "description": "Omnidite Desk local productivity with unified agenda, project task board, universal search, research studio, weather, markets and FX.",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
