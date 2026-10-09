@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Omnidite Desk — Personal Dashboard",
   "short_name": "Omnidite Desk",
-  "version": "0.5.7",
-  "description": "Omnidite Desk with free or snapped widget sizing, configurable cell grids, Google Calendar and local Pulse.",
+  "version": "0.5.8",
+  "description": "Omnidite Desk with widgets-first New Tab, free/snap grid layouts, live Calendar and local Pulse.",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",

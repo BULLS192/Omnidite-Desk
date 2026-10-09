@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="desk-v055.css">
   <link rel="stylesheet" href="desk-v056.css">
   <link rel="stylesheet" href="desk-v057.css">
+  <link rel="stylesheet" href="desk-v058.css">
 </head>
 <body class="side-mode">
   <div class="shell">
@@ -44,7 +45,7 @@
       <header class="topbar">
         <div class="crumb">WORKSPACE <span>/</span> <span id="crumbPage">OVERVIEW</span></div>
         <div class="top-actions">
-          <span class="desk-version-pill" title="Installed Omnidite Desk version">v0.5.7</span>
+          <span class="desk-version-pill" title="Installed Omnidite Desk version">v0.5.8</span>
           <span id="localDate" class="top-date"></span>
           <button type="button" class="button ghost desk-top-command" data-v03="command">⌕ <span>Commands</span></button>
           <button type="button" class="button ghost desk-top-capture" data-v03="capture">＋ <span>Capture</span></button>
@@ -53,11 +54,14 @@
         </div>
       </header>
       <div class="content">
-        <div class="eyebrow"><span class="live-dot"></span> YOUR SPACE · LIVE WORKSPACE OVERVIEW</div>
-        <div class="mobile-pages" id="mobilePages"></div><div class="hero-row">
-          <div><h1 id="welcomeHeading">Make room for what<br>matters today<span class="highlight">.</span></h1><p class="lede">Your work, meetings and systems. One clear view.</p></div>
-          <div class="hero-decoration" aria-hidden="true"><span class="orb orb-one"></span><span class="orb orb-two"></span></div>
-        </div>
+        <div class="mobile-pages" id="mobilePages"></div>
+        <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <button class="page-edit" data-v03="layouts">Layouts</button> <button id="deskLayoutMode" type="button" class="desk-layout-mode" data-global="toggle-layout" aria-pressed="true" title="Toggle compact widget stacking">◫ Compact: On</button> <button id="deskSnapMode" type="button" class="desk-snap-mode" data-global="toggle-snap" aria-pressed="false" title="Switch between free resize and fixed-cell widget footprints">⌗ Free resize</button> <button id="deskGridSettings" type="button" class="desk-grid-settings" data-global="grid-settings" hidden title="Customize grid columns and cell height">⚙ Grid</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
+        <div id="grid" class="modules" aria-live="polite"></div>
+        <section id="deskWorkspaceTools" class="desk-secondary" aria-labelledby="deskToolsTitle">
+          <div class="desk-secondary-head">
+            <div><span class="eyebrow">WORKSPACE UTILITIES</span><h2 id="deskToolsTitle">Search &amp; tools</h2></div>
+            <p>Shortcuts, connected services and updates whenever you need them.</p>
+          </div>
         <form class="searchbar" id="searchForm" autocomplete="off">
           <span class="search-glyph">⌕</span>
           <input id="searchInput" type="search" aria-label="Search the web" placeholder="Search the web, or type a URL…">
@@ -98,9 +102,8 @@
         </section>
         <p id="deskUpdateHelp" class="update-help" hidden>One-time setup required: from your Omnidite-Desk folder run <strong>Setup-OneClickUpdates.bat</strong>, then reload this extension. If you have not received these files yet, run <strong>Update-Desk.bat</strong> once first.</p>
 
-        <div class="sectionhead"><div><span class="eyebrow">YOUR MODULES</span><h2 id="pageHeading">Dashboard</h2></div><p><button class="page-edit" data-global="edit-page">Edit page</button> · <button class="page-edit" data-v03="layouts">Layouts</button> <button id="deskLayoutMode" type="button" class="desk-layout-mode" data-global="toggle-layout" aria-pressed="true" title="Toggle compact widget stacking">◫ Compact: On</button> <button id="deskSnapMode" type="button" class="desk-snap-mode" data-global="toggle-snap" aria-pressed="false" title="Switch between free resize and fixed-cell widget footprints">⌗ Free resize</button> <button id="deskGridSettings" type="button" class="desk-grid-settings" data-global="grid-settings" hidden title="Customize grid columns and cell height">⚙ Grid</button> · <span id="moduleCount">0</span> modules <span class="muted">· Drag or resize cards</span></p></div>
-        <div id="grid" class="modules" aria-live="polite"></div>
-        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK · V0.5.7</span></div>
+        </section>
+        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK · V0.5.8</span></div>
       </div>
     </main>
   </div>
