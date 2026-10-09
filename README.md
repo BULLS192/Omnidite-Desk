@@ -10,7 +10,7 @@
 
 **Install:** once merged into `main`, use Desk → **Check updates → Update now**, then Add module to opt into each widget. A one-time native updater helper refresh is required **only** to switch Stable/Beta, not to install Stable releases. If the Chrome profile prompts for `api.frankfurter.dev` access, it is for the new optional FX rate feed.
 
-**Validation:** automated feature/regression tests and Windows C# native-helper compile must pass before release. Manual Windows Chrome New Tab, Side Panel, live data/CORS, permissions, Calendar/Pulse, wallpaper, widget persistence and Stable/Beta switching still need user verification. This release must not be described as fully device-tested until those checks are completed.
+**Validation:** automated feature/regression tests, Windows C# native-helper compile, and a headless Chromium New Tab/Side Panel rendering check with fabricated data must pass before release. Manual Windows Chrome New Tab, Side Panel, live data/CORS, permissions, Calendar/Pulse, wallpaper, widget persistence and Stable/Beta switching still need user verification. This release must not be described as fully device-tested until those checks are completed.
 
 ---
 
