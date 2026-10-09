@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const manifest=JSON.parse(read('manifest.json'));
-const files=['index.html','sidepanel.html','app.js','desk-v03.js','desk-v04.js','desk-v05.js','desk-v052.js','desk-google-calendar.js','styles.css','desk-v03.css','desk-v045.css','desk-v055.css','desk-v055.js','desk-v056.css','desk-compact.js','desk-v057.css','desk-grid.js','desk-focus-audio.js','background.js','icons/icon16.png','icons/icon48.png','icons/icon128.png'];
+const files=['index.html','sidepanel.html','app.js','desk-v03.js','desk-v04.js','desk-v05.js','desk-v052.js','desk-google-calendar.js','styles.css','desk-v03.css','desk-v045.css','desk-v055.css','desk-v055.js','desk-v056.css','desk-compact.js','desk-v057.css','desk-v058.css','desk-grid.js','desk-focus-audio.js','background.js','icons/icon16.png','icons/icon48.png','icons/icon128.png'];
 for(const f of files) if(!fs.existsSync(new URL('../'+f,import.meta.url)))throw Error(`Missing file: ${f}`);
-if(manifest.manifest_version!==3||manifest.version!=='0.5.7')throw Error('Unexpected extension version');
+if(manifest.manifest_version!==3||manifest.version!=='0.5.8')throw Error('Unexpected extension version');
 if(JSON.stringify(manifest.permissions)!=='["storage","sidePanel","nativeMessaging","favicon","identity"]')throw Error('Unexpected permissions');
 const expectedHosts=['https://geocoding-api.open-meteo.com/*','https://api.open-meteo.com/*'];
 if(JSON.stringify(manifest.host_permissions)!==JSON.stringify(expectedHosts))throw Error('Unexpected weather API hosts');
@@ -21,7 +21,7 @@ for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('deskInstall
 for(const p of ['Setup-OneClickUpdates.bat','native-host/install.ps1','native-host/DeskNativeHost.cs'])if(!fs.existsSync(new URL('../'+p,import.meta.url)))throw Error('Missing native helper: '+p);
 for(const command of ['pulseStatus','pulseStart','pulseStop','pulseRestart','PulseTaskName'])if(!read('native-host/DeskNativeHost.cs').includes(command))throw Error('Missing fixed Pulse control: '+command);
 if(!read('native-host/DeskNativeHost.cs').includes('merge --ff-only'))throw Error('Native helper must use fast-forward-only updates');
-for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-v055.css')||!read(p).includes('desk-v055.js')||!read(p).includes('desk-focus-audio.js')||!read(p).includes('desk-v056.css')||!read(p).includes('desk-compact.js')||!read(p).includes('desk-v057.css')||!read(p).includes('desk-grid.js'))throw Error(p+' missing visual preview or local Focus sound module');
+for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-v055.css')||!read(p).includes('desk-v055.js')||!read(p).includes('desk-focus-audio.js')||!read(p).includes('desk-v056.css')||!read(p).includes('desk-compact.js')||!read(p).includes('desk-v057.css')||!read(p).includes('desk-v058.css')||!read(p).includes('desk-grid.js'))throw Error(p+' missing visual preview or local Focus sound module');
 
 for(const p of ['index.html','sidepanel.html']){
  const html=read(p);
@@ -30,7 +30,8 @@ for(const p of ['index.html','sidepanel.html']){
  }
  if(!html.includes('<details class="desk-tools-more">')||!html.includes('data-v03="research"')||!html.includes('data-v04="tasks"'))throw Error(p+': utility disclosure lost existing actions');
  const glance=html.indexOf('<section class="desk-ops-strip"'),updater=html.indexOf('<section id="deskUpdateBar"'),modules=html.indexOf('id="grid"');
- if(!(glance>0&&updater>glance&&modules>updater))throw Error(p+': dashboard hierarchy order regression');
+ const search=html.indexOf('id="searchForm"'),tools=html.indexOf('id="deskWorkspaceTools"'),firstHead=html.indexOf('class="sectionhead"');
+ if(!(firstHead>0&&modules>firstHead&&tools>modules&&search>tools&&glance>search&&updater>glance))throw Error(p+': widgets-first hierarchy regression');
 }
 const designCss=read('desk-v055.css');
 for(const token of ['[data-theme="slate"]','[data-theme="light"]','body.has-wallpaper','body.side-mode','prefers-reduced-motion','.desk-ops-tile--calendar','.desk-tools-more'])
@@ -38,7 +39,7 @@ for(const token of ['[data-theme="slate"]','[data-theme="light"]','body.has-wall
 
 for(const p of ['index.html','sidepanel.html']){
  const html=read(p);
- for(const t of ['id="deskLayoutMode"','data-global="toggle-layout"','OMNIDITE DESK · V0.5.7','class="desk-version-pill"','id="deskSnapMode"','id="deskGridSettings"']){
+ for(const t of ['id="deskLayoutMode"','data-global="toggle-layout"','OMNIDITE DESK · V0.5.8','class="desk-version-pill"','id="deskSnapMode"','id="deskGridSettings"']){
   if(!html.includes(t))throw Error(p+': missing visible V0.5.6 version or compact toggle: '+t);
  }
  if(html.includes('0.5.5 DESIGN PREVIEW'))throw Error(p+': stale design preview label');
@@ -58,4 +59,4 @@ for(const token of ['normalizeOperations','workSessions','calendarEvents','pulse
 for(const token of ['newSession','taskForm','contentForm','captureActiveTab','calendar','renderSearch'])if(!read('desk-v04.js').includes(token))throw Error('Missing V0.4 feature: '+token);
 for(const token of ['refreshGithub','refreshPulse','pulseAllowed','normalizePulse','operationalAlerts'])if(!read('desk-v05.js').includes(token))throw Error('Missing V0.5 feature: '+token);
 for(const token of ['chrome.identity.getAuthToken','calendar.readonly','local.get','calendarUrl','dateMs','disconnect'])if(!read('desk-google-calendar.js').includes(token))throw Error('Google Calendar integration missing '+token);
-console.log('PASS: MV3 V0.5.7 free/snap grid development (configured Google OAuth client ID), limited required permissions, opt-in tabs and hosts, updater, productivity and read-only monitoring');
+console.log('PASS: MV3 V0.5.8 widgets-first home (configured Google OAuth client ID), limited required permissions, opt-in tabs and hosts, updater, productivity and read-only monitoring');
