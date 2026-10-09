@@ -1,3 +1,9 @@
+# Omnidite Desk v0.5.10 — Stability and recovery
+
+This non-destructive update adds a local-only **Health** button beside Desk Updates on New Tab and Side Panel. It checks installation version, local storage bytes, workspace/widget counts, optional Chrome Sync toggle, local network indication and Windows native updater. The copied diagnostic report contains **no widget contents, calendar events, URLs or OAuth tokens**. Use **Backup & settings** to reach the existing JSON backup flow; no data is deleted or migrated. Existing layout, Pulse, Google Calendar, air quality, wallpaper and native host behavior are unchanged. Chrome on-device acceptance is still required.
+
+---
+
 # Omnidite Desk v0.5.9 — Weather + Air Quality (release candidate)
 
 ## V0.5.9 — Singapore PSI and global AQI for the existing Weather widget
