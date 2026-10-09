@@ -1,3 +1,9 @@
+## V0.7 Beta Wave 2 — Weather & air quality alert widget
+
+A third optional module, **Weather & air alerts**, reads an existing Weather widget's configured cities (with Singapore available by default). Choose a location, an index-appropriate threshold (NEA 24h PSI, modeled US AQI or modeled European AQI), and rain probability sensitivity. It shows threshold breaches and modeled thunderstorm indications **only while Desk is open**. It does not claim official push warnings, OS notifications or complete weather safety. Data is fetched through existing NEA and Open-Meteo hosts, with 15-minute cache and explicit stale marks. No permissions, backend or accounts added.
+
+---
+
 # V0.7 Beta Wave 1 — Global Markets and FX widgets
 
 Two optional modules are available via **Add module**: **World markets** (SGX, NYSE, NASDAQ, LSE, HKEX, SSE) and **Currency & FX** (dated published reference rates from Frankfurter). Neither changes existing widgets. Market local hours and countdowns use IANA timezones and DST; **exchange holidays/early closes aren't covered, and scheduled hours must not be mistaken for verified open status**. FX is updated at most about every six hours in a Chrome page, includes publication date and stale fallback, and is **not** a live bid/ask rate. A narrowly scoped Frankfurter host permission is added. All source/state remains in Chrome; no account, credentials, or purchase.
