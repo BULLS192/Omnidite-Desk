@@ -93,3 +93,42 @@ jobs:
           Add-Type -Path 'native-host/DeskNativeHost.cs' -ReferencedAssemblies @('System.Web.Extensions.dll') -OutputAssembly $exe -OutputType ConsoleApplication -ErrorAction Stop
           if (-not (Test-Path -LiteralPath $exe)) { throw 'Native helper compilation failed.' }
           Write-Host 'PASS: C# native host compiles on Windows'
+
+  v07-browser-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare local fake-data New Tab and Side Panel fixtures
+        run: node tools/generate-v07-browser-preview.mjs
+      - name: Render actual HTML and check V0.7 DOM in headless Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          BROWSER=$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$BROWSER" ]; then echo "No Chromium browser available"; exit 1; fi
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/desk-v07-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          sleep 2
+          for PAGE in v07-preview-newtab v07-preview-sidepanel; do
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-extensions --hide-scrollbars --virtual-time-budget=5000 --dump-dom "http://127.0.0.1:8765/$PAGE.html" > "/tmp/$PAGE-dom.html"
+            grep -Fq 'data-v07-market-list=' "/tmp/$PAGE-dom.html"
+            grep -Fq 'data-v07-fx-result=' "/tmp/$PAGE-dom.html"
+            grep -Fq 'data-v07-alert-result=' "/tmp/$PAGE-dom.html"
+            grep -Fq 'data-v07-snapshot-output=' "/tmp/$PAGE-dom.html"
+            grep -Fq 'class="v07-snapshot-kpis"' "/tmp/$PAGE-dom.html"
+            if [ "$PAGE" = "v07-preview-newtab" ]; then SIZE="1600,1300"; else SIZE="440,1100"; fi
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-extensions --hide-scrollbars --virtual-time-budget=5000 --window-size="$SIZE" --screenshot="$PWD/$PAGE.png" "http://127.0.0.1:8765/$PAGE.html"
+            test -s "$PAGE.png"
+          done
+          echo "PASS: V0.7 real browser DOM rendered all four widgets in New Tab and Side Panel"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desk-v07-browser-qa
+          path: |
+            v07-preview-newtab.png
+            v07-preview-sidepanel.png
+          retention-days: 7
