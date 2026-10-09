@@ -1,3 +1,11 @@
+# V0.7 Beta Wave 1 — Global Markets and FX widgets
+
+Two optional modules are available via **Add module**: **World markets** (SGX, NYSE, NASDAQ, LSE, HKEX, SSE) and **Currency & FX** (dated published reference rates from Frankfurter). Neither changes existing widgets. Market local hours and countdowns use IANA timezones and DST; **exchange holidays/early closes aren't covered, and scheduled hours must not be mistaken for verified open status**. FX is updated at most about every six hours in a Chrome page, includes publication date and stale fallback, and is **not** a live bid/ask rate. A narrowly scoped Frankfurter host permission is added. All source/state remains in Chrome; no account, credentials, or purchase.
+
+This is Beta; Chrome installation acceptance and source-provider availability are not certified by mocked CI. Other V0.7 modules follow in later Beta waves.
+
+---
+
 # Omnidite Desk V0.6.2 — Beta maintenance release
 
 **Scope:** non-destructive reliability and release hygiene. Updates visible version labels and the automated QA baseline; retains user storage format, extension key, OAuth permissions, native helper protocol, wallpaper folders, and all V0.6.1 functionality. The earlier form-close fix remains in place. Release qualification includes the existing full CI tests, Chrome extension manifest checks, and Windows helper compilation. **Manual Windows Chrome acceptance is pending.** No old feature branches were merged or deleted.
