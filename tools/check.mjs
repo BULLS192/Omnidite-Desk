@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const manifest=JSON.parse(read('manifest.json'));
-const files=['index.html','sidepanel.html','app.js','air-quality.js','desk-health.js','desk-health.css','desk-update-channels.js','desk-update-channels.css','desk-v07.js','desk-v07-alerts.js','desk-v07-snapshot.js','desk-v07.css','desk-v03.js','desk-v04.js','desk-v05.js','desk-v052.js','desk-google-calendar.js','styles.css','desk-v03.css','desk-v045.css','desk-v055.css','desk-v055.js','desk-v056.css','desk-compact.js','desk-v057.css','desk-v058.css','desk-grid.js','desk-focus-audio.js','background.js','icons/icon16.png','icons/icon48.png','icons/icon128.png'];
+const files=['index.html','sidepanel.html','app.js','air-quality.js','desk-health.js','desk-health.css','desk-update-channels.js','desk-update-channels.css','desk-v07.js','desk-v07-alerts.js','desk-v07-snapshot.js','desk-v07.css','desk-v03.js','desk-v04.js','desk-v05.js','desk-v052.js','desk-google-calendar.js','styles.css','desk-v03.css','desk-v045.css','desk-v055.css','desk-v055.js','desk-v056.css','desk-compact.js','desk-v057.css','desk-v058.css','desk-grid.js','desk-focus-audio.js','background.js','icons/icon16.png','icons/icon48.png','icons/icon128.png','assets/providence-mark.webp'];
 for(const f of files) if(!fs.existsSync(new URL('../'+f,import.meta.url)))throw Error(`Missing file: ${f}`);
 if(manifest.manifest_version!==3||manifest.version!=='0.7.0')throw Error('Unexpected extension version');
 if(JSON.stringify(manifest.permissions)!=='["storage","sidePanel","nativeMessaging","favicon","identity"]')throw Error('Unexpected permissions');
