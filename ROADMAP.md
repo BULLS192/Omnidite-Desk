@@ -100,12 +100,29 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [ ] Formal browser privacy review and authenticated service token lifecycle, if ever introduced.
 - **Acceptance:** no privileged API token embedded in extension source, clear "last updated" stamps, rate-limited polling.
 
-## Current release state — October 8, 2026
+## Current release state — October 9, 2026
 
-- Stable `main`: V0.5.3, confirmed updating on the user's Chrome profile. Local Omnidite Pulse is connected and showing service usage data; real Startup-folder behavior is subject to next sign-in testing.
-- V0.5.4 is a read-only live Google Calendar integration with a configured Chrome Extension OAuth client ID. Confirm its Item ID matches the original stable Chrome extension ID.
-- The OAuth client ID is public. **Do not commit any client secret, access tokens, downloaded credentials JSON or private events**. Actual Google authorization must still be tested on the user's installed Chrome extension.
-- The original .ics snapshot import remains available; live fetched event details reside only in per-profile Chrome local storage, outside the existing Sync and backup state.
+- **Stable main:** V0.5.9 with NEA Singapore regional PSI and international modeled AQI, widgets-first layout, live read-only Google Calendar, local Pulse and Chrome's fixed extension identity. Release V0.5.10 is staged as a local diagnostics/recovery patch.
+- User Chrome acceptance is **not automatically demonstrated by CI**. Verify latest version, local backup/export/import, world clocks, weather/AQI, wallpaper folder, Chrome Sync, Calendar OAuth, Pulse controls, Snap/Free resize and updater after installing.
+- Existing issue #4 and other old issues remain as historical release gates; revisit them before closing. Do **not** imply incomplete manual tests passed.
+- Older merged feature branches are candidates for deletion after confirming they contain no unique changes; no automatic branch deletion.
+- Native updater currently supports only main. V0.6 will introduce secure explicit Beta switching using a fixed remote branch, with a one-time Windows host-helper recompilation due to the existing updater's fixed action allowlist.
+
+## V0.5.10 — Stability & Recovery
+
+- [x] Read-only local diagnostics displaying Chrome extension version, widget/workspace counts, storage use, Sync setting, basic network state and native helper readiness without exporting personal contents.
+- [x] Health/recovery link beside one-click updates, with backup/export navigation and self-check.
+- [x] No new extension permissions, no account/server/database changes, no reset or destructive data migration.
+- [x] Automated diagnostics smoke checks and existing regression CI.
+- [ ] User Windows Chrome acceptance after one-click update; especially backup/import, Chrome Sync, desktop/sidepanel and connected accounts.
+
+## V0.6 — Safe Stable/Beta updater (next)
+
+- [ ] Explicit Stable and Beta channel, fixed allowlist, safe Git checkout/FF-only, clean-worktree checks and installed-channel visibility.
+- [ ] Clear fallback when old native helper is installed; one-time `Setup-OneClickUpdates.bat` recompilation after new host actions are released.
+- [ ] Roll back from Beta to Stable by selecting Stable, preserving Chrome storage; no arbitrary ref or repository from the UI.
+- [ ] Automated C# compile/security tests, JS mock tests, manual Windows Chrome acceptance.
+- [ ] Dedicated `beta` branch created from current main; tests pass before advancing Beta.
 
 ## V1.0 — F.R.E.Y.A. intelligence (future)
 - [ ] Connect to a user-controlled F.R.E.Y.A. Core / Third Brain service through a documented, secure interface.
