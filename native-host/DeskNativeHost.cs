@@ -31,10 +31,11 @@ internal static class DeskNativeHost
             byte[] body = new byte[size];
             ReadExactly(input, body);
             var request = Encoding.UTF8.GetString(body);
-            var match = Regex.Match(request, @"^\s*\{\s*""action""\s*:\s*""(status|update|pulseStatus|pulseStart|pulseStop|pulseRestart)""\s*\}\s*$");
+            var match = Regex.Match(request, @"^\s*\{\s*""action""\s*:\s*""(status|update|channelStatus|channelUpdate|switchStable|switchBeta|pulseStatus|pulseStart|pulseStop|pulseRestart)""\s*\}\s*$");
             if (!match.Success) throw new InvalidOperationException("Unrecognized native host action.");
             string action = match.Groups[1].Value;
-            Send(action.StartsWith("pulse", StringComparison.Ordinal) ? RunPulse(action) : Run(action == "update"));
+            Send(action.StartsWith("pulse", StringComparison.Ordinal) ? RunPulse(action)
+                : (action == "status" || action == "update") ? Run(action == "update") : RunChannel(action));
         }
         catch (Exception ex)
         {
@@ -247,6 +248,78 @@ internal static class DeskNativeHost
         else if (action == "pulseStop") message = running ? "Scheduled task stopped, but Pulse still responds. Close any manually started instance." : "Pulse task stopped.";
         else message = running ? "Pulse is responding on your computer." : "Pulse is offline, or is still starting.";
         return new { ok = true, status = running ? "online" : "offline", installed = true, running = running, message = message };
+    }
+
+    // V0.6 channel updater: fixed branch names and fixed Git repository, never user input.
+    // Existing "status"/"update" actions intentionally remain backward compatible.
+    private static object RunChannel(string action)
+    {
+        var root = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
+        if (!Directory.Exists(Path.Combine(root, ".git")))
+            throw new InvalidOperationException("This installation is not inside a Git clone.");
+        string remote = Git(root, "remote get-url origin");
+        if (!remote.Equals(RemoteUrl, StringComparison.OrdinalIgnoreCase) &&
+            !remote.Equals(RemoteUrl.Substring(0, RemoteUrl.Length - 4), StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Unexpected Git remote. No files changed.");
+
+        string branch = Git(root, "branch --show-current");
+        if (branch != "main" && branch != "beta")
+            throw new InvalidOperationException("Only main (Stable) and beta (Beta) are supported. Switch to main manually before setup.");
+        string target = action == "switchStable" ? "main" : action == "switchBeta" ? "beta" : branch;
+        bool switching = action == "switchStable" || action == "switchBeta";
+        bool updating = action == "channelUpdate";
+        if (!switching && !updating && action != "channelStatus")
+            throw new InvalidOperationException("Unknown update channel action.");
+
+        // The channel names and remote are constants. These requests are made on user clicks only.
+        Git(root, "fetch --quiet origin main beta");
+        if (target == "beta")
+        {
+            // Avoid switching to a Beta branch missing current stable fixes.
+            try { Git(root, "merge-base --is-ancestor refs/remotes/origin/main refs/remotes/origin/beta"); }
+            catch { throw new InvalidOperationException("Beta needs the latest stable release before installation. Try Stable."); }
+        }
+        string branchRef = "refs/remotes/origin/" + target;
+        string localBranchRef = "refs/heads/" + target;
+        bool dirty = Git(root, "status --porcelain --untracked-files=no").Length > 0;
+        if (switching && branch != target)
+        {
+            if (dirty)
+                return new { ok = false, status = "dirty", channel = branch == "beta" ? "beta" : "stable", helperVersion = 2, message = "Local tracked files are modified. Channel change was blocked; export a backup and inspect Git." };
+            bool exists;
+            try { Git(root, "show-ref --verify --quiet " + localBranchRef); exists = true; }
+            catch { exists = false; }
+            if (exists)
+            {
+                int aheadTarget = int.Parse(Git(root, "rev-list --count " + branchRef + ".." + localBranchRef));
+                if (aheadTarget > 0)
+                    return new { ok = false, status = "diverged", channel = branch == "beta" ? "beta" : "stable", helperVersion = 2, message = "Target branch has local commits. Channel change refused without a force reset." };
+                Git(root, "switch " + target);
+            }
+            else
+            {
+                if (target != "beta") throw new InvalidOperationException("Local stable main branch missing; refused to recreate it.");
+                Git(root, "switch -c beta --track origin/beta");
+            }
+            Git(root, "merge --ff-only " + branchRef);
+            return new { ok = true, status = "updated", channel = target == "beta" ? "beta" : "stable", helperVersion = 2, message = "Switched to " + (target == "beta" ? "Beta" : "Stable") + ". Chrome will reload." };
+        }
+
+        string current = Git(root, "rev-parse HEAD");
+        string latest = Git(root, "rev-parse " + branchRef);
+        int behind = int.Parse(Git(root, "rev-list --count HEAD.." + branchRef));
+        int ahead = int.Parse(Git(root, "rev-list --count " + branchRef + "..HEAD"));
+        string channel = branch == "beta" ? "beta" : "stable";
+        if (ahead > 0)
+            return new { ok = false, status = "diverged", channel, helperVersion = 2, behind, message = "Local commits diverged; refusing to overwrite local work." };
+        if (updating && dirty)
+            return new { ok = false, status = "dirty", channel, helperVersion = 2, behind, message = "Local tracked files are modified; no updates were installed." };
+        if (updating && behind > 0)
+        {
+            Git(root, "merge --ff-only " + branchRef);
+            return new { ok = true, status = "updated", channel, helperVersion = 2, behind = 0, message = "Channel update installed; Chrome will reload." };
+        }
+        return new { ok = true, status = behind > 0 ? "available" : "current", channel, helperVersion = 2, behind, dirty, current, latest, message = behind > 0 ? behind + " commit(s) available." : "You are up to date." };
     }
 
     private static object Run(bool update)
