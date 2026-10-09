@@ -75,3 +75,39 @@ body.has-wallpaper{background-repeat:no-repeat;background-position:center center
 :root[data-theme="light"] .wallpaper-section-head strong{color:#284562}
 :root[data-theme="light"] .folder-connection{background:#e8eff8;border-color:#bfcee1}
 :root[data-theme="light"] .folder-connection small,:root[data-theme="light"] .wallpaper-pages span{color:#536d8d}
+
+
+/* Desk v0.3 air quality — PSI is an official SG 24-hour index, AQI elsewhere is modelled. */
+.air-preview{border-top:1px solid #36506d;margin-top:12px;padding-top:10px;display:flex;align-items:flex-start;gap:6px;flex-direction:column}
+.air-preview small{font-size:10px;color:#a9bfd8;line-height:1.5}
+.air-preview.air-unavailable{font-size:10px;color:#a7b7cb}
+.air-badge{font-size:10px;font-weight:700;line-height:1.5;border-radius:7px;padding:3px 7px;border:1px solid #4a5b70;background:#1a3147;color:#e9f0f9;display:inline-flex;align-items:center;max-width:100%}
+.air-badge[data-tone="good"]{background:#163b37;border-color:#276e60;color:#a3f4cf}
+.air-badge[data-tone="moderate"]{background:#473f24;border-color:#75683b;color:#ffda82}
+.air-badge[data-tone="unhealthy"]{background:#50342b;border-color:#97624b;color:#ffc6a7}
+.air-badge[data-tone="severe"]{background:#512a40;border-color:#9c4a76;color:#ffd0e9}
+.air-badge[data-tone="hazardous"]{background:#542630;border-color:#ab4558;color:#ffd1d9}
+.air-detail{border:1px solid #38516b;border-radius:10px;padding:13px;background:#192a40;font-size:11px;min-width:0}
+.air-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:13px}
+.air-head strong{font-size:13px}
+.air-explain{font-size:10px;color:#acc0db;line-height:1.6;margin:10px 0}
+.air-region-heading,.air-region-row{display:grid;grid-template-columns:1fr minmax(115px,1.5fr) minmax(90px,1fr);gap:8px;align-items:center;padding:8px 3px;border-bottom:1px solid #35485d}
+.air-region-heading{font-size:9px;color:#97afca;font-weight:650}
+.air-region-row strong{font-size:11px}
+.air-region-row>span:last-child{font-size:10px;white-space:nowrap;text-align:right}
+.air-region-row .air-badge{justify-self:start}
+.air-pollutants{display:flex;flex-wrap:wrap;gap:10px}
+.air-pollutants>span{font-size:11px;padding:8px;background:#21374e;border-radius:7px}
+.air-pollutants strong{font-variant-numeric:tabular-nums;margin-left:5px;color:#edf4ff}
+.air-observed,.air-source{margin-top:12px;font-size:9px;color:#9cb1ce;line-height:1.6}
+.air-source a{color:#b4d4ff;text-decoration:underline;text-underline-offset:2px}
+.air-trend-label{font-size:10px;font-weight:650;margin:15px 0 8px}
+.air-trend{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.air-trend-item{text-align:center;display:grid;gap:5px;font-size:10px}
+.air-trend-item small{font-size:9px;color:#9eb9d6}
+.air-trend-item b{border-radius:5px;padding:7px 0;background:#294663;font-variant-numeric:tabular-nums}
+.air-trend-item b[data-tone="good"]{color:#a3f4cf}
+.air-trend-item b[data-tone="moderate"]{color:#ffda82}
+.air-trend-item b[data-tone="unhealthy"]{color:#ffc6a7}
+.air-trend-item b[data-tone="severe"],.air-trend-item b[data-tone="hazardous"]{color:#ffb0c5}
+@media(max-width:620px){.air-region-heading,.air-region-row{grid-template-columns:1fr minmax(95px,1.3fr) minmax(75px,1fr);gap:4px}.air-badge{font-size:9px;padding:3px 5px}.air-trend{grid-template-columns:repeat(4,minmax(0,1fr))}.air-detail{padding:10px}}
