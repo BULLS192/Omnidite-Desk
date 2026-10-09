@@ -875,8 +875,7 @@ async function runDeskUpdate(action){
   deskUpdateControls(false,false);
  }
 }
-$('#deskCheckButton')?.addEventListener('click',()=>runDeskUpdate('status'));
-$('#deskInstallButton')?.addEventListener('click',()=>runDeskUpdate('update'));
+// V0.6 update-channel controller now owns the visible updater buttons.
 
 function render(){
  document.documentElement.dataset.theme=state.theme;document.documentElement.style.setProperty('--accent',state.accent);

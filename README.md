@@ -1,3 +1,22 @@
+# Omnidite Desk V0.6.0 — Secure Stable/Beta updates
+
+The existing **Updates** panel on New Tab and Side Panel now offers **Stable** and **Beta**, plus fixed GitHub changes links, safe channel-switch actions and native helper compatibility detection. Stable is `main`; Beta is the repository's dedicated `beta` branch. All Git paths, remote and actions are hard-coded in the signed-in user's local native helper; the webpage cannot specify a repository, ref, file path or shell command. This remains a local unpacked Chrome extension, without Vercel or a separate web host.
+
+### Install V0.6.0 / enable the channels
+1. In the existing Desk, use **Check updates → Update now** while on Stable. This works with the *old* updater helper and upgrades the extension code to V0.6.0.
+2. To activate Beta switching, **once** double-click `Setup-OneClickUpdates.bat` in the **same Omnidite-Desk Git clone already loaded by Chrome**. This recompiles/re-registers the updated Windows native messaging helper under your user account (no admin). An old helper cannot recognize the new channel actions until it is rebuilt; **this one-time step cannot be done by the pre-V0.6 helper via the browser**.
+3. Return to Desk and click **Check updates**. Select **Beta**, click **Switch to Beta** and confirm. Chrome reloads automatically. To return, select **Stable** → **Switch to Stable**.
+4. Before switching channels, use **Settings → Export JSON**. Both channels share the same extension ID, local storage, OAuth identity and wallpapers. Switching code back to Stable is **not a rollback of application data**; experimental Betas must maintain compatible storage schemas.
+
+### Safeguards
+- Only `main` (Stable) and `beta` (Beta), fetched from `BULLS192/Omnidite-Desk`, are supported; switching requires a clean Git worktree. The beta branch must contain the latest stable commit.
+- Local ahead/diverged branches are refused; releases use `merge --ff-only`; no force reset, deletion or background updates. Switching does not overwrite Chrome-stored widgets.
+- If the new Windows helper has not been recompiled, Stable updating continues to work and the UI explains the one-time Beta setup.
+- The native helper's existing Pulse controls and extension identity are preserved.
+- GitHub Actions runs source, mocked Chrome UI/state and Windows helper compile checks; manual Chrome validation of both channel switches and user data is still necessary. Do not assume switching has been tested on the user's machine.
+
+---
+
 # Omnidite Desk v0.5.10 — Stability and recovery
 
 This non-destructive update adds a local-only **Health** button beside Desk Updates on New Tab and Side Panel. It checks installation version, local storage bytes, workspace/widget counts, optional Chrome Sync toggle, local network indication and Windows native updater. The copied diagnostic report contains **no widget contents, calendar events, URLs or OAuth tokens**. Use **Backup & settings** to reach the existing JSON backup flow; no data is deleted or migrated. Existing layout, Pulse, Google Calendar, air quality, wallpaper and native host behavior are unchanged. Chrome on-device acceptance is still required.
