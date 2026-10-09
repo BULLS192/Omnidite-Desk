@@ -1,3 +1,9 @@
+## V0.7 Beta Wave 3 — Daily snapshot widget
+
+**Daily snapshot** is a fourth optional module. It combines locally saved project-linked/planner and widget tasks, overdue/due-soon counts, next 1/3/7 days of calendar appointments, cached GitHub/Pulse health, and weather + air quality in one card. Google Calendar is **read-only from Chrome's existing local cache**, without additional OAuth or API requests. If disconnected it uses the imported .ics snapshot, clearly labeled. Weather uses existing Open-Meteo and NEA sources while the widget is visible, with no new host permissions. Nothing about your tasks, appointments or projects is sent to an AI service. Connected readings are labeled as cached/stale; no push alerts or background monitoring promised.
+
+---
+
 ## V0.7 Beta Wave 2 — Weather & air quality alert widget
 
 A third optional module, **Weather & air alerts**, reads an existing Weather widget's configured cities (with Singapore available by default). Choose a location, an index-appropriate threshold (NEA 24h PSI, modeled US AQI or modeled European AQI), and rain probability sensitivity. It shows threshold breaches and modeled thunderstorm indications **only while Desk is open**. It does not claim official push warnings, OS notifications or complete weather safety. Data is fetched through existing NEA and Open-Meteo hosts, with 15-minute cache and explicit stale marks. No permissions, backend or accounts added.

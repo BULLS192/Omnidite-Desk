@@ -3,7 +3,7 @@
 'use strict';
 const V2='omniditeDeskStateV2', V1='omniditeDeskStateV1', SYNC_OPT='odV2SyncEnabled';
 const SYNC_META='od_v2_meta', CHUNK='od_v2_chunk_';
-const TYPES=['links','tasks','notes','clock','weather','focus','agenda','countdown','habits','metric','quote','markets','fx','weatheralerts'];
+const TYPES=['links','tasks','notes','clock','weather','focus','agenda','countdown','habits','metric','quote','markets','fx','weatheralerts','snapshot'];
 const gridSettings=raw=>{
  const x=raw&&typeof raw==='object'?raw:{};
  return {columns:[4,6,8,12].includes(x.columns)?x.columns:6,cellHeight:Number.isInteger(x.cellHeight)&&x.cellHeight>=72&&x.cellHeight<=180?x.cellHeight:104};
@@ -22,13 +22,13 @@ const META={
  clock:['◷','World clocks','Analog and digital city clocks'],weather:['☁','Weather + air quality','Weather forecasts, Singapore PSI and global AQI'],focus:['◴','Focus timer','Custom-length deep work'],
  agenda:['▦','Local agenda','Upcoming events and reminders'],countdown:['⌛','Countdown','Count down to a milestone'],
  habits:['◉','Habit tracker','Daily check-ins'],metric:['▥','Metric tracker','Track a running total'],
- quote:['✦','Inspiration','Thoughtful quotes'],markets:['◴','World markets','Global exchange hours and market session countdowns'],fx:['⇄','Currency & FX','Dated reference rates and quick conversions'],weatheralerts:['☂','Weather & air alerts','Thresholds for haze, rain and storms']};
+ quote:['✦','Inspiration','Thoughtful quotes'],markets:['◴','World markets','Global exchange hours and market session countdowns'],fx:['⇄','Currency & FX','Dated reference rates and quick conversions'],weatheralerts:['☂','Weather & air alerts','Thresholds for haze, rain and storms'],snapshot:['▧','Daily snapshot','Calendar, priorities, projects and weather']};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const clone=v=>JSON.parse(JSON.stringify(v));
 const $=(s,x=document)=>x.querySelector(s);
 const validUrl=s=>{try {const u=new URL(s); return ['http:','https:'].includes(u.protocol)&&!!u.hostname;}catch{return false;}};
-const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4,height:0,gridW:Math.max(1,Math.round((['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4)/2)),gridH:type==='clock'||type==='weather'?4:type==='links'||type==='quote'||type==='countdown'?2:3,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},clock:{cities:defaultClockCities()},weather:{cities:defaultWeatherCities(),view:'now',selected:'sg'},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''},markets:{markets:['SGX','NYSE','NASDAQ','LSE','HKEX','SSE']},fx:{base:'SGD',quote:'USD',amount:100},weatheralerts:{cityId:'sg',psiLimit:101,aqiLimit:101,euLimit:61,rainLimit:70}}[type]||{}),...config}});
+const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4,height:0,gridW:Math.max(1,Math.round((['links','tasks','notes','agenda','clock','weather'].includes(type)?6:4)/2)),gridH:type==='clock'||type==='weather'?4:type==='links'||type==='quote'||type==='countdown'?2:3,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},clock:{cities:defaultClockCities()},weather:{cities:defaultWeatherCities(),view:'now',selected:'sg'},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''},markets:{markets:['SGX','NYSE','NASDAQ','LSE','HKEX','SSE']},fx:{base:'SGD',quote:'USD',amount:100},weatheralerts:{cityId:'sg',psiLimit:101,aqiLimit:101,euLimit:61,rainLimit:70},snapshot:{days:3}}[type]||{}),...config}});
 const defaultPage=(id,title,modules)=>({id,title,modules});
 const defaultProjects=()=>[['Omnidite','https://omnidite.com'],['Providence','https://providence.omnidite.com'],['TTT-OS','https://ttt-os.vercel.app'],['Atlas',''],['SGBuddy',''],['F.R.E.Y.A.','']].map(([name,url])=>({id:uid(),name,url,status:'Tracked'}));
 const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',layoutMode:'compact',sizingMode:'free',gridSettings:{columns:6,cellHeight:104},accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),projects:defaultProjects(),captures:[],layoutSnapshots:[],workSessions:[],advancedTasks:[],contentItems:[],calendarEvents:[],githubRepos:['BULLS192/Omnidite-Desk'],githubSelected:'BULLS192/Omnidite-Desk',githubCache:null,pulseSettings:{url:'',auto:false},pulseCache:null,operationalAlerts:[],pages:[
@@ -61,6 +61,7 @@ function sanitizeModule(x,ids){
  if(x.type==='agenda')out.config.events=(Array.isArray(c.events)?c.events:[]).slice(0,75).filter(e=>e&&e.title&&e.when).map(e=>({id:cleanText(e.id||uid(),90),title:cleanText(e.title,140),when:cleanText(e.when,25)}));
  if(x.type==='countdown')out.config={target:/^\d{4}-\d{2}-\d{2}$/.test(c.target||'')?c.target:'2026-12-31',label:cleanText(c.label||'Milestone',80)};
  if(x.type==='markets')out.config={markets:[...new Set((Array.isArray(c.markets)?c.markets:['SGX','NYSE','NASDAQ','LSE','HKEX','SSE']).filter(v=>['SGX','NYSE','NASDAQ','LSE','HKEX','SSE'].includes(v)))].slice(0,6)};
+  if(x.type==='snapshot')out.config={days:[1,3,7].includes(c.days)?c.days:3};
   if(x.type==='weatheralerts')out.config={cityId:cleanText(c.cityId||'sg',90),psiLimit:[101,151,201].includes(c.psiLimit)?c.psiLimit:101,aqiLimit:[101,151,201].includes(c.aqiLimit)?c.aqiLimit:101,euLimit:[41,61,81].includes(c.euLimit)?c.euLimit:61,rainLimit:[50,70,90].includes(c.rainLimit)?c.rainLimit:70};
   if(x.type==='fx')out.config={base:['SGD','USD','EUR','GBP','JPY','AUD','CAD','CNY','TWD','BRL','CHF','HKD','NZD'].includes(c.base)?c.base:'SGD',quote:['SGD','USD','EUR','GBP','JPY','AUD','CAD','CNY','TWD','BRL','CHF','HKD','NZD'].includes(c.quote)?c.quote:'USD',amount:Number.isFinite(Number(c.amount))&&Number(c.amount)>0&&Number(c.amount)<=1e9?Number(c.amount):100};
   if(x.type==='metric')out.config={value:Number.isFinite(Number(c.value))?Math.min(1e9,Math.max(-1e9,Number(c.value))):0,unit:cleanText(c.unit||'',40),step:Number.isFinite(Number(c.step))?Math.min(1e6,Math.max(.01,Number(c.step))):1};
@@ -819,7 +820,8 @@ function content(m){const c=m.config;
  case 'countdown':return `<p class="module-sub">${esc(c.label)}</p><div class="count-number" data-countdown="${esc(m.id)}">—</div><div class="focus-hint">DAYS UNTIL ${esc(c.target)}</div>`;
  case 'habits':{const today=new Date().toLocaleDateString('en-CA');return `<p class="module-sub">TODAY'S CHECK-IN</p><form class="task-input-row" data-add-habit="${esc(m.id)}"><input name="text" placeholder="Add a habit…" maxlength="200" required><button>＋</button></form><div ${widgetGrid(m,'desk-task-grid')}>${c.habits.map((h,i)=>`<div class="taskrow ${h.day===today?'done':''}" data-item-drop-mid="${esc(m.id)}" data-item-drop-index="${i}"><input type="checkbox" data-toggle-habit="${esc(m.id)}" data-id="${esc(h.id)}" ${h.day===today?'checked':''}><span class="tasktext">${esc(h.text)}</span>${itemOrderButtons(m.id,i,c.habits.length)}<button class="delete-task" data-action="delete-habit" data-mid="${esc(m.id)}" data-tid="${esc(h.id)}">×</button></div>`).join('')}</div>`;}
  case 'metric':return `<p class="module-sub">CUSTOM COUNTER</p><div class="count-number">${esc(c.value)}<span class="metric-unit">${esc(c.unit)}</span></div><div class="focus-controls"><button class="smallbutton" data-action="metric-sub" data-mid="${esc(m.id)}">− ${esc(c.step)}</button><button class="smallbutton" data-action="metric-add" data-mid="${esc(m.id)}">＋ ${esc(c.step)}</button></div>`;
- case 'weatheralerts':return window.DeskV07?.renderAlerts(m)||'<p class="empty-note">Weather alert engine loading…</p>';
+ case 'snapshot':return window.DeskV07?.renderSnapshot(m)||'<p class="empty-note">Daily snapshot loading…</p>';
+  case 'weatheralerts':return window.DeskV07?.renderAlerts(m)||'<p class="empty-note">Weather alert engine loading…</p>';
   case 'markets':case 'fx':return window.DeskV07?.render(m)||'<p class="empty-note">Widget loading…</p>';
   case 'quote':{const q=quotes[Math.floor(Date.now()/86400000)%quotes.length];return `<p class="module-sub">DAILY PERSPECTIVE</p><blockquote class="quote-text">“${esc(q[0])}”</blockquote><div class="focus-hint">— ${esc(q[1])}</div>`;}
  }
@@ -906,6 +908,7 @@ function render(){
   refreshWeather();
   window.DeskV07?.refreshVisible();
   window.DeskV07?.refreshAlerts();
+  window.DeskV07?.refreshSnapshot();
  update();
 }
 function update(){const now=new Date();$('#localDate').textContent=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'}).format(now).toUpperCase();
