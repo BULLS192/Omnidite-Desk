@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Omnidite Desk — Personal Dashboard",
   "short_name": "Omnidite Desk",
-  "version": "0.5.8",
-  "description": "Omnidite Desk with widgets-first New Tab, free/snap grid layouts, live Calendar and local Pulse.",
+  "version": "0.5.9",
+  "description": "Omnidite Desk with widgets-first layout, live Calendar, Weather + PSI/AQI, and local Pulse.",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
@@ -32,7 +32,9 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxk8dc+UalWUO3SKO4VuOZ44JthTfWA27rLX8rpPw4RuCFMZFapqnT/0grKc/uw6T4t7SRG7yEFo1U2YaerAsv+JekC4UbsSX3CJYHODrChBa9vNxovmNKcMtPnkS6bf+9Lxte2OYpD9jmzQNaaRxQWdJSqRa7fb68a9uTVZXcdz3tMQcDD68NFMIXz4KsKG3O3JebX1rZLwcrjAKdSPVFjd6R0noyzlZSZHLPHI5ksrhonrJyyjRNxSdfzNUlLHeviurEMaF574DkHbURaRfczStkBqcH0UIAZuc6494R3u4nsOCWABVve6cG+Hf9LzfAkzV54oPaoh7sAkdiZLk4wIDAQAB",
   "host_permissions": [
     "https://geocoding-api.open-meteo.com/*",
-    "https://api.open-meteo.com/*"
+    "https://api.open-meteo.com/*",
+    "https://air-quality-api.open-meteo.com/*",
+    "https://api-open.data.gov.sg/*"
   ],
   "optional_permissions": [
     "tabs"
