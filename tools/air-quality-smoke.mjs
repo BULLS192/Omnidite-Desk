@@ -24,7 +24,7 @@ const sg={name:'Singapore',country:'Singapore',timezone:'Asia/Singapore',latitud
 const sgData=await a.load(sg);
 assert.equal(sgData.psi.central,192);
 assert.equal(sgData.pm25.central,123);
-assert.match(a.detail(sgData,sg),/2026-10-09/);
+assert.match(a.detail(sgData,sg),/9 Oct 2026/);
 assert.equal(sgData.pm25.central,123);
 const sgCard=a.summary(sgData);
 assert.match(sgCard,/PSI 192 · Unhealthy/);
