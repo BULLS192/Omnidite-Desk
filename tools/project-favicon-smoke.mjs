@@ -15,7 +15,7 @@ const context={chrome,URL,widgetGrid:()=>'class="linkgrid"',itemOrderButtons:()=
 vm.runInNewContext(source.slice(start,end)+'\nglobalThis.icons={siteFavicon,renderLinkModule}',context);
 const {siteFavicon,renderLinkModule}=context.icons;
 
-const expected=chrome.runtime.getURL('assets/providence-mark.webp');
+const expected=chrome.runtime.getURL('assets/providence-mark.png');
 assert.equal(siteFavicon('https://providence.omnidite.com'),expected);
 assert.equal(siteFavicon('https://providence.omnidite.com/region?focus=singapore'),expected);
 assert.notEqual(siteFavicon('https://fake-providence.omnidite.com'),expected,'Do not pin on lookalike hosts');
@@ -44,13 +44,16 @@ assert.ok(html.includes('class="site-favicon" src="'+expected+'"'),'Existing My 
 assert.ok(html.includes('class="site-favicon" src="'+bulls+'"'),'Saved BULL.S project link should show the approved bundled icon');
 assert.ok(html.includes('pageUrl=https%3A%2F%2Fomnidite.com'),'Other projects should continue using Chrome favicons');
 
-const image=fs.readFileSync(new URL('assets/providence-mark.webp',root));
+const image=fs.readFileSync(new URL('assets/providence-mark.png',root));
 assert.ok(image.length>10_000&&image.length<100_000,'Bundled emblem has expected image size');
-assert.equal(image.toString('ascii',0,4),'RIFF');
-assert.equal(image.toString('ascii',8,12),'WEBP');
+assert.equal(image.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+const zlib=await import('node:zlib');
+const idatSize=image.readUInt32BE(33);
+assert.equal(image.toString('ascii',37,41),'IDAT');
+assert.equal(zlib.inflateSync(image.subarray(41,41+idatSize)).length,96*(1+96*4),'PNG has all its rows');
 const githubBlob=crypto.createHash('sha1')
   .update(Buffer.from('blob '+image.length+'\0')).update(image).digest('hex');
-assert.equal(githubBlob,'2af74748bb1544095d52c5cf4cfc3f78cafce24f',
+assert.equal(githubBlob,'27480b3463564fd92497a2033d4f10bc9094d92e',
   'Use exact approved Providence mark, not an arbitrary logo or changed image');
 const bullsImage=fs.readFileSync(new URL('assets/bulls-icon.png',root));
 assert.ok(bullsImage.length>1000&&bullsImage.length<100000,'BULL.S icon should be a compact bundled image');
