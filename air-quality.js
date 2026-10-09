@@ -44,7 +44,7 @@
   return {label:'Hazardous',tone:'hazardous'};
  }
  const indexLabel = kind => kind==='psi'?'24-hour PSI':kind==='european_aqi'?'European AQI':'US AQI';
- function modelLocalTime(timestamp){return typeof timestamp==='string' && /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}/.test(timestamp)?timestamp.slice(0,16).replace('T',' ')+' (local)':'Time unavailable';}
+ function modelLocalTime(timestamp){return typeof timestamp==='string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(timestamp)?timestamp.slice(0,16).replace('T',' ') + '':'Time unavailable';}
  function formattedTime(timestamp,timezone) {
   if (!timestamp || Number.isNaN(Date.parse(timestamp))) return 'Time unavailable';
   try { return new Intl.DateTimeFormat('en-SG',{timeZone:timezone||'UTC',dateStyle:'medium',timeStyle:'short'}).format(new Date(timestamp)); }
