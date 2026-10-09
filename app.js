@@ -434,7 +434,23 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
 
  function siteFavicon(url){
   if(typeof chrome==='undefined'||!chrome.runtime?.getURL)return '';
-  try{const u=new URL(chrome.runtime.getURL('/_favicon/'));u.searchParams.set('pageUrl',url);u.searchParams.set('size','32');return u.toString();}catch{return '';}
+  try{
+   const target=new URL(url);
+   if(!['https:','http:'].includes(target.protocol))return '';
+   // Chrome's favicon cache may use a generic icon for WebP-only sites.
+   // Pin the EXISTING approved Providence square mark as a local extension
+   // asset, so New Tab and Side Panel work offline without extra permissions.
+   if(target.hostname.toLowerCase()==='providence.omnidite.com')
+    return chrome.runtime.getURL('assets/providence-mark.webp');
+   // Use the approved BULL.S icon on production and our V2 preview.
+   // Do not depend on Chrome's (possibly empty/stale) favicon cache.
+   const host=target.hostname.toLowerCase();
+   if(['kevinbullsyap.com','www.kevinbullsyap.com','kevinbullsyap.vercel.app','kevinbullsyap-oa-192.vercel.app','kevinbullsyap-git-main-oa-192.vercel.app','kevinbullsyap-git-feature-bulls-v2-phase-1-oa-192.vercel.app'].includes(host))
+    return chrome.runtime.getURL('assets/bulls-icon.png');
+   const u=new URL(chrome.runtime.getURL('/_favicon/'));
+   u.searchParams.set('pageUrl',url);u.searchParams.set('size','32');
+   return u.toString();
+  }catch{return '';}
  }
  function renderLinkModule(m){
   const list=m.config.links||[];
