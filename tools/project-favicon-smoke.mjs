@@ -15,7 +15,7 @@ const context={chrome,URL,widgetGrid:()=>'class="linkgrid"',itemOrderButtons:()=
 vm.runInNewContext(source.slice(start,end)+'\nglobalThis.icons={siteFavicon,renderLinkModule}',context);
 const {siteFavicon,renderLinkModule}=context.icons;
 
-const expected=chrome.runtime.getURL('assets/providence-mark.webp');
+const expected=chrome.runtime.getURL('assets/providence-icon.png');
 assert.equal(siteFavicon('https://providence.omnidite.com'),expected);
 assert.equal(siteFavicon('https://providence.omnidite.com/region?focus=singapore'),expected);
 assert.notEqual(siteFavicon('https://fake-providence.omnidite.com'),expected,'Do not pin on lookalike hosts');
@@ -44,13 +44,23 @@ assert.ok(html.includes('class="site-favicon" src="'+expected+'"'),'Existing My 
 assert.ok(html.includes('class="site-favicon" src="'+bulls+'"'),'Saved BULL.S project link should show the approved bundled icon');
 assert.ok(html.includes('pageUrl=https%3A%2F%2Fomnidite.com'),'Other projects should continue using Chrome favicons');
 
-const image=fs.readFileSync(new URL('assets/providence-mark.webp',root));
-assert.ok(image.length>10_000&&image.length<100_000,'Bundled emblem has expected image size');
-assert.equal(image.toString('ascii',0,4),'RIFF');
-assert.equal(image.toString('ascii',8,12),'WEBP');
+const image=fs.readFileSync(new URL('assets/providence-icon.png',root));
+assert.ok(image.length>1000&&image.length<10_000,'Approved Providence 48px favicon has compact size');
+assert.equal(image.subarray(0,8).toString('hex'),'89504e470d0a1a0a','Providence must be PNG');
+assert.equal(image.readUInt32BE(16),48,'Providence icon width');
+assert.equal(image.readUInt32BE(20),48,'Providence icon height');
+const { inflateSync }=await import('node:zlib');
+let offset=8;const idat=[];
+while(offset<image.length){
+ const len=image.readUInt32BE(offset),type=image.toString('ascii',offset+4,offset+8);
+ assert.ok(offset+12+len<=image.length,'PNG chunk may not be truncated');
+ if(type==='IDAT')idat.push(image.subarray(offset+8,offset+8+len));
+ offset+=12+len;
+}
+assert.equal(inflateSync(Buffer.concat(idat)).length,48*49,'Full icon must decompress without truncation');
 const githubBlob=crypto.createHash('sha1')
   .update(Buffer.from('blob '+image.length+'\0')).update(image).digest('hex');
-assert.equal(githubBlob,'2af74748bb1544095d52c5cf4cfc3f78cafce24f',
+assert.equal(githubBlob,'fadda07ae300b0ebcc96040e879d785f1f67ac21',
   'Use exact approved Providence mark, not an arbitrary logo or changed image');
 const bullsImage=fs.readFileSync(new URL('assets/bulls-icon.png',root));
 assert.ok(bullsImage.length>1000&&bullsImage.length<100000,'BULL.S icon should be a compact bundled image');
