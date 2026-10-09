@@ -110,11 +110,13 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 
 ## V0.7 — Four optional dashboard modules
 
-- [ ] Global markets: regular continuous sessions and DST-aware countdown; holiday calendar uncertainty clearly marked; never present indicative hours as live exchange connectivity.
-- [ ] Currency/FX: dated official reference rates, amount conversion, pair selection, cache/fallback; no trading.
-- [ ] Weather & air alerts: user-selectable threshold, live data freshness, distinguish official Singapore PSI from modeled AQI, no push claims.
-- [ ] Daily snapshot: local tasks and deadlines, cached Calendar/Pulse and weather summaries, no hidden network or data upload.
-- [ ] Beta per-wave CI, native helper compatibility, state migration and UI checks, then promote reviewed release to Stable.
+- [x] Global markets: regular continuous sessions and DST-aware countdown; holiday calendar uncertainty clearly marked; never present indicative hours as live exchange connectivity.
+- [x] Currency/FX: dated official reference rates, amount conversion, pair selection, cache/fallback; no trading.
+- [x] Weather & air alerts: user-selectable threshold, live data freshness, distinguish official Singapore PSI from modeled AQI, no push claims.
+- [x] Daily snapshot: local tasks and deadlines, cached Calendar/Pulse and weather summaries, no hidden network or data upload.
+- [x] Beta waves merged separately through PRs #22–#25; automated feature CI and native helper checks passed.
+- [ ] V0.7 combined regression and release qualification, then Stable promotion.
+- [ ] Windows Chrome manual acceptance of live source providers, New Tab/Side Panel, resizing, OAuth, Sync and update channels.
 
 ## V0.5.10 — Stability & Recovery
 
