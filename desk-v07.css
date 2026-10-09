@@ -17,3 +17,17 @@
 .v07-fx-value strong{font-size:20px;color:var(--accent,#93bbfd)}
 .v07-fx-value span,.v07-fx-result small{font-size:10px;color:var(--muted,#a4b5cd)}
 @media(max-width:500px){.v07-market-row{grid-template-columns:1fr}.v07-market-row>div:last-child{text-align:left}}
+
+/* V0.7 weather and haze alerts */
+.v07-alert-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:11px}
+.v07-alert-form label{display:grid;gap:5px;color:var(--muted,#b4c6da);font-size:10px;min-width:0}
+.v07-alert-form label:first-child{grid-column:1/-1}
+.v07-alert-form select{width:100%;min-width:0}
+.v07-alert-form small{font-size:9px;font-weight:400}
+.v07-alert-form button{align-self:end;min-height:36px}
+.v07-alert-output{margin-top:12px;font-size:12px}
+.v07-alert-item,.v07-alert-calm{padding:10px 12px;margin-bottom:6px;border-radius:9px;border:1px solid rgba(240,169,83,.5);background:rgba(255,193,92,.1);line-height:1.45}
+.v07-alert-item[data-stale=true]{opacity:.7;border-style:dashed}
+.v07-alert-calm{border-color:rgba(104,180,147,.3);background:rgba(80,145,115,.08)}
+.v07-alert-stamp{font-size:10px;color:var(--muted,#adc0d8);margin:8px 0}
+@media(max-width:480px){.v07-alert-form{grid-template-columns:1fr}.v07-alert-form label:first-child{grid-column:auto}}
