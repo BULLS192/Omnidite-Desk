@@ -15,7 +15,7 @@
   const items=(state.advancedTasks||[]).filter(x=>!x.done).map(x=>({label:String(x.title||''),date:x.due||'',priority:x.priority||'medium',project:x.project||''}));
   for(const p of state.pages||[])for(const m of p.modules||[])if(m.type==='tasks')for(const t of m.config?.tasks||[])if(!t.done)items.push({label:String(t.text||''),date:'',priority:'normal',project:p.title});
   const seen=new Set();
-  const tasks=items.filter(x=>{if(!x.label.trim())return false;const key=x.label.trim().toLocaleLowerCase()+':'+x.project.toLocaleLowerCase();if(seen.has(key))return false;seen.add(key);return true;}).sort((a,b)=>
+  const tasks=items.filter(x=>{if(!x.label.trim())return false;const key=x.label.trim().toLocaleLowerCase()+':'+String(x.project||'').toLocaleLowerCase();if(seen.has(key))return false;seen.add(key);return true;}).sort((a,b)=>
     (a.date||'9999-12-31').localeCompare(b.date||'9999-12-31')||({high:0,medium:1,low:2,normal:3}[a.priority]??4)-({high:0,medium:1,low:2,normal:3}[b.priority]??4)).slice(0,6);
   const overdue=items.filter(t=>t.date&&t.date<today).length;
   const dueSoon=items.filter(t=>t.date&&t.date>=today&&t.date<=end).length;
