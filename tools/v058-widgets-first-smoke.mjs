@@ -41,7 +41,7 @@ for(const page of ['index.html','sidepanel.html']){
  assert.ok(html.includes('OMNIDITE DESK · V0.5.10'),page+': footer version incorrect');
  console.log('PASS: '+page+' opens to widget grid before search/shortcuts/status/updater, with existing actions intact');
 }
-assert.equal(JSON.parse(read('manifest.json')).version,'0.5.9');
+assert.equal(JSON.parse(read('manifest.json')).version,'0.5.10');
 const css=read('desk-v058.css');
 for(const selector of ['.content > .sectionhead','.desk-secondary','body.side-mode',
  ':root[data-theme="light"]','body.has-wallpaper','@media(max-width:650px)']){
