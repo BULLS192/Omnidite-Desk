@@ -174,7 +174,7 @@ async function pullSync(initial=false,force=false){
 const modal=$('#modal'), modalInner=$('#modalInner');
 function show(html){modalInner.innerHTML=html;if(!modal.open)modal.showModal();}
 function close(){if(modal.open)modal.close();}
-const header=(title,detail)=>`<div class="modal-top"><div><span class="eyebrow">OMNIDITE / DESK</span><h2 id="modalTitle">${esc(title)}</h2><p>${esc(detail)}</p></div><button class="modal-close" data-modal="close">✕</button></div>`;
+const header=(title,detail)=>`<div class="modal-top"><div><span class="eyebrow">OMNIDITE / DESK</span><h2 id="modalTitle">${esc(title)}</h2><p>${esc(detail)}</p></div><button type="button" class="modal-close" data-modal="close" aria-label="Close dialog">✕</button></div>`;
 function gallery(){show(`<div class="modal-pad">${header('Widget library','Add any module to the current workspace.')}<div class="modal-grid">${TYPES.map(t=>`<button type="button" class="module-option" data-modal="add" data-type="${t}"><span class="module-icon">${META[t][0]}</span><strong>${esc(META[t][1])}</strong><small>${esc(META[t][2])}</small></button>`).join('')}</div></div>`);}
 function linkRow(l={label:'',url:''}){return `<div class="editlink"><input class="modal-input link-label" placeholder="Name" value="${esc(l.label)}"><input class="modal-input link-url" placeholder="https://example.com" value="${esc(l.url)}"><button type="button" data-modal="remove-row">×</button></div>`;}
 function editModule(id){const m=moduleFor(id);if(!m)return;
