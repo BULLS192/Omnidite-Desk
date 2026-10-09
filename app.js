@@ -74,7 +74,8 @@ function sanitizeModule(x,ids){
   const tasks=(Array.isArray(obj.advancedTasks)?obj.advancedTasks:[]).slice(0,70).filter(v=>v&&typeof v.title==='string').map(v=>({
    id:chars(v.id||uid(),90),title:chars(v.title,180),project:chars(v.project,80),
    priority:['high','medium','low'].includes(v.priority)?v.priority:'medium',
-   due:/^\d{4}-\d{2}-\d{2}$/.test(v.due||'')?v.due:'',done:!!v.done
+   due:/^\d{4}-\d{2}-\d{2}$/.test(v.due||'')?v.due:'',done:!!v.done,
+    stage:['todo','doing','blocked','done'].includes(v.stage)?v.stage:(v.done?'done':'todo')
   }));
   const contentItems=(Array.isArray(obj.contentItems)?obj.contentItems:[]).slice(0,45).filter(v=>v&&typeof v.title==='string').map(v=>({
    id:chars(v.id||uid(),90),title:chars(v.title,180),channel:chars(v.channel||'Article / Blog',60),
@@ -133,7 +134,7 @@ function normalize(obj){
  });
  if(!pages.length)pages.push(defaultPage('overview','Overview',[]));
  const projects=(Array.isArray(obj.projects)?obj.projects:defaultProjects()).slice(0,60).filter(x=>x&&typeof x.name==='string').map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,80),url:validUrl(x.url)?cleanText(x.url,1000):'',status:cleanText(x.status||'Tracked',40)}));
-  const captures=(Array.isArray(obj.captures)?obj.captures:[]).slice(0,40).filter(x=>x&&typeof x.title==='string').map(x=>({id:cleanText(x.id||uid(),90),title:cleanText(x.title,140),url:validUrl(x.url)?cleanText(x.url,1000):'',note:cleanText(x.note||'',1100),project:cleanText(x.project||'',90),createdAt:Number.isFinite(x.createdAt)?x.createdAt:Date.now()}));
+  const captures=(Array.isArray(obj.captures)?obj.captures:[]).slice(0,40).filter(x=>x&&typeof x.title==='string').map(x=>({id:cleanText(x.id||uid(),90),title:cleanText(x.title,140),url:validUrl(x.url)?cleanText(x.url,1000):'',note:cleanText(x.note||'',1100),project:cleanText(x.project||'',90),collection:cleanText(x.collection||'General',50),tags:[...new Set((Array.isArray(x.tags)?x.tags:[]).map(t=>cleanText(t,28)).filter(Boolean))].slice(0,8),createdAt:Number.isFinite(x.createdAt)?x.createdAt:Date.now()}));
   const layoutSnapshots=(Array.isArray(obj.layoutSnapshots)?obj.layoutSnapshots:[]).slice(0,12).filter(x=>x&&typeof x.name==='string'&&Array.isArray(x.widgets)).map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,70),pageId:cleanText(x.pageId||'',90),widgets:x.widgets.slice(0,80).filter(w=>w&&typeof w.id==='string').map(w=>({id:cleanText(w.id,90),cols:Number.isInteger(w.cols)?Math.max(1,Math.min(12,w.cols)):4,height:Number.isFinite(w.height)?Math.max(0,Math.min(1000,w.height)):0,gridW:Number.isInteger(w.gridW)&&w.gridW>=1&&w.gridW<=12?w.gridW:0,gridH:Number.isInteger(w.gridH)&&w.gridH>=1&&w.gridH<=12?w.gridH:0})) ,sizingMode:x.sizingMode==='snap'?'snap':'free',gridSettings:gridSettings(x.gridSettings)}));
   return {...normalizeOperations(obj),projects,captures,layoutSnapshots,version:2,brand:cleanText(obj.brand||'Omnidite Desk',55),searchEngine:['google','duckduckgo','bing'].includes(obj.searchEngine)?obj.searchEngine:'google',theme:['midnight','slate','light'].includes(obj.theme)?obj.theme:'midnight',layoutMode:obj.layoutMode==='rows'?'rows':'compact',sizingMode:obj.sizingMode==='snap'?'snap':'free',gridSettings:gridSettings(obj.gridSettings),accent:/^#[0-9a-fA-F]{6}$/.test(obj.accent||'')?obj.accent:'#4a8df5',activePage:pages.some(p=>p.id===obj.activePage)?obj.activePage:pages[0].id,updatedAt:Number.isFinite(obj.updatedAt)?obj.updatedAt:Date.now(),pages};
 }
