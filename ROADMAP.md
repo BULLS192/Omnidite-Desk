@@ -41,7 +41,8 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Remove oversized welcome hero to expose widget content immediately.
 - [x] Keep Search, shortcuts, Calendar/Pulse/Alerts, and updater in a section below widgets.
 - [x] Add hierarchy and element-identity regression checks for both HTML entry points.
-- [ ] Verify real browser screenshots, layout responsiveness and user acceptance before release.
+- [x] Checked rendered desktop and Side Panel screenshots, static integration regressions and native helper compilation; PR #16 merged to main.
+- [ ] Confirm widgets-first initial viewport in the user's installed Chrome extension.
 
 ## V0.5.7 — Snap-to-grid sizing (released on main in PR #15)
 
