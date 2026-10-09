@@ -9,7 +9,7 @@ for(const type of types){
  assert.ok(app.includes("x.type==='"+type+"'"),'Missing persisted config sanitizer for '+type);
  assert.ok(app.includes("case '"+type+"'")||app.includes("case 'markets':case 'fx'"),'Missing widget renderer for '+type);
 }
-assert.equal(manifest.version,'0.7.0');
+assert.equal(manifest.version,'0.8.0');
 assert.equal(manifest.manifest_version,3);
 assert.ok(manifest.key&&manifest.key.length>350,'Stable extension public ID key must be preserved');
 assert.deepEqual(manifest.permissions,['storage','sidePanel','nativeMessaging','favicon','identity']);
@@ -24,7 +24,7 @@ for(const html of ['index.html','sidepanel.html']){
  assert.ok(runtime>0&&a>runtime&&ss>a&&appJs>ss,html+': widget adapters must be loaded before app core');
  assert.ok(s.includes('href="desk-v07.css"'),html+': missing CSS');
  assert.ok(!/<script[^>]+src=["']https?:/i.test(s),html+': remote script must not be loaded');
- assert.ok(s.includes('v0.7.0</span>'),html+': version label');
+ assert.ok(s.includes('v0.8.0</span>'),html+': version label');
 }
 assert.match(markets,/Indicative regular sessions only/);
 assert.match(markets,/localToUtc/);
