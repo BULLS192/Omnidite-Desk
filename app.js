@@ -22,7 +22,7 @@ const META={
  clock:['◷','World clocks','Analog and digital city clocks'],weather:['☁','Weather + air quality','Weather forecasts, Singapore PSI and global AQI'],focus:['◴','Focus timer','Custom-length deep work'],
  agenda:['▦','Local agenda','Upcoming events and reminders'],countdown:['⌛','Countdown','Count down to a milestone'],
  habits:['◉','Habit tracker','Daily check-ins'],metric:['▥','Metric tracker','Track a running total'],
- quote:['✦','Inspiration','Thoughtful quotes'],markets:['◴','World markets','Global exchange hours and market session countdowns'],fx:['⇄','Currency & FX','Dated reference rates and quick conversions'],weatheralerts:['☂','Weather & air alerts','Thresholds for haze, rain and storms'];
+ quote:['✦','Inspiration','Thoughtful quotes'],markets:['◴','World markets','Global exchange hours and market session countdowns'],fx:['⇄','Currency & FX','Dated reference rates and quick conversions'],weatheralerts:['☂','Weather & air alerts','Thresholds for haze, rain and storms']};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const clone=v=>JSON.parse(JSON.stringify(v));
