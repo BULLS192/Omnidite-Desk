@@ -8,7 +8,7 @@ Four enhancements built on top of V0.7 Stable:
 
 **Privacy:** no new host permissions, remote AI services, background uploads, OAuth scopes, project database or privileged tokens. A user-initiated request for Chrome's existing optional tabs permission is needed only for active-tab capture. Research and task metadata are retained through existing Chrome Sync and JSON backup limits. No existing workspace/widget is automatically rearranged.
 
-**Deployment:** release through Beta branch first. Only promote Stable after full regression, headless Chromium UI and native helper CI. Actual Windows Chrome profile with live Calendar, Sync, wallpaper and update channel still needs user acceptance.
+**Deployment:** V0.8.0 is a **Beta-first release**. The extension's current Stable branch remains V0.7.0. Automated regression, headless Chromium modal interactions and native helper compilation are required, followed by actual Windows Chrome/Sync/Calendar acceptance before promotion. Users can return to Stable V0.7.0 code by selecting Stable; switching does not roll back data or delete any newly entered tasks/tags.
 
 ---
 

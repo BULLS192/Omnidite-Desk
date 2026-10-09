@@ -132,3 +132,50 @@ jobs:
             v07-preview-newtab.png
             v07-preview-sidepanel.png
           retention-days: 7
+
+  v08-browser-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Create fake-data Desk productivity panels
+        run: node tools/generate-v08-browser-preview.mjs
+      - name: Exercise V0.8 dialogs in real Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          BROWSER=$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$BROWSER" ]; then echo "No Chromium browser"; exit 1; fi
+          python3 -m http.server 8766 --bind 127.0.0.1 >/tmp/desk-v08-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          sleep 2
+          for PAGE in newtab sidepanel; do
+            for CASE in agenda tasks search research; do
+              URL="http://127.0.0.1:8766/v08-$PAGE-$CASE.html"
+              "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-extensions --virtual-time-budget=5000 --dump-dom "$URL" > "/tmp/desk-v08-$PAGE-$CASE.html"
+              case "$CASE" in
+                agenda) TITLE="Unified agenda" ;;
+                tasks) TITLE="Project task board" ;;
+                search) TITLE="Universal search" ;;
+                research) TITLE="Research studio" ;;
+              esac
+              grep -Fq "<h2 id=\"modalTitle\">$TITLE</h2>" "/tmp/desk-v08-$PAGE-$CASE.html"
+              if [ "$CASE" = "agenda" ]; then
+                grep -Fq 'Example team review' "/tmp/desk-v08-$PAGE-$CASE.html"
+                grep -Fq 'Review launch checklist' "/tmp/desk-v08-$PAGE-$CASE.html"
+              fi
+              if [ "$CASE" = "tasks" ]; then grep -Fq 'v08-task-board' "/tmp/desk-v08-$PAGE-$CASE.html"; fi
+              if [ "$CASE" = "search" ]; then grep -Fq 'v08-search-result' "/tmp/desk-v08-$PAGE-$CASE.html"; fi
+              if [ "$CASE" = "research" ]; then grep -Fq 'Research collection example' "/tmp/desk-v08-$PAGE-$CASE.html"; fi
+              echo "PASS: $PAGE / $CASE"
+            done
+          done
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: desk-v08-browser-debug
+          path: /tmp/desk-v08-*.html
+          retention-days: 5
