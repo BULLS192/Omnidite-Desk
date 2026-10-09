@@ -1,3 +1,19 @@
+# Omnidite Desk V0.7.0 — Four-Widget Release Candidate
+
+**What is new:** four optional widgets under **Add module**: **World markets**, **Currency & FX**, **Weather & air alerts**, and **Daily snapshot**. All use the existing widget layout/resize system and remain local-first. They are **not inserted automatically**, so existing workspace order and settings are preserved.
+
+- **World markets:** SGX, NYSE, Nasdaq, LSE, HKEX and SSE time-zone/DST-aware continuous trading-session schedules and indicative countdowns. Exchange holidays, early closures and halts are not checked; these are **not live exchange status claims**.
+- **FX:** select pair and amount. Dated, published central-bank/reference rates through [Frankfurter](https://frankfurter.dev/), cached up to six hours while Desk is open. Prices are **not live bid/ask quotes** and don't represent bank/card spreads. Frankfurter public endpoint adds a narrowly scoped host permission.
+- **Weather & air alerts:** adjustable NEA Singapore 24-hour PSI / modeled international US/European AQI thresholds, rain probability, and forecast storm indicators; updates on-page about every 15 minutes while Desk is open. **No push notification or official hazard-alert claim**. Source freshness and stale values are marked.
+- **Daily snapshot:** upcoming local tasks/deadlines, selected read-only cached Google Calendar events (or imported .ics), GitHub/Pulse cached status, and public weather/air readings; choose 1, 3 or 7-day horizon. No new AI, user data uploads, Calendar OAuth scope or backend.
+- **Stability:** inherits V0.6.2 QA/roadmap refresh, V0.6.1 modal form fix and secure Stable/Beta updater. Preserves stable Chrome extension ID, local data, backup and Chrome Sync storage schema.
+
+**Install:** once merged into `main`, use Desk → **Check updates → Update now**, then Add module to opt into each widget. A one-time native updater helper refresh is required **only** to switch Stable/Beta, not to install Stable releases. If the Chrome profile prompts for `api.frankfurter.dev` access, it is for the new optional FX rate feed.
+
+**Validation:** automated feature/regression tests and Windows C# native-helper compile must pass before release. Manual Windows Chrome New Tab, Side Panel, live data/CORS, permissions, Calendar/Pulse, wallpaper, widget persistence and Stable/Beta switching still need user verification. This release must not be described as fully device-tested until those checks are completed.
+
+---
+
 ## V0.7 Beta Wave 3 — Daily snapshot widget
 
 **Daily snapshot** is a fourth optional module. It combines locally saved project-linked/planner and widget tasks, overdue/due-soon counts, next 1/3/7 days of calendar appointments, cached GitHub/Pulse health, and weather + air quality in one card. Google Calendar is **read-only from Chrome's existing local cache**, without additional OAuth or API requests. If disconnected it uses the imported .ics snapshot, clearly labeled. Weather uses existing Open-Meteo and NEA sources while the widget is visible, with no new host permissions. Nothing about your tasks, appointments or projects is sent to an AI service. Connected readings are labeled as cached/stale; no push alerts or background monitoring promised.
