@@ -116,13 +116,16 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [x] Automated diagnostics smoke checks and existing regression CI.
 - [ ] User Windows Chrome acceptance after one-click update; especially backup/import, Chrome Sync, desktop/sidepanel and connected accounts.
 
-## V0.6 — Safe Stable/Beta updater (next)
+## V0.6.0 — Safe Stable/Beta updater (release candidate)
 
-- [ ] Explicit Stable and Beta channel, fixed allowlist, safe Git checkout/FF-only, clean-worktree checks and installed-channel visibility.
-- [ ] Clear fallback when old native helper is installed; one-time `Setup-OneClickUpdates.bat` recompilation after new host actions are released.
-- [ ] Roll back from Beta to Stable by selecting Stable, preserving Chrome storage; no arbitrary ref or repository from the UI.
-- [ ] Automated C# compile/security tests, JS mock tests, manual Windows Chrome acceptance.
-- [ ] Dedicated `beta` branch created from current main; tests pass before advancing Beta.
+- [x] Explicit Stable/`main` and Beta/`beta` UI with fixed allowed actions and safe confirmed channel changes.
+- [x] Read-only channel status, fast-forward Git updates, dirty/diverged branch refusal and fixed official remote.
+- [x] Refuse Beta unless it contains the latest stable main; no arbitrary refs, commands, force resets or untracked-file removal.
+- [x] Backward compatibility: existing main-only updater still installs V0.6.0; missing new helper capability is surfaced with one-time `Setup-OneClickUpdates.bat` instructions.
+- [x] Chrome extension ID, widget state, Google OAuth and Pulse native host protocol preserved.
+- [x] Automated JS channel/legacy tests, CI manifest consistency and Windows C# helper compilation.
+- [ ] User Windows Chrome manual acceptance: install release using legacy helper, recompile native helper once, switch Beta/Stable, verify local widgets/Sync/Calendar/Pulse, and confirm a dirty Git checkout blocks changes.
+- [ ] After stable release, initialize official `beta` from main; Beta should not contain unreviewed code or any user data.
 
 ## V1.0 — F.R.E.Y.A. intelligence (future)
 - [ ] Connect to a user-controlled F.R.E.Y.A. Core / Third Brain service through a documented, secure interface.
