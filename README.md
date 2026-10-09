@@ -1,4 +1,4 @@
-# Omnidite Desk V0.7.0 — Four-Widget Release Candidate
+# Omnidite Desk V0.7.0 — Four Optional Widgets (Stable Release)
 
 **What is new:** four optional widgets under **Add module**: **World markets**, **Currency & FX**, **Weather & air alerts**, and **Daily snapshot**. All use the existing widget layout/resize system and remain local-first. They are **not inserted automatically**, so existing workspace order and settings are preserved.
 
@@ -8,9 +8,9 @@
 - **Daily snapshot:** upcoming local tasks/deadlines, selected read-only cached Google Calendar events (or imported .ics), GitHub/Pulse cached status, and public weather/air readings; choose 1, 3 or 7-day horizon. No new AI, user data uploads, Calendar OAuth scope or backend.
 - **Stability:** inherits V0.6.2 QA/roadmap refresh, V0.6.1 modal form fix and secure Stable/Beta updater. Preserves stable Chrome extension ID, local data, backup and Chrome Sync storage schema.
 
-**Install:** once merged into `main`, use Desk → **Check updates → Update now**, then Add module to opt into each widget. A one-time native updater helper refresh is required **only** to switch Stable/Beta, not to install Stable releases. If the Chrome profile prompts for `api.frankfurter.dev` access, it is for the new optional FX rate feed.
+**Install:** use Desk → **Check updates → Update now**, then Add module to opt into each widget. A one-time native updater helper refresh is required **only** to switch Stable/Beta, not to install Stable releases. If the Chrome profile prompts for `api.frankfurter.dev` access, it is for the new optional FX rate feed.
 
-**Validation:** automated feature/regression tests, Windows C# native-helper compile, and a headless Chromium New Tab/Side Panel rendering check with fabricated data must pass before release. Manual Windows Chrome New Tab, Side Panel, live data/CORS, permissions, Calendar/Pulse, wallpaper, widget persistence and Stable/Beta switching still need user verification. This release must not be described as fully device-tested until those checks are completed.
+**Validation:** automated feature/regression tests, Windows C# native-helper compile and headless Chromium New Tab/Side Panel rendering with fabricated data passed before Stable promotion. Manual Windows Chrome New Tab, Side Panel, live data/CORS, permissions, Calendar/Pulse, wallpaper, widget persistence and Stable/Beta switching still need user verification. This release must not be described as fully device-tested until those checks are completed.
 
 ---
 

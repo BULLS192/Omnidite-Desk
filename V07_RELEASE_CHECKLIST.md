@@ -9,6 +9,7 @@
 - [x] V0.7 Daily Snapshot tasks, date/horizon, cached Calendar and weather tests
 - [x] V0.7 integration/schema/script order and extension-ID guard
 - [x] Windows native messaging helper compilation
+- [x] Automated headless Chromium actual New Tab and Side Panel DOM with all four V0.7 widgets and sample-data screenshots
 
 ## Windows Chrome user acceptance — not asserted by CI
 
