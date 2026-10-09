@@ -37,11 +37,11 @@ for(const page of ['index.html','sidepanel.html']){
   assert.ok(html.includes(handler),page+': missing '+handler);
  }
  assert.ok(html.includes('desk-v058.css'),page+': V0.5.8 CSS missing');
- assert.ok(html.includes('v0.5.8</span>'),page+': version chip incorrect');
- assert.ok(html.includes('OMNIDITE DESK · V0.5.8'),page+': footer version incorrect');
+ assert.ok(html.includes('v0.5.9</span>'),page+': version chip incorrect');
+ assert.ok(html.includes('OMNIDITE DESK · V0.5.9'),page+': footer version incorrect');
  console.log('PASS: '+page+' opens to widget grid before search/shortcuts/status/updater, with existing actions intact');
 }
-assert.equal(JSON.parse(read('manifest.json')).version,'0.5.8');
+assert.equal(JSON.parse(read('manifest.json')).version,'0.5.9');
 const css=read('desk-v058.css');
 for(const selector of ['.content > .sectionhead','.desk-secondary','body.side-mode',
  ':root[data-theme="light"]','body.has-wallpaper','@media(max-width:650px)']){

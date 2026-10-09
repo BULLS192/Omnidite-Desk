@@ -19,7 +19,7 @@ const itemOrderButtons=(mid,i,total)=>'<span class="desk-item-order"><span class
 const widgetGrid=(m,cls)=>'class="'+cls+' desk-inner-grid" data-columns="'+layoutColumns(m.config.columns,defaultInnerColumns(m.type))+'"';
 const META={
  links:['↗','Link launcher','Your project shortcuts'],tasks:['✓','Task list','Daily priorities'],notes:['▤','Notes','Keep ideas handy'],
- clock:['◷','World clocks','Analog and digital city clocks'],weather:['☁','Live weather','Current, hourly and 7-day forecasts'],focus:['◴','Focus timer','Custom-length deep work'],
+ clock:['◷','World clocks','Analog and digital city clocks'],weather:['☁','Weather + air quality','Weather forecasts, Singapore PSI and global AQI'],focus:['◴','Focus timer','Custom-length deep work'],
  agenda:['▦','Local agenda','Upcoming events and reminders'],countdown:['⌛','Countdown','Count down to a milestone'],
  habits:['◉','Habit tracker','Daily check-ins'],metric:['▥','Metric tracker','Track a running total'],
  quote:['✦','Inspiration','Thoughtful quotes']};
@@ -57,7 +57,7 @@ function sanitizeModule(x,ids){
  if(x.type==='notes')out.config.text=cleanText(c.text,12000);
  if(x.type==='focus'){const duration=Number.isFinite(c.duration)?Math.min(14400,Math.max(60,Math.round(c.duration))):1500;out.config={duration,seconds:Number.isFinite(c.seconds)?Math.min(14400,Math.max(0,Math.round(c.seconds))):duration,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null,sound:['chime','soft','bell','digital','none','custom'].includes(c.sound)?c.sound:'chime',volume:Number.isFinite(c.volume)?Math.min(100,Math.max(0,Math.round(c.volume))):70};}
  if(x.type==='clock')out.config={...out.config,cities:sanitizeCities(c.cities,'clock')};
- if(x.type==='weather')out.config={...out.config,cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
+ if(x.type==='weather')out.config={...out.config,cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily','air'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
  if(x.type==='agenda')out.config.events=(Array.isArray(c.events)?c.events:[]).slice(0,75).filter(e=>e&&e.title&&e.when).map(e=>({id:cleanText(e.id||uid(),90),title:cleanText(e.title,140),when:cleanText(e.when,25)}));
  if(x.type==='countdown')out.config={target:/^\d{4}-\d{2}-\d{2}$/.test(c.target||'')?c.target:'2026-12-31',label:cleanText(c.label||'Milestone',80)};
  if(x.type==='metric')out.config={value:Number.isFinite(Number(c.value))?Math.min(1e9,Math.max(-1e9,Number(c.value))):0,unit:cleanText(c.unit||'',40),step:Number.isFinite(Number(c.step))?Math.min(1e6,Math.max(.01,Number(c.step))):1};
@@ -341,9 +341,9 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  function temperature(n){return Number.isFinite(n)?Math.round(n)+'°C':'—';}
  function renderWeatherModule(m){
   const c=m.config,cs=c.cities||[];
-  return `<p class="module-sub">LIVE CONDITIONS · UPDATED ABOUT EVERY 15 MINUTES · OPEN-METEO</p>
+  return `<p class="module-sub">LIVE WEATHER + AIR QUALITY · UPDATED ABOUT EVERY 15 MINUTES</p>
    <div class="weather-city-bar">${cs.map(city=>`<button class="weather-city-pill ${c.selected===city.id?'selected':''}" type="button" data-weather-select="${esc(city.id)}" data-weather-mid="${esc(m.id)}">${esc(city.name)}</button>`).join('')}</div>
-   <div class="weather-tabs">${[['now','Now'],['hourly','Hourly'],['daily','7 days']].map(([v,label])=>`<button type="button" class="${c.view===v?'selected':''}" data-weather-view="${v}" data-weather-mid="${esc(m.id)}">${label}</button>`).join('')}</div>
+   <div class="weather-tabs">${[['now','Now'],['hourly','Hourly'],['daily','7 days'],['air','Air quality']].map(([v,label])=>`<button type="button" class="${c.view===v?'selected':''}" data-weather-view="${v}" data-weather-mid="${esc(m.id)}">${label}</button>`).join('')}</div>
    <div class="weather-content" data-weather-content="${esc(m.id)}"><p class="empty-note">Loading live forecasts…</p></div>
    <div class="weather-city-management">${cityPicker(m)}<div class="weather-remove-list">${cs.map((city,i)=>`<span>${esc(city.name)} ${itemOrderButtons(m.id,i,cs.length)} <button type="button" data-city-remove="${esc(city.id)}" data-city-mid="${esc(m.id)}" aria-label="Remove ${esc(city.name)}">×</button></span>`).join('')}</div></div>`;
  }
@@ -368,10 +368,10 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   }).catch(e=>{if(old)return old.data;throw e;}).finally(()=>weatherInFlight.delete(key));
   weatherInFlight.set(key,work);return work;
  }
- function weatherTile(city,data,mid,i,total){
+ function weatherTile(city,data,mid,i,total,air){
   const w=data.current||{},[symbol,label]=weatherCondition(w.weather_code,!!w.is_day);
   return `<div class="weather-now" data-item-drop-mid="${esc(mid)}" data-item-drop-index="${i}"><div class="weather-main"><div class="weather-symbol">${symbol}</div><div><strong>${esc(city.name)}</strong><div class="weather-reading">${temperature(w.temperature_2m)}</div><div class="weather-desc">${label}</div></div></div>
-   <div class="desk-weather-actions">${itemOrderButtons(mid,i,total)}</div><div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div></div>`;
+   <div class="desk-weather-actions">${itemOrderButtons(mid,i,total)}</div><div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div>${window.DeskAir?.summary(air)||''}</div>`;
  }
  function weatherForecast(data,view){
   if(view==='hourly'){
@@ -398,17 +398,25 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
    const view=m.config.view||'now';
    try{
     if(view==='now'){
-     const all=await Promise.allSettled(cities.map(weatherRequest));
+     const all=await Promise.all(cities.map(async city=>{
+      const [weather,air]=await Promise.allSettled([weatherRequest(city),window.DeskAir.load(city)]);
+      return {weather:weather.status==='fulfilled'?weather.value:null,air:air.status==='fulfilled'?air.value:null};
+     }));
      const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
      if(!current||!livePanel||current.config.view!==view)return;
-     livePanel.innerHTML=`<div ${widgetGrid(current,'weather-now-grid')}>${all.map((res,i)=>res.status==='fulfilled'?weatherTile(cities[i],res.value,current.id,i,cities.length):`<div class="weather-error">${esc(cities[i].name)}: weather unavailable</div>`).join('')}</div>`;
+     livePanel.innerHTML=`<div ${widgetGrid(current,'weather-now-grid')}>${all.map((res,i)=>res.weather?weatherTile(cities[i],res.weather,current.id,i,cities.length,res.air):`<div class="weather-error">${esc(cities[i].name)}: weather unavailable ${window.DeskAir.summary(res.air)}</div>`).join('')}</div>`;
+    }else if(view==='air'){
+     const air=await window.DeskAir.load(selected);
+     const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
+     if(!current||!livePanel||current.config.view!==view||(current.config.selected||cities[0].id)!==selected.id)return;
+     livePanel.innerHTML=window.DeskAir.detail(air,selected);
     }else{
      const data=await weatherRequest(selected);
      const current=moduleFor(m.id),livePanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);
      if(!current||!livePanel||current.config.view!==view||(current.config.selected||cities[0].id)!==selected.id)return;
      livePanel.innerHTML=`<div class="weather-forecast-head"><strong>${esc(selected.name)}</strong><span>${view==='hourly'?'Next 24 hours':'Next 7 days'}</span></div>`+weatherForecast(data,view);
     }
-   }catch(e){const currentPanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);if(currentPanel)currentPanel.innerHTML='<p class="weather-error">Weather unavailable. Check your connection and try again.</p>';}
+   }catch(e){const currentPanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);if(currentPanel)currentPanel.innerHTML=`<p class="weather-error">${view==='air'?'Air quality':'Weather'} data unavailable. Check your connection and try again.</p>`;}
   }
  }
  document.addEventListener('click',e=>{

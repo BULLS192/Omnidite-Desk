@@ -1,3 +1,18 @@
+# Omnidite Desk v0.5.9 — Weather + Air Quality (release candidate)
+
+## V0.5.9 — Singapore PSI and global AQI for the existing Weather widget
+
+- **Singapore:** Official NEA/data.gov.sg 24-hour PSI and hourly PM2.5 readings for five regions, with observation times, source and stale-data labels.
+- **Other cities:** clearly attributed Open-Meteo/CAMS model US AQI (most locations) or European AQI (European countries), PM2.5/PM10 concentrations, eight-hour model outlook, index categories and valid times. Different indices are not equivalent and model data is not a station reading.
+- Adds a compact AQ status to the existing Now tiles and an **Air quality** tab while retaining hourly and seven-day weather, city search/order, movable/resizable widgets and current Calendar/Pulse/project integrations.
+- Updates every ~15 minutes while the extension is open; caches responses and falls back to last known readings on transient errors. Public data sources; no new user data storage, accounts or backend.
+- Adds narrow API host permissions for Open-Meteo Air Quality and Singapore government data.gov.sg; the extension's existing public key and Chrome ID, OAuth settings, native updater, and saved dashboard state are unchanged.
+- Production update is through **Check updates → Update now** after release is merged to main. Installation requires the optional Windows native helper previously set up; updater runs only from a clean local main branch.
+- Source links: https://data.gov.sg/datasets/d_fe37906a0182569d891506e815e819b7/view ; https://open-meteo.com/en/docs/air-quality-api .
+- Validation: `node tools/check.mjs && node tools/air-quality-smoke.mjs` plus existing `.github/workflows/validate.yml` suites. Live-network / Windows acceptance recommended after updating.
+
+---
+
 # Omnidite Desk v0.5.8 — Released
 
 ## V0.5.8 — Widgets first in New Tab and Side Panel (released on main in PR #16)
