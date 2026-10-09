@@ -1,12 +1,12 @@
-# Omnidite Desk v0.5.8 — Widgets-first homepage (review branch; V0.5.7 stable)
+# Omnidite Desk v0.5.8 — Released
 
-## V0.5.8 — Widgets first in New Tab and Side Panel (development review)
+## V0.5.8 — Widgets first in New Tab and Side Panel (released on main in PR #16)
 
 The primary reason to open Desk is to see modules immediately. On both the full New Tab and compact Side Panel, the active workspace heading and **live widget grid now appear at the top, directly after the persistent navigation bar**. The huge decorative welcome hero has been removed so it no longer hides World Clocks, Weather, Quick Launch and other modules below the first viewport.
 
 **Search & tools**, placed after the widget grid, preserves the web search form, Projects / Google Calendar / Operations / Quick Capture actions, expanded additional-tool controls, cached Google Calendar preview, GitHub/Pulse/Local Alerts status cards, and **Check updates → Update now**. All original element IDs/data actions and native extension resources remain unchanged. The layout is mobile-responsive and theme/wallpaper-aware.
 
-Compatibility: existing four workspaces, saved widget order, Free Resize and Snap to Grid footprints, OAuth client ID, local Pulse, alarm sounds, cached calendar, optional Sync and Chrome extension ID are unchanged. No new permissions, network connections, or migrations. This review build is intentionally isolated from the stable release until validation and visual approval.
+Compatibility: existing four workspaces, saved widget order, Free Resize and Snap to Grid footprints, OAuth client ID, local Pulse, alarm sounds, cached calendar, optional Sync and Chrome extension ID are unchanged. No new permissions, network connections, or migrations. The user-requested redesign is released to `main` after desktop and Side Panel screenshots and regression checks passed. Use the existing Check updates → Update now control to install; verify on your device afterward.
 
 ## V0.5.7 — Flexible sizing or fixed phone-style grid (released on main in PR #15)
 
