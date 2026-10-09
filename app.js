@@ -332,7 +332,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
      if(!current||!livePanel||current.config.view!==view||(current.config.selected||cities[0].id)!==selected.id)return;
      livePanel.innerHTML=`<div class="weather-forecast-head"><strong>${esc(selected.name)}</strong><span>${view==='hourly'?'Next 24 hours':'Next 7 days'}</span></div>`+weatherForecast(data,view);
     }
-   }catch(e){const currentPanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);if(currentPanel)currentPanel.innerHTML='<p class="weather-error">Weather unavailable. Check your connection and try again.</p>';}
+   }catch(e){const currentPanel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);if(currentPanel)currentPanel.innerHTML=`<p class="weather-error">${view==='air'?'Air quality':'Weather'} data unavailable. Check your connection and try again.</p>`;}
   }
  }
  document.addEventListener('click',e=>{
