@@ -1,0 +1,7 @@
+/* V0.5.10: local diagnostics without altering widget layout */
+.desk-health-list{display:grid;gap:0;margin:12px 0 20px;border:1px solid #3b516b;border-radius:10px;overflow:hidden}
+.desk-health-list>div{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:12px;border-bottom:1px solid #31465e;font-size:12px;background:#1c3049}
+.desk-health-list>div:last-child{border-bottom:0}
+.desk-health-list span{color:#a5bbd1}.desk-health-list strong{font-weight:650;max-width:65%;text-align:right;overflow-wrap:anywhere}
+#deskHealthButton{margin-left:4px}
+@media(max-width:650px){.desk-health-list>div{align-items:flex-start}.desk-health-list strong{max-width:60%}}
