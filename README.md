@@ -8,8 +8,9 @@
 - **Projects hub**: editable project names, optional URLs and manual status labels. Seeded with relevant Omnidite projects; no claim of live project status.
 - **Quick research capture**: manually save a link, title, note and associated project. Search, edit and delete items via Research library.
 - **Layout studio**: Compact, Balanced and Wide presets; up to 12 snapshots; drag or move tiles; all 12 desktop grid widths; single-column compact mode.
+- **Air quality (development addition)**: The existing weather widget now includes live Singapore NEA 24-hour regional PSI and 1-hour PM2.5, plus a dedicated Air quality tab. Other cities show CAMS model-based US AQI, or European AQI where applicable, with PM2.5 and hourly trend. Readings include source, valid time, freshness and a clear distinction between official measurements and model estimates; indexes are not directly interchangeable. Air data refreshes about every 15 minutes while Desk is open. No additional accounts or keys are needed for ordinary personal use.
 - **Existing features preserved**: v0.2.3 live connected Google Drive/OneDrive local wallpaper folders, weather, clocks, widgets, storage/Chrome Sync, native updater and backups.
-- **Checks**: `node tools/check.mjs && node tools/v03-smoke.mjs`; verify Chrome New Tab, side panel, folder permissions and native updates on Windows before merging.
+- **Checks**: `node tools/check.mjs && node tools/v03-smoke.mjs && node tools/air-quality-smoke.mjs`; verify Chrome New Tab, side panel, folder permissions and native updates on Windows before merging.
 
 Development is on `feature/desk-v0.3-foundation`. Export a backup before manually loading a test branch. Existing **Update now** follows `main` and will not install this branch until it is released.
 
@@ -28,7 +29,7 @@ Development is on `feature/desk-v0.3-foundation`. Export a backup before manuall
 - Chrome side panel and new-tab experience.
 - **Built-in GitHub updater** on the New Tab dashboard. The optional one-time Windows native helper lets the page check GitHub, pull approved fast-forward updates, and reload the unpacked extension without opening a terminal.
 
-**Important limitations:** Calendar/agenda events are local manual entries; not yet connected to Google Calendar. Metric counters are manually adjusted, not live Vercel/Supabase data. Weather and city geocoding call only Open-Meteo endpoints; no account or API key is used. Local calendar remains manual. Resize snaps to grid, rather than allowing overlapping/free-pixel positioning. The version is designed for one Chrome profile per device.
+**Important limitations:** Calendar/agenda events are local manual entries; not yet connected to Google Calendar. Metric counters are manually adjusted, not live Vercel/Supabase data. Weather and geocoding call Open-Meteo; Singapore air quality calls official data.gov.sg NEA public APIs, and other cities use Open-Meteo/CAMS modelling. No account or API key is used in this development build. API fair-use/license terms apply, and readings can be delayed or unavailable. Local calendar remains manual. Resize snaps to grid, rather than allowing overlapping/free-pixel positioning. The version is designed for one Chrome profile per device.
 
 ## Connected Google Drive, OneDrive or local wallpaper folder (v0.2.3)
 
