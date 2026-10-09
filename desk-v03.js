@@ -53,6 +53,7 @@
     return list;
   }
   function openCommand() {
+    if (window.DeskV08?.openSearch) return window.DeskV08.openSearch();
     show('Command bar', 'Search across your workspaces, projects, tasks, shortcuts and saved research.',
       '<label class="label" for="deskCommandInput">Search or type a command</label>' +
       '<input id="deskCommandInput" class="modal-input desk-command-input" autocomplete="off" placeholder="e.g. Atlas, capture, research…" aria-controls="deskCommandResults">' +
