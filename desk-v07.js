@@ -95,9 +95,13 @@
   if(m.type==='fx')return fxHtml(m);
   return '<p class="empty-note">Widget not available.</p>';
  }
+ let lastMarketTick=0;
  function tick(now=new Date()){
-  const state=window.DeskBridge?.getState?.();
-  for(const el of document.querySelectorAll('[data-v07-exchange]')){
+  const rows=[...document.querySelectorAll('[data-v07-exchange]')];
+  if(!rows.length)return;
+  if(now.getTime()-lastMarketTick<30000&&rows.every(el=>el.querySelector('.v07-market-clock')?.textContent!=='—'))return;
+  lastMarketTick=now.getTime();
+  for(const el of rows){
    const x=MARKETS.find(m=>m.id===el.dataset.v07Exchange);if(!x)continue;
    const s=marketStatus(x,now),clock=el.querySelector('.v07-market-clock'),label=el.querySelector('.v07-market-state');
    if(clock)clock.textContent=s.localTime+' local';
