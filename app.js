@@ -433,7 +433,18 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
 
  function siteFavicon(url){
   if(typeof chrome==='undefined'||!chrome.runtime?.getURL)return '';
-  try{const u=new URL(chrome.runtime.getURL('/_favicon/'));u.searchParams.set('pageUrl',url);u.searchParams.set('size','32');return u.toString();}catch{return '';}
+  try{
+   const target=new URL(url);
+   if(!['https:','http:'].includes(target.protocol))return '';
+   // Chrome's favicon cache may use a generic icon for WebP-only sites.
+   // Pin the EXISTING approved Providence square mark as a local extension
+   // asset, so New Tab and Side Panel work offline without extra permissions.
+   if(target.hostname.toLowerCase()==='providence.omnidite.com')
+    return chrome.runtime.getURL('assets/providence-mark.webp');
+   const u=new URL(chrome.runtime.getURL('/_favicon/'));
+   u.searchParams.set('pageUrl',url);u.searchParams.set('size','32');
+   return u.toString();
+  }catch{return '';}
  }
  function renderLinkModule(m){
   const list=m.config.links||[];
