@@ -55,7 +55,7 @@ assert.equal(githubBlob,'2af74748bb1544095d52c5cf4cfc3f78cafce24f',
 const bullsImage=fs.readFileSync(new URL('assets/bulls-icon.png',root));
 assert.ok(bullsImage.length>1000&&bullsImage.length<100000,'BULL.S icon should be a compact bundled image');
 assert.equal(bullsImage.subarray(0,8).toString('hex'),'89504e470d0a1a0a','BULL.S icon should be a valid PNG');
-const bullsBlob=crypto.createHash('sha1').update(Buffer.from('blob '+bullsImage.length+'\\0')).update(bullsImage).digest('hex');
+const bullsBlob=crypto.createHash('sha1').update(Buffer.from('blob '+bullsImage.length+'\0')).update(bullsImage).digest('hex');
 assert.equal(bullsBlob,'c3d03c623c006f7e24cddbe86a441f5c0b0ae604','Use the exact owner-approved BULL.S PNG from the website repository');
 console.log('PASS: Desk bundles the exact approved BULL.S icon on saved production and preview links');
 console.log('PASS: Desk renders the approved Providence emblem from a local bundled asset');
