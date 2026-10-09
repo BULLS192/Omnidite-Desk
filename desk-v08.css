@@ -1,0 +1,47 @@
+/* Desk V0.8 productivity panels — uses existing dialog and theme tokens */
+.desk-v08 .modal-top{margin-bottom:16px}
+.desk-v08 .v08-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:9px;margin:12px 0}
+.v08-toolbar label{display:grid;gap:5px;font-size:11px;color:var(--muted,#b2c4d9);min-width:115px}
+.desk-v08 .v08-toolbar .modal-input{min-width:0;max-width:100%}
+.desk-v08 .v08-grow{flex:1 1 260px;min-width:0}
+.desk-v08 .v08-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.v08-stats>span{display:grid;gap:4px;background:rgba(88,127,177,.12);border:1px solid rgba(126,158,195,.23);border-radius:9px;padding:11px;color:var(--muted,#aac0da);font-size:10px}
+.v08-stats strong{font-size:21px;color:var(--accent,#96bbff)}
+.v08-calendar-source{font-size:10px;color:var(--muted,#aec1d7);margin:9px 0}
+.v08-agenda-day{padding:10px 0;border-top:1px solid rgba(121,155,195,.25)}
+.v08-agenda-day h3{font-size:12px;margin:0 0 8px}
+.v08-event{display:grid;grid-template-columns:80px 1fr;gap:11px;margin:8px 0;padding:9px;background:rgba(81,128,185,.075);border-radius:8px}
+.v08-event-type{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--accent,#94c2ff);font-weight:650}
+.v08-event>div{display:grid;gap:3px;min-width:0}
+.v08-event strong{font-size:12px;overflow-wrap:anywhere}
+.v08-event small{font-size:10px;color:var(--muted,#b1c4d9);overflow-wrap:anywhere}
+.v08-attention{padding:11px 13px;border:1px solid rgba(233,158,86,.46);border-radius:9px;background:rgba(213,139,81,.1);font-size:11px}
+.v08-attention p{margin:7px 0}
+.v08-task-board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px}
+.v08-task-column{background:rgba(89,130,181,.08);border:1px solid rgba(113,158,207,.22);border-radius:10px;padding:11px;min-width:0}
+.v08-task-column h3{font-size:12px;display:flex;justify-content:space-between;margin:0 0 12px}
+.v08-task-column h3 small{font-size:11px;color:var(--muted,#a7c1d9)}
+.v08-task-card{background:rgba(89,130,181,.14);border:1px solid rgba(108,149,193,.22);border-radius:8px;margin:7px 0;padding:10px;display:grid;gap:5px}
+.v08-task-card strong{font-size:11px;overflow-wrap:anywhere}
+.v08-task-card small{font-size:10px;color:var(--muted,#b2c6dc);overflow-wrap:anywhere}
+.v08-card-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.v08-card-actions select{min-width:0;flex:1;font-size:11px}
+.v08-empty{font-size:11px;color:var(--muted,#9cb5d0)}
+.v08-search-list{display:grid;gap:5px;max-height:55vh;overflow-y:auto;margin-top:10px}
+.v08-search-result{width:100%;display:grid;grid-template-columns:80px 1fr auto;gap:10px;text-align:left;align-items:center;border:1px solid rgba(114,154,197,.25);border-radius:8px;padding:10px;background:rgba(91,136,189,.1);color:inherit}
+.v08-search-result:hover,.v08-search-result:focus-visible{border-color:var(--accent,#95bfff)}
+.v08-search-result>span{font-size:10px;font-weight:650;color:var(--accent,#94c3ff);text-transform:uppercase}
+.v08-search-result>div{min-width:0;display:grid;gap:4px}
+.v08-search-result strong{font-size:12px;overflow-wrap:anywhere}
+.v08-search-result small{font-size:10px;color:var(--muted,#afc3da);overflow-wrap:anywhere}
+.v08-list{max-height:55vh;overflow-y:auto}
+.v08-record{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(126,161,203,.22)}
+.v08-record>div{display:grid;gap:5px;min-width:0}
+.v08-record strong{font-size:12px;overflow-wrap:anywhere}
+.v08-record small,.v08-record p,.v08-record a{font-size:10px;color:var(--muted,#b7c8db);overflow-wrap:anywhere}
+.v08-record a{color:var(--accent,#a2cbff)}
+.v08-tags{display:flex;flex-wrap:wrap;gap:5px}
+.v08-tags span{font-size:9px;border:1px solid rgba(127,163,203,.35);border-radius:999px;padding:3px 7px}
+.desk-v08 form>.modal-input,.desk-v08 form>label.label{display:block;margin-top:10px}
+.desk-v08 form>select.modal-input,.desk-v08 form>input.modal-input,.desk-v08 form>textarea.modal-input{width:100%}
+@media(max-width:640px){.v08-task-board{grid-template-columns:1fr}.v08-event{grid-template-columns:70px 1fr}.v08-search-result{grid-template-columns:67px 1fr auto}}
