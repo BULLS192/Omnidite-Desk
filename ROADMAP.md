@@ -108,6 +108,24 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - Existing roadmap/issues for V0.3–V0.5 are historical; preserve them until reviewed. No unreviewed branch cleanup.
 - Stable promotion must be a merge containing the latest main, never a forced reset, and must preserve the installed extension ID and data schema.
 
+## Current status — Desk V0.8 development
+
+- **Stable `main`:** V0.7.0; user confirmed working on their Windows Chrome installation. Do not update Stable until V0.8 Beta has been reviewed.
+- **Beta `beta`:** V0.8.0 productivity command center, built directly from current Beta (containing V0.7.0), in PR #31.
+- **Branch safety:** preserve fast-forward-safe main ancestry, same Chrome extension ID/public manifest key and existing V2 persisted data schema.
+- **Privacy:** no new required/optional extension permissions, origins, OAuth scopes, backend, AI uploads or admin tokens.
+
+## V0.8 — Productivity Command Center
+
+- [x] Unified 1/7/30-day agenda: selected cached Google Calendar or .ics events, local agenda, planner deadlines and content dates, overdue summary.
+- [x] Project task board: Todo, In progress, Blocked, Completed, project filter, priority and deadline edit, classic task planner compatibility.
+- [x] Universal search: ranked, filterable lookup across pages, widgets, local notes, shortcuts, tasks, projects, content, captured research, browser sessions and cached calendar; existing command shortcut delegates with fallback.
+- [x] Research studio: project/collection/tag organization, duplicate URL guard, explicit opt-in active-tab capture, privacy-safe JSON export and existing 40-record limit.
+- [x] Backward-compatible `stage` field for advancedTasks, `collection` and `tags` for research captures in existing state normalize/Chrome Sync/JSON backup.
+- [x] Automated deterministic feature tests, legacy regression and Windows native helper compilation; browser New Tab / Side Panel tests added.
+- [ ] Beta on-device acceptance: update channel, modal buttons, form validation, project workflow persistence, Google cached calendar, old v03/v04 task/research forms, Chrome Sync limits.
+- [ ] Promote Beta V0.8.0 to Stable only after live Chrome acceptance. Synchronize Beta to latest main after merge.
+
 ## V0.7 — Four optional dashboard modules
 
 - [x] Global markets: regular continuous sessions and DST-aware countdown; holiday calendar uncertainty clearly marked; never present indicative hours as live exchange connectivity.
