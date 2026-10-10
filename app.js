@@ -437,11 +437,11 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   try{
    const target=new URL(url);
    if(!['https:','http:'].includes(target.protocol))return '';
-   // Chrome's favicon cache may use a generic icon for WebP-only sites.
+   // Chrome's favicon cache may use a generic icon, and the old Providence WebP was corrupted.
    // Pin the EXISTING approved Providence square mark as a local extension
    // asset, so New Tab and Side Panel work offline without extra permissions.
    if(target.hostname.toLowerCase()==='providence.omnidite.com')
-    return chrome.runtime.getURL('assets/providence-mark.webp');
+    return chrome.runtime.getURL('assets/providence-icon.png');
    // Use the approved BULL.S icon on production and our V2 preview.
    // Do not depend on Chrome's (possibly empty/stale) favicon cache.
    const host=target.hostname.toLowerCase();
