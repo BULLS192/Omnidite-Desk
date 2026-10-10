@@ -8,6 +8,11 @@
 - [x] Original V0.7 widget rendering smoke passed.
 - [x] Existing MV3 manifest key, permissions and required hosts unchanged from V0.7.
 
+## Stable/Beta ancestry synchronization
+- [x] Latest Stable Providence icon repair (#35) integrated into V0.8 Beta without removing the approved BULL.S shortcut icon.
+- [x] Git ancestry confirms `origin/main` is contained in `origin/beta` (no forced branch rewrite).
+- [ ] Windows Chrome Stable -> Beta switch using the native updater helper must be verified by the user.
+
 ## Windows Chrome — still requires user confirmation
 - [ ] Settings → Export JSON backup before Beta testing.
 - [ ] Confirm Stable V0.7.0 -> Beta V0.8.0, then version label and all old workspaces/widgets/settings retained.
