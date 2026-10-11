@@ -1,3 +1,17 @@
+# Omnidite Desk V0.8.0 — Productivity Command Center (Stable Release)
+
+Four enhancements built on top of V0.7 Stable:
+1. **Unified Agenda:** a read-only merged view of selected cached Google Calendar events (or imported .ics), locally entered agenda items, project task deadlines and content publishing dates, with 1/7/30-day filters. Calendar is never changed; your Google token stays in Chrome Identity.
+2. **Project Task Board:** existing advanced tasks displayed across To do, In progress, Blocked and Completed with project filters, priority and deadline editing. Existing classic planner and widget task lists are retained. Workflow stage is added as a backward-compatible optional field in the existing V2 state, not a new database.
+3. **Universal Search:** the existing Ctrl+K and command-bar button now search workspaces, widgets, local notes, links, project tasks, content plans, saved research, sessions and cached calendar appointments with ranked results and category filters.
+4. **Research Studio:** collection names and up to 8 tags per saved research item, cross-field search, URL duplicate checks, manual or explicitly permissioned active-tab capture, and local JSON export. Keeps existing 40-item capacity and never silently evicts old captures.
+
+**Privacy:** no new host permissions, remote AI services, background uploads, OAuth scopes, project database or privileged tokens. A user-initiated request for Chrome's existing optional tabs permission is needed only for active-tab capture. Research and task metadata are retained through existing Chrome Sync and JSON backup limits. No existing workspace/widget is automatically rearranged.
+
+**Deployment:** V0.8.0 completed Beta testing and is being promoted to Stable through reviewed GitHub PR. The user confirmed the Beta updater installed V0.8.0 and tested Unified Agenda, Project Task Board, Universal Search and Research Studio successfully on their Windows Chrome installation. Existing automated regression, V0.7/V0.8 Chromium New Tab and Side Panel UI tests and Windows native helper compilation passed. Extended checks (all data-provider edge cases, optional Chrome Sync, wallpaper, accessibility and every local configuration) remain ongoing rather than certified. To install Stable, use **Desk Updates → Stable → Switch to Stable** if currently on Beta, or **Check updates → Update now** if currently on Stable. This keeps the extension ID and local data; do not reinstall.
+
+---
+
 # Omnidite Desk V0.7.0 — Four Optional Widgets (Stable Release)
 
 **What is new:** four optional widgets under **Add module**: **World markets**, **Currency & FX**, **Weather & air alerts**, and **Daily snapshot**. All use the existing widget layout/resize system and remain local-first. They are **not inserted automatically**, so existing workspace order and settings are preserved.

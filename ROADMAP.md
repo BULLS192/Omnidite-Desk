@@ -100,13 +100,32 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - [ ] Formal browser privacy review and authenticated service token lifecycle, if ever introduced.
 - **Acceptance:** no privileged API token embedded in extension source, clear "last updated" stamps, rate-limited polling.
 
-## Current release state — October 9, 2026
+## Release state — V0.8.0 Stable cut
 
-- **Stable main:** V0.7.0 (after release cut; user Chrome upgrade acceptance pending). It includes official NEA PSI, global AQI, widget layouts, Calendar, Pulse, Health, Stable/Beta updater and the modal-close form correction.
-- **Beta:** V0.6.2 maintenance and all four V0.7 widget waves plus browser QA are integrated and ready for promotion; Beta must be synchronized with main after the release merge.
+- **Stable main:** V0.8.0 after release PR merge, including the four V0.7 data widgets and all four V0.8 productivity panels.
+- **Beta:** V0.8.0 is the candidate that passed CI and user-confirmed core feature acceptance; sync Beta from updated main after Stable promotion to maintain updater ancestry.
 - One-time native host recompile may be required for Beta switching. The installed Chrome profile, wallpaper folder, Calendar OAuth, Pulse and Chrome Sync must be user-tested. GitHub Actions do not substitute for real-device acceptance.
 - Existing roadmap/issues for V0.3–V0.5 are historical; preserve them until reviewed. No unreviewed branch cleanup.
 - Stable promotion must be a merge containing the latest main, never a forced reset, and must preserve the installed extension ID and data schema.
+
+## Current status — Desk V0.8 development
+
+- **Stable `main`:** V0.8.0 (release through this PR). Core Beta feature acceptance confirmed by user.
+- **Beta `beta`:** V0.8.0, first introduced in PR #31; Beta synchronization required after release.
+- **Branch safety:** preserve fast-forward-safe main ancestry, same Chrome extension ID/public manifest key and existing V2 persisted data schema.
+- **Privacy:** no new required/optional extension permissions, origins, OAuth scopes, backend, AI uploads or admin tokens.
+
+## V0.8 — Productivity Command Center
+
+- [x] Unified 1/7/30-day agenda: selected cached Google Calendar or .ics events, local agenda, planner deadlines and content dates, overdue summary.
+- [x] Project task board: Todo, In progress, Blocked, Completed, project filter, priority and deadline edit, classic task planner compatibility.
+- [x] Universal search: ranked, filterable lookup across pages, widgets, local notes, shortcuts, tasks, projects, content, captured research, browser sessions and cached calendar; existing command shortcut delegates with fallback.
+- [x] Research studio: project/collection/tag organization, duplicate URL guard, explicit opt-in active-tab capture, privacy-safe JSON export and existing 40-record limit.
+- [x] Backward-compatible `stage` field for advancedTasks, `collection` and `tags` for research captures in existing state normalize/Chrome Sync/JSON backup.
+- [x] Automated deterministic feature tests, legacy regression and Windows native helper compilation; browser New Tab / Side Panel tests added.
+- [x] User confirmed V0.8.0 Beta installed and all four new productivity features tested successfully on Windows Chrome.
+- [ ] Further edge-case acceptance: legacy dialogs, light theme, wallpaper permissions, optional Chrome Sync, all provider data paths, error history.
+- [x] Begin V0.8.0 Stable promotion after core on-device acceptance; synchronize Beta to latest main after merge.
 
 ## V0.7 — Four optional dashboard modules
 
