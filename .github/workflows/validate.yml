@@ -179,3 +179,55 @@ jobs:
           name: desk-v08-browser-debug
           path: /tmp/desk-v08-*.html
           retention-days: 5
+
+  v09-browser-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build fabricated-data operations panel fixtures
+        run: node tools/generate-v09-browser-preview.mjs
+      - name: Validate V0.9 real-browser New Tab and Side Panel dialogs
+        shell: bash
+        run: |
+          set -euo pipefail
+          BROWSER=$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$BROWSER" ]; then echo "Chromium browser missing"; exit 1; fi
+          python3 -m http.server 8767 --bind 127.0.0.1 >/tmp/desk-v09-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          sleep 2
+          for PAGE in newtab sidepanel; do
+            for CASE in monitor projects alerts brief; do
+              URL="http://127.0.0.1:8767/v09-$PAGE-$CASE.html"
+              "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-extensions --virtual-time-budget=5000 --dump-dom "$URL" > "/tmp/desk-v09-$PAGE-$CASE.html"
+              case "$CASE" in
+                monitor)
+                  grep -Fq '<h2 id="modalTitle">Unified monitoring</h2>' "/tmp/desk-v09-$PAGE-$CASE.html"
+                  grep -Fq 'Vercel' "/tmp/desk-v09-$PAGE-$CASE.html"
+                  grep -Fq 'Not live / stale' "/tmp/desk-v09-$PAGE-$CASE.html"
+                  ;;
+                projects)
+                  grep -Fq '<h2 id="modalTitle">Project command center</h2>' "/tmp/desk-v09-$PAGE-$CASE.html"
+                  grep -Fq 'preview.example.com' "/tmp/desk-v09-$PAGE-$CASE.html"
+                  ;;
+                alerts)
+                  grep -Fq '<h2 id="modalTitle">Operations alerts</h2>' "/tmp/desk-v09-$PAGE-$CASE.html"
+                  grep -Fq 'Acknowledge' "/tmp/desk-v09-$PAGE-$CASE.html"
+                  ;;
+                brief)
+                  grep -Fq '<h2 id="modalTitle">Daily operations brief</h2>' "/tmp/desk-v09-$PAGE-$CASE.html"
+                  grep -Fq 'Review example release' "/tmp/desk-v09-$PAGE-$CASE.html"
+                  ;;
+              esac
+              echo "PASS: $PAGE / $CASE"
+            done
+          done
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: desk-v09-browser-debug
+          path: /tmp/desk-v09-*.html
+          retention-days: 5
