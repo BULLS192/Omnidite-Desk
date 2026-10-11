@@ -116,11 +116,14 @@ function sanitizeModule(x,ids){
   const operationalAlerts=(Array.isArray(obj.operationalAlerts)?obj.operationalAlerts:[]).slice(0,16).filter(x=>x&&typeof x.message==='string').map(x=>({
    id:chars(x.id||uid(),90),source:chars(x.source,80),message:chars(x.message,190),
    severity:['ok','warning','down','unknown'].includes(x.severity)?x.severity:'unknown',
-   createdAt:Number.isFinite(x.createdAt)?x.createdAt:0,signature:chars(x.signature,250)
+   createdAt:Number.isFinite(x.createdAt)?x.createdAt:0,signature:chars(x.signature,250),acknowledgedAt:Number.isFinite(x.acknowledgedAt)&&x.acknowledgedAt>0?x.acknowledgedAt:0
   }));
+  const prefs=obj.opsPrefs||{};
+  const opsPrefs={warn:[70,80,90].includes(prefs.warn)?prefs.warn:80,critical:[90,95,100].includes(prefs.critical)?prefs.critical:95,staleHours:[1,3,6,24].includes(prefs.staleHours)?prefs.staleHours:3};
+  if(opsPrefs.critical<opsPrefs.warn)opsPrefs.critical=95;
   return {workSessions,advancedTasks:tasks,contentItems,calendarEvents,githubRepos,
    githubSelected:githubRepos.includes(obj.githubSelected)?obj.githubSelected:(githubRepos[0]||''),
-   githubCache,pulseSettings,pulseCache,operationalAlerts};
+   githubCache,pulseSettings,pulseCache,operationalAlerts,opsPrefs};
  }
 
 function normalize(obj){
@@ -133,7 +136,7 @@ function normalize(obj){
   return {id,title:cleanText(p.title||'Workspace',45),modules:p.modules.slice(0,80).map(x=>sanitizeModule(x,ids)).filter(Boolean)};
  });
  if(!pages.length)pages.push(defaultPage('overview','Overview',[]));
- const projects=(Array.isArray(obj.projects)?obj.projects:defaultProjects()).slice(0,60).filter(x=>x&&typeof x.name==='string').map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,80),url:validUrl(x.url)?cleanText(x.url,1000):'',status:cleanText(x.status||'Tracked',40)}));
+ const projects=(Array.isArray(obj.projects)?obj.projects:defaultProjects()).slice(0,60).filter(x=>x&&typeof x.name==='string').map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,80),url:validUrl(x.url)?cleanText(x.url,1000):'',previewUrl:validUrl(x.previewUrl)?cleanText(x.previewUrl,1000):'',repo:/^[a-zA-Z0-9_.-]{1,80}\/[a-zA-Z0-9_.-]{1,100}$/.test(x.repo||'')&&!String(x.repo).includes('..')?cleanText(x.repo,181):'',note:cleanText(x.note||'',240),status:cleanText(x.status||'Tracked',40)}));
   const captures=(Array.isArray(obj.captures)?obj.captures:[]).slice(0,40).filter(x=>x&&typeof x.title==='string').map(x=>({id:cleanText(x.id||uid(),90),title:cleanText(x.title,140),url:validUrl(x.url)?cleanText(x.url,1000):'',note:cleanText(x.note||'',1100),project:cleanText(x.project||'',90),collection:cleanText(x.collection||'General',50),tags:[...new Set((Array.isArray(x.tags)?x.tags:[]).map(t=>cleanText(t,28)).filter(Boolean))].slice(0,8),createdAt:Number.isFinite(x.createdAt)?x.createdAt:Date.now()}));
   const layoutSnapshots=(Array.isArray(obj.layoutSnapshots)?obj.layoutSnapshots:[]).slice(0,12).filter(x=>x&&typeof x.name==='string'&&Array.isArray(x.widgets)).map(x=>({id:cleanText(x.id||uid(),90),name:cleanText(x.name,70),pageId:cleanText(x.pageId||'',90),widgets:x.widgets.slice(0,80).filter(w=>w&&typeof w.id==='string').map(w=>({id:cleanText(w.id,90),cols:Number.isInteger(w.cols)?Math.max(1,Math.min(12,w.cols)):4,height:Number.isFinite(w.height)?Math.max(0,Math.min(1000,w.height)):0,gridW:Number.isInteger(w.gridW)&&w.gridW>=1&&w.gridW<=12?w.gridW:0,gridH:Number.isInteger(w.gridH)&&w.gridH>=1&&w.gridH<=12?w.gridH:0})) ,sizingMode:x.sizingMode==='snap'?'snap':'free',gridSettings:gridSettings(x.gridSettings)}));
   return {...normalizeOperations(obj),projects,captures,layoutSnapshots,version:2,brand:cleanText(obj.brand||'Omnidite Desk',55),searchEngine:['google','duckduckgo','bing'].includes(obj.searchEngine)?obj.searchEngine:'google',theme:['midnight','slate','light'].includes(obj.theme)?obj.theme:'midnight',layoutMode:obj.layoutMode==='rows'?'rows':'compact',sizingMode:obj.sizingMode==='snap'?'snap':'free',gridSettings:gridSettings(obj.gridSettings),accent:/^#[0-9a-fA-F]{6}$/.test(obj.accent||'')?obj.accent:'#4a8df5',activePage:pages.some(p=>p.id===obj.activePage)?obj.activePage:pages[0].id,updatedAt:Number.isFinite(obj.updatedAt)?obj.updatedAt:Date.now(),pages};
