@@ -185,7 +185,7 @@
   if(a==='task-board')window.DeskV08?.taskBoard?.();
   if(a==='research')window.DeskV08?.researchStudio?.();
   if(a==='refresh-pulse')window.DeskV05?.refreshPulse?.(false,true);
-  if(a==='refresh-github'){api.close();document.querySelector('.nav-link[data-v05="github"]')?.click();}
+  if(a==='refresh-github')window.DeskV05?.refreshGithub?.();
   if(['ack','reopen','ack-all'].includes(a)){
    const alertsArr=S().operationalAlerts||[],now=Date.now();
    if(a==='ack-all')for(const item of alertsArr)item.acknowledgedAt=item.acknowledgedAt||now;
