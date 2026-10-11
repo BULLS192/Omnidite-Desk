@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-const due=new Date(Date.now()+86400000);
+const due=new Date();
 const day=[due.getFullYear(),String(due.getMonth()+1).padStart(2,'0'),String(due.getDate()).padStart(2,'0')].join('-');
 const now=Date.now();
 const fixture={
