@@ -1,4 +1,4 @@
-# Omnidite Desk V0.8 — Beta Acceptance Checklist
+# Omnidite Desk V0.8 — Stable Promotion Checklist
 
 ## Automated checks
 - [x] Existing V0.3–V0.7 compatibility and regression suite passed.
@@ -11,9 +11,12 @@
 ## Stable/Beta ancestry synchronization
 - [x] Latest Stable Providence icon repair (#35) integrated into V0.8 Beta without removing the approved BULL.S shortcut icon.
 - [x] Git ancestry confirms `origin/main` is contained in `origin/beta` (no forced branch rewrite).
-- [ ] Windows Chrome Stable -> Beta switch using the native updater helper must be verified by the user.
+- [x] User confirmed Windows Chrome installed V0.8.0 via the Beta channel and version displayed correctly.
 
-## Windows Chrome — still requires user confirmation
+## Windows Chrome — feature-level acceptance confirmed, edge cases pending
+
+- [x] User explicitly confirmed that all four V0.8 Beta features worked successfully on Windows Chrome: Unified Agenda, Project Task Board, Universal Search and Research Studio.
+- [x] User requested preparation of the Stable promotion after Beta acceptance.
 - [ ] Settings → Export JSON backup before Beta testing.
 - [ ] Confirm Stable V0.7.0 -> Beta V0.8.0, then version label and all old workspaces/widgets/settings retained.
 - [ ] Today / Unified agenda: cached Google Calendar reflects selected calendars; local .ics fallback; planner and content deadlines display.
@@ -24,4 +27,4 @@
 - [ ] chrome://extensions → Errors panel stays clear after dismissing blank required form fields.
 - [ ] Switch Beta back to Stable without error; note that version rollback does not roll back Chrome-stored data.
 
-**Do not merge V0.8 to Stable until the user explicitly confirms that the on-device Beta acceptance checks passed.**
+**Stable promotion authorized:** User confirmed on-device Beta feature acceptance and requested preparation of the Stable release. Remaining granular checks are follow-up QA, not claims of completed testing. No destructive migration or extension reinstall.
