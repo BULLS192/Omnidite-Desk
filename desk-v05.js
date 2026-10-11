@@ -20,7 +20,7 @@ const isActive=()=>typeof chrome!=='undefined'&&!!chrome.permissions?.request;
 function alertRecord(source,message,severity){
  const alerts=S().operationalAlerts||[];
  const signature=source+':'+message;
- if(alerts[0]?.signature===signature)return;
+ if(alerts.some(a=>a.signature===signature&&Date.now()-(a.createdAt||0)<86400000))return;
  alerts.unshift({id:api.uid(),source:String(source).slice(0,80),message:String(message).slice(0,190),severity:statusName(severity),createdAt:Date.now(),signature:signature.slice(0,250)});
  if(alerts.length>maxAlert)alerts.splice(maxAlert);
 }
@@ -127,9 +127,13 @@ function normalizePulse(input,source){
  return {providers,source:String(source).slice(0,140),checkedAt:Date.now(),capturedAt:typeof input.capturedAt==='string'?input.capturedAt.slice(0,100):''};
 }
 function checkPulseAlerts(cache){
+ const prefs=S().opsPrefs||{},warn=[70,80,90].includes(prefs.warn)?prefs.warn:80,critical=[90,95,100].includes(prefs.critical)?prefs.critical:95;
  for(const p of cache.providers){
   if(['warning','down'].includes(p.status))alertRecord(p.name,p.status==='down'?'Service reported down':'Service reported degraded status',p.status);
-  for(const m of p.metrics){if(typeof m.value==='number'&&m.limit!==null&&m.limit>0&&m.value/m.limit>=0.8)alertRecord(p.name,m.label+' reached '+Math.round(m.value/m.limit*100)+'% of reported limit','warning');}
+  for(const m of p.metrics){if(typeof m.value==='number'&&m.limit!==null&&m.limit>0){
+   const percent=100*m.value/m.limit;
+   if(percent>=warn)alertRecord(p.name,m.label+' reached '+Math.round(percent)+'% of reported limit',percent>=critical?'down':'warning');
+  }}
  }
 }
 async function refreshPulse(silent=false,force=false){
@@ -163,7 +167,7 @@ function overview(){
 }
 function updateBadge(){
  const el=$('#deskV05Badge');if(!el)return;
- const c=S().pulseCache,alertCount=(S().operationalAlerts||[]).length;
+ const c=S().pulseCache,alertCount=(S().operationalAlerts||[]).filter(a=>!a.acknowledgedAt).length;
  const captured=Date.parse(c?.capturedAt||'');
  const isSnapshot=c?.source==='Imported JSON snapshot';
  const stale=!c?.checkedAt||Date.now()-c.checkedAt>3600000||(Number.isFinite(captured)&&Date.now()-captured>3600000);
@@ -223,4 +227,5 @@ setInterval(()=>{
  if(++autoTick%3===0&&S().pulseSettings?.auto&&pulseAllowed(S().pulseSettings.url))refreshPulse(true);
  updateBadge();
 },300000);
+window.DeskV05={refreshPulse,refreshGithub,overview,github,pulse,updateBadge};
 })();
