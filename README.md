@@ -1,4 +1,4 @@
-# Omni­dite Desk V0.8.0 — Productivity Command Center (Beta)
+# Omnidite Desk V0.8.0 — Productivity Command Center (Stable Release)
 
 Four enhancements built on top of V0.7 Stable:
 1. **Unified Agenda:** a read-only merged view of selected cached Google Calendar events (or imported .ics), locally entered agenda items, project task deadlines and content publishing dates, with 1/7/30-day filters. Calendar is never changed; your Google token stays in Chrome Identity.
@@ -8,7 +8,7 @@ Four enhancements built on top of V0.7 Stable:
 
 **Privacy:** no new host permissions, remote AI services, background uploads, OAuth scopes, project database or privileged tokens. A user-initiated request for Chrome's existing optional tabs permission is needed only for active-tab capture. Research and task metadata are retained through existing Chrome Sync and JSON backup limits. No existing workspace/widget is automatically rearranged.
 
-**Deployment:** V0.8.0 is a **Beta-first release**. The extension's current Stable branch remains V0.7.0. Automated regression, headless Chromium modal interactions and native helper compilation are required, followed by actual Windows Chrome/Sync/Calendar acceptance before promotion. Users can return to Stable V0.7.0 code by selecting Stable; switching does not roll back data or delete any newly entered tasks/tags.
+**Deployment:** V0.8.0 completed Beta testing and is being promoted to Stable through reviewed GitHub PR. The user confirmed the Beta updater installed V0.8.0 and tested Unified Agenda, Project Task Board, Universal Search and Research Studio successfully on their Windows Chrome installation. Existing automated regression, V0.7/V0.8 Chromium New Tab and Side Panel UI tests and Windows native helper compilation passed. Extended checks (all data-provider edge cases, optional Chrome Sync, wallpaper, accessibility and every local configuration) remain ongoing rather than certified. To install Stable, use **Desk Updates → Stable → Switch to Stable** if currently on Beta, or **Check updates → Update now** if currently on Stable. This keeps the extension ID and local data; do not reinstall.
 
 ---
 
