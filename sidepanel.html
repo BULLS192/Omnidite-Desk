@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="desk-update-channels.css">
   <link rel="stylesheet" href="desk-v07.css">
   <link rel="stylesheet" href="desk-v08.css">
+  <link rel="stylesheet" href="desk-v09.css">
 </head>
 <body class="side-mode">
   <div class="shell">
@@ -37,6 +38,10 @@
       <button class="nav-link" data-v04="content"><span>✎</span> Content planner</button>
       <button class="nav-link" data-v04="capture-tab"><span>↳</span> Capture active tab</button>
       <div class="nav-heading">OPERATIONS</div>
+      <button class="nav-link" data-v09="overview"><span>▥</span> Unified monitoring</button>
+      <button class="nav-link" data-v09="projects"><span>◇</span> Project command</button>
+      <button class="nav-link" data-v09="alerts"><span>◉</span> Alert center</button>
+      <button class="nav-link" data-v09="brief"><span>☰</span> Daily operations brief</button>
       <button class="nav-link" data-v05="overview"><span>▥</span> Systems overview</button>
       <button class="nav-link" data-v05="github"><span>⌘</span> GitHub activity</button>
       <button class="nav-link" data-v05="pulse"><span>◈</span> Omnidite Pulse</button>
@@ -53,9 +58,10 @@
       <header class="topbar">
         <div class="crumb">WORKSPACE <span>/</span> <span id="crumbPage">OVERVIEW</span></div>
         <div class="top-actions">
-          <span class="desk-version-pill" title="Installed Omnidite Desk version">v0.8.0</span>
+          <span class="desk-version-pill" title="Installed Omnidite Desk version">v0.9.0</span>
           <span id="localDate" class="top-date"></span>
           <button type="button" class="button ghost" data-v08="agenda" title="Today's schedule and deadlines">▦ <span>Today</span></button>
+          <button type="button" class="button ghost" data-v09="brief" title="Cached operations briefing">☰ <span>Brief</span></button>
           <button type="button" class="button ghost desk-top-command" data-v03="command">⌕ <span>Commands</span></button>
           <button type="button" class="button ghost desk-top-capture" data-v03="capture">＋ <span>Capture</span></button>
           <button class="button ghost" data-global="customize" aria-label="Customize dashboard">⚙ <span>Settings</span></button>
@@ -82,7 +88,7 @@
           <button type="button" class="smallbutton" data-v08="tasks"><span class="desk-action-glyph" aria-hidden="true">✓</span> Task board</button>
           <button type="button" class="smallbutton" data-v03="projects"><span class="desk-action-glyph" aria-hidden="true">◇</span> Projects</button>
           <button type="button" class="smallbutton" data-v04="calendar"><span class="desk-action-glyph" aria-hidden="true">▦</span> Calendar</button>
-          <button type="button" class="smallbutton" data-v05="overview"><span class="desk-action-glyph" aria-hidden="true">◈</span> Operations</button>
+          <button type="button" class="smallbutton" data-v09="overview"><span class="desk-action-glyph" aria-hidden="true">◈</span> Operations hub</button>
           <button type="button" class="smallbutton" data-v03="capture"><span class="desk-action-glyph" aria-hidden="true">✎</span> Quick capture</button>
         </nav>
         <details class="desk-tools-more">
@@ -118,7 +124,7 @@
         <p id="deskUpdateHelp" class="update-help" hidden>One-time setup required: from your Omnidite-Desk folder run <strong>Setup-OneClickUpdates.bat</strong>, then reload this extension. If you have not received these files yet, run <strong>Update-Desk.bat</strong> once first.</p>
 
         </section>
-        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK · V0.8.0</span></div>
+        <div class="footer">Built for your workflow. Local-first · optional Chrome Sync. <span>OMNIDITE DESK · V0.9.0</span></div>
       </div>
     </main>
   </div>
@@ -137,6 +143,7 @@
   <script src="desk-v04.js" defer></script>
   <script src="desk-v08.js" defer></script>
   <script src="desk-v05.js" defer></script>
+  <script src="desk-v09.js" defer></script>
   <script src="desk-v052.js" defer></script>
   <script src="desk-google-calendar.js" defer></script>
   <script src="desk-focus-audio.js" defer></script>
