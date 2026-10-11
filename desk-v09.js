@@ -154,7 +154,8 @@
   const cal=await window.DeskV08?.calendarCache?.();
   const agenda=window.DeskV08?.collectAgenda?.(state,cal,Date.now(),1)||{items:[],overdue:[],source:'Local events'};
   const severity=(state.operationalAlerts||[]).filter(a=>!a.acknowledgedAt&&['down','warning'].includes(a.severity));
-  const todayTasks=due.filter(t=>t.due&&t.due<=new Date().toLocaleDateString('en-CA')).sort((a,b)=>a.due.localeCompare(b.due));
+  const local=new Date(),today=[local.getFullYear(),String(local.getMonth()+1).padStart(2,'0'),String(local.getDate()).padStart(2,'0')].join('-');
+  const todayTasks=due.filter(t=>t.due&&t.due<=today).sort((a,b)=>a.due.localeCompare(b.due));
   view('Daily operations brief','Your cached source status, upcoming appointments and highest priority local actions, assembled on your device.',
    '<div class="v09-kpis"><span><strong>'+agenda.items.length+'</strong> next 24h events</span><span><strong>'+todayTasks.length+'</strong> due / overdue</span><span><strong>'+severity.length+'</strong> unacknowledged warnings</span></div>'+
    '<div class="v09-toolbar">'+button('Unified monitoring','overview')+button('Project command','projects')+button('Task board','task-board')+button('Alerts','alerts')+'</div>'+
@@ -183,13 +184,13 @@
   if(a==='edit-project')projectForm(b.dataset.id);
   if(a==='task-board')window.DeskV08?.taskBoard?.();
   if(a==='research')window.DeskV08?.researchStudio?.();
-  if(a==='refresh-pulse'){$('[data-v05="pulse-refresh"]')?.click();if(!$('[data-v05="pulse-refresh"]')){api.close();document.querySelector('.nav-link[data-v05="pulse"]')?.click();}}
+  if(a==='refresh-pulse')window.DeskV05?.refreshPulse?.(false,true);
   if(a==='refresh-github'){api.close();document.querySelector('.nav-link[data-v05="github"]')?.click();}
   if(['ack','reopen','ack-all'].includes(a)){
    const alertsArr=S().operationalAlerts||[],now=Date.now();
    if(a==='ack-all')for(const item of alertsArr)item.acknowledgedAt=item.acknowledgedAt||now;
    else {const item=alertsArr.find(x=>x.id===b.dataset.id);if(item)item.acknowledgedAt=a==='ack'?now:0;}
-   api.save();alerts();
+   api.save();window.DeskV05?.updateBadge?.();alerts();
   }
  });
  document.addEventListener('change',e=>{
