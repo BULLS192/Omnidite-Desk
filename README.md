@@ -1,4 +1,4 @@
-# Omnidite Desk V0.9.0 — Operations Hub (Beta)
+# Omnidite Desk V0.9.0 — Operations Hub (Stable)
 
 **Four local-first operations panels**, built on the V0.8 stable baseline without adding a backend or provider token:
 
@@ -9,7 +9,7 @@
 
 **Limits and source integrity:** Pulse is the data source for providers and usage. This release does not connect private Vercel/Supabase APIs directly, does not fabricate live metrics and will clearly identify stale sources or missing collectors. The existing Github panel still checks only one selected public repository at a time. No new required/optional browser permissions, remote scripts, OAuth scopes, native updater protocols or API keys. All data uses the existing V2 local state; optional additional project metadata and alert fields default safely when upgrading older backups.
 
-**Rollout:** Beta only while actual Windows Chrome integration is tested. CI checks include source/unit regression, existing V0.7/V0.8 headless Chromium New Tab/Side Panel and native Windows helper compilation. Manual acceptance of a live local Pulse feed, new panel forms, Chrome Sync and Beta/Stable switching is still required before Stable promotion.
+**Stable release:** V0.9.0 developed and QA-tested through Beta PRs #40–#41. Automated source/state tests, Chrome New Tab and Side Panel checks for V0.7–V0.9, and Windows updater compilation passed. The user explicitly requested promotion to Stable, but did not separately report results of the detailed V0.9 Windows acceptance checklist; that live integration testing remains follow-up QA. Install through Desk Updates: choose Stable → Switch to Stable if on Beta, or Check updates → Update now if still on V0.8 Stable. Use the existing extension; no reinstall or data reset.
 
 ---
 

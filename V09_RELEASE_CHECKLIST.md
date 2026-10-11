@@ -1,12 +1,13 @@
-# Omnidite Desk V0.9.0 — Beta release acceptance
+# Omnidite Desk V0.9.0 — Stable promotion record
 
 ## Automated checks
 - [x] V0.9 model tests: provider/metric limit ratios, stale imported snapshots, missing data, matched-only GitHub cache, project links, alert acknowledgement and threshold storage, local brief
 - [x] Existing V0.3–V0.8 source/state regression tests and Chrome manifest guard
 - [x] Windows C# updater/native messaging helper compilation
 - [x] V0.7 weather/FX widgets and V0.8 productivity panels Chrome render regression
-- [ ] V0.9 actual New Tab/Side Panel Chromium render check (8 fictional-data cases)
-- [ ] Final main-ancestor-of-beta Git comparison, preserve manifest key, OAuth scope and permissions
+- [x] V0.9 actual New Tab/Side Panel Chromium render check (8 fictional-data cases), GitHub Actions successful
+- [x] Pre-release main-ancestor-of-beta Git comparison: Beta ahead, not behind; manifest key, OAuth scopes, and permissions equal to V0.8 Stable
+- [ ] After Stable merge, merge updated main into beta and re-check ancestry
 
 ## Windows Chrome acceptance — user still needs to verify
 - [ ] Export Desk JSON backup first; then switch Stable V0.8.0 → Beta V0.9.0 and confirm the same extension ID and all existing workspaces
@@ -17,7 +18,7 @@
 - [ ] Re-test V0.8 Agenda/Task Board/Search/Research, Google Calendar, weather/FX, wallpapers, Pulse controls, optional Chrome Sync, narrow Side Panel and Chrome Errors panel
 - [ ] Test switching back to Stable only after backup. Switching channels does not erase V0.9 data, but Stable code may not display V0.9-only project metadata.
 
-**Do not promote V0.9 to Stable before the user verifies the Beta on their actual Chrome installation.**
+**Stable promotion authorization:** The user explicitly requested promotion of V0.9.0. The checklist's detailed Windows acceptance tasks have not been individually confirmed, so they remain marked as pending follow-up, not as completed or inferred. Release must pass all automated CI gates.
 
 ## Source contract
 Vercel and Supabase are monitored only when present in the already-connected Pulse provider feed. Desk V0.9 does NOT directly call private provider APIs or create API tokens. The GitHub panel queries only the selected public repository and labels cache age. A provider snapshot is never claimed to be live.

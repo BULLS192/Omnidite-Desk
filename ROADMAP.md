@@ -115,16 +115,16 @@ Do not duplicate full Atlas, Providence, TTT-OS, Pulse or F.R.E.Y.A. application
 - **Branch safety:** preserve fast-forward-safe main ancestry, same Chrome extension ID/public manifest key and existing V2 persisted data schema.
 - **Privacy:** no new required/optional extension permissions, origins, OAuth scopes, backend, AI uploads or admin tokens.
 
-## V0.9 — Operations Hub (Beta implementation)
+## V0.9 — Operations Hub (Stable release)
 
 - [x] Unified monitoring from existing Pulse and selected GitHub public REST cached data; labels provider source, source age, snapshot, stale/unavailable states, numeric usage ratios and thresholds. Vercel/Supabase only appear if actually supplied by Pulse.
 - [x] Project command cards built on saved projects and existing task/content planners; optional production/preview URLs, public repository linkage and note survive V2 storage and opt-in Chrome Sync. Unmatched repository cache is not attributed to projects.
 - [x] Alert center with adjustable usage warning/critical levels, acknowledgement/reopening, severity filtering and capped local history. Reuse Pulse's existing alert recording; no push notifications.
 - [x] Cached read-only daily operations brief from local deadlines, selected Calendar, saved alerts, Pulse and GitHub, with no new data uploading or AI.
 - [x] No additional Chrome host permissions, OAuth scopes, native updater changes, Vercel/Supabase database, secrets or remote JS.
-- [ ] Automated unit + V0.7/V0.8 regression, headless Chromium New Tab/Side Panel, Windows native host compile, and latest-main ancestry.
-- [ ] User Windows Chrome Beta validation including Pulse local feed and project/alert state persistence; Stable V0.8 remains untouched until approved.
-- [ ] V0.9 Stable after Beta acceptance; future F.R.E.Y.A. separate.
+- [x] Automated unit + V0.7/V0.8 regression, headless Chromium New Tab/Side Panel (including V0.9), Windows native host compile and pre-release latest-main ancestry checks passed.
+- [ ] Follow-up detailed Windows Chrome QA including live Pulse feed, project/alert persistence, optional Chrome Sync, and channel switching. User requested Stable promotion after Beta release; no granular QA completion claimed.
+- [x] V0.9 Stable promotion requested by user; release through reviewed PR then synchronize Beta. Future F.R.E.Y.A. separate.
 
 ## V0.8 — Productivity Command Center
 
