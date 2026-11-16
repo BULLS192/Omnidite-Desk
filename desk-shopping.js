@@ -229,5 +229,20 @@
   const term=e.target.value.trim().toLowerCase();
   document.querySelectorAll('[data-shop-row]').forEach(row=>{row.hidden=!row.dataset.search.includes(term);});
  });
+ // app.js can finish its first async storage read before this deferred module initializes.
+ // Fill only shopping module bodies that rendered the initial loading fallback;
+ // do not trigger a full dashboard redraw or save.
+ function refreshShoppingWidgets(){
+  const modules=(S().pages||[]).flatMap(p=>p.modules||[]).filter(m=>m.type==='shopping');
+  if(!modules.length)return;
+  document.querySelectorAll('[data-module]').forEach(node=>{
+   const m=modules.find(x=>x.id===node.dataset.module);
+   if(!m)return;
+   const body=node.querySelector('.module-body');
+   if(body)body.innerHTML=renderWidget(m);
+  });
+ }
  window.DeskShopping={home,listView,totals,lineTotal,parsePrice,exportCsv,renderWidget};
+ refreshShoppingWidgets();
+ document.addEventListener('DOMContentLoaded',refreshShoppingWidgets);
 })();
