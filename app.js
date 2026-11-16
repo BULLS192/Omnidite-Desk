@@ -31,7 +31,7 @@ const validUrl=s=>{try {const u=new URL(s); return ['http:','https:'].includes(u
 const mk=(type,title=undefined,config={})=>({id:uid(),type,title:typeof title==='string'?title:META[type][1],cols:['links','tasks','notes','agenda','clock','weather','markets','fx','weatheralerts','snapshot'].includes(type)?6:4,height:0,gridW:Math.max(1,Math.round((['links','tasks','notes','agenda','clock','weather','markets','fx','weatheralerts','snapshot'].includes(type)?6:4)/2)),gridH:type==='markets'||type==='snapshot'?5:type==='clock'||type==='weather'||type==='weatheralerts'?4:type==='links'||type==='quote'||type==='countdown'?2:3,config:{...({links:{links:[]},tasks:{tasks:[]},notes:{text:''},clock:{cities:defaultClockCities()},weather:{cities:defaultWeatherCities(),view:'now',selected:'sg'},focus:{duration:1500,seconds:1500,until:null},agenda:{events:[]},countdown:{target:'2026-12-31',label:'Milestone'},habits:{habits:[]},metric:{value:0,step:1,unit:''},markets:{markets:['SGX','NYSE','NASDAQ','LSE','HKEX','SSE']},fx:{base:'SGD',quote:'USD',amount:100},weatheralerts:{cityId:'sg',psiLimit:101,aqiLimit:101,euLimit:61,rainLimit:70},snapshot:{days:3}}[type]||{}),...config}});
 const defaultPage=(id,title,modules)=>({id,title,modules});
 const defaultProjects=()=>[['Omnidite','https://omnidite.com'],['Providence','https://providence.omnidite.com'],['TTT-OS','https://ttt-os.vercel.app'],['Atlas',''],['SGBuddy',''],['F.R.E.Y.A.','']].map(([name,url])=>({id:uid(),name,url,status:'Tracked'}));
-const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',layoutMode:'compact',sizingMode:'free',gridSettings:{columns:6,cellHeight:104},accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),projects:defaultProjects(),captures:[],layoutSnapshots:[],workSessions:[],advancedTasks:[],contentItems:[],calendarEvents:[],githubRepos:['BULLS192/Omnidite-Desk'],githubSelected:'BULLS192/Omnidite-Desk',githubCache:null,pulseSettings:{url:'',auto:false},pulseCache:null,operationalAlerts:[],pages:[
+const starter=()=>({version:2,brand:'Omnidite Desk',searchEngine:'google',theme:'midnight',layoutMode:'compact',sizingMode:'free',gridSettings:{columns:6,cellHeight:104},accent:'#4a8df5',activePage:'overview',updatedAt:Date.now(),projects:defaultProjects(),captures:[],layoutSnapshots:[],workSessions:[],advancedTasks:[],contentItems:[],calendarEvents:[],githubRepos:['BULLS192/Omnidite-Desk'],githubSelected:'BULLS192/Omnidite-Desk',githubCache:null,pulseSettings:{url:'',auto:false},pulseCache:null,operationalAlerts:[],shoppingLists:[],pages:[
  defaultPage('overview','Overview',[
   mk('links','My projects',{links:[{label:'Omnidite',url:'https://omnidite.com'},{label:'Providence',url:'https://providence.omnidite.com'},{label:'TTT-OS',url:'https://ttt-os.vercel.app'},{label:'GitHub',url:'https://github.com/BULLS192/Omnidite-Desk'}]}),
   mk('links','Quick launch',{links:[{label:'Vercel',url:'https://vercel.com/dashboard'},{label:'Supabase',url:'https://supabase.com/dashboard'},{label:'ChatGPT',url:'https://chatgpt.com'},{label:'Google Drive',url:'https://drive.google.com'}]}),
@@ -66,6 +66,33 @@ function sanitizeModule(x,ids){
   if(x.type==='fx')out.config={base:['SGD','USD','EUR','GBP','JPY','AUD','CAD','CNY','TWD','BRL','CHF','HKD','NZD'].includes(c.base)?c.base:'SGD',quote:['SGD','USD','EUR','GBP','JPY','AUD','CAD','CNY','TWD','BRL','CHF','HKD','NZD'].includes(c.quote)?c.quote:'USD',amount:Number.isFinite(Number(c.amount))&&Number(c.amount)>0&&Number(c.amount)<=1e9?Number(c.amount):100};
   if(x.type==='metric')out.config={value:Number.isFinite(Number(c.value))?Math.min(1e9,Math.max(-1e9,Number(c.value))):0,unit:cleanText(c.unit||'',40),step:Number.isFinite(Number(c.step))?Math.min(1e6,Math.max(.01,Number(c.step))):1};
  return out;
+}
+
+
+function normalizeShoppingLists(raw){
+ const safeCents=v=>Number.isSafeInteger(v)&&v>=0&&v<=10000000000?v:null;
+ const clean=(v,n)=>String(v??'').slice(0,n);
+ const categories=['Groceries','Holiday wishlist','Tech','Projects','Home','Gifts','Other'];
+ const currencies=['SGD','USD','BRL','EUR','GBP','AUD','JPY','CAD'];
+ const ids=new Set();
+ return (Array.isArray(raw)?raw:[]).slice(0,16).filter(x=>x&&typeof x.title==='string'&&x.title.trim()).map(x=>{
+  const id=typeof x.id==='string'&&/^[\w-]{1,90}$/.test(x.id)&&!ids.has(x.id)?x.id:uid();ids.add(id);
+  const itemIds=new Set();
+  const items=(Array.isArray(x.items)?x.items:[]).slice(0,100).filter(i=>i&&typeof i.name==='string'&&i.name.trim()).map(i=>{
+   const itemId=typeof i.id==='string'&&/^[\w-]{1,90}$/.test(i.id)&&!itemIds.has(i.id)?i.id:uid();itemIds.add(itemId);
+   const qty=Number(i.qty);
+   const hist=(Array.isArray(i.history)?i.history:[]).slice(-12).filter(h=>h&&safeCents(h.priceCents)!==null).map(h=>({
+    priceCents:safeCents(h.priceCents),at:Number.isFinite(h.at)&&h.at>0?h.at:0
+   }));
+   return {id:itemId,name:clean(i.name,140),qty:Number.isFinite(qty)&&qty>0&&qty<=9999.99?Math.round(qty*100)/100:1,
+    unit:clean(i.unit||'pcs',20),priceCents:safeCents(i.priceCents),targetCents:safeCents(i.targetCents),
+    merchant:clean(i.merchant,100),url:validUrl(i.url)&&String(i.url).length<=700?String(i.url):'',note:clean(i.note,350),
+    purchased:!!i.purchased,history:hist
+   };
+  });
+  return {id,title:clean(x.title.trim(),70),category:categories.includes(x.category)?x.category:'Other',
+   currency:currencies.includes(x.currency)?x.currency:'SGD',items};
+ });
 }
 
  function normalizeOperations(obj) {
@@ -123,7 +150,7 @@ function sanitizeModule(x,ids){
   if(opsPrefs.critical<opsPrefs.warn)opsPrefs.critical=95;
   return {workSessions,advancedTasks:tasks,contentItems,calendarEvents,githubRepos,
    githubSelected:githubRepos.includes(obj.githubSelected)?obj.githubSelected:(githubRepos[0]||''),
-   githubCache,pulseSettings,pulseCache,operationalAlerts,opsPrefs};
+   githubCache,pulseSettings,pulseCache,operationalAlerts,opsPrefs,shoppingLists:normalizeShoppingLists(obj.shoppingLists)};
  }
 
 function normalize(obj){

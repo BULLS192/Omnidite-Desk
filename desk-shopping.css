@@ -1,0 +1,52 @@
+/* Desk Shopping Lists V0.10 beta — desktop and compact side panel */
+#modal:has(.desk-shopping){max-width:min(1100px,calc(100vw - 28px));width:calc(100vw - 28px)}
+.desk-shopping{min-width:0}
+.desk-shopping .modal-top{margin-bottom:16px}
+.shop-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0 17px}
+.shop-hint,.shop-help{font-size:11px;line-height:1.6;color:var(--muted,#a9bed8)}
+.shop-hint{margin-left:auto}
+.shop-help{padding:8px 0;margin:10px 0 0}
+.shop-list-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.shop-list-card{padding:16px;background:rgba(95,135,183,.11);border:1px solid rgba(129,165,203,.25);border-radius:12px;min-width:0}
+.shop-list-card h3{font-size:14px;line-height:1.35;margin:9px 0 11px;overflow-wrap:anywhere}
+.shop-list-card p{font-size:11px;color:var(--muted,#a6c0d9);line-height:1.5;margin:7px 0}
+.shop-list-card p strong{color:inherit}
+.shop-stat{font-size:20px;letter-spacing:-.5px;color:var(--accent,#8cbaff);font-weight:750}
+.shop-category{font-size:10px;letter-spacing:.4px;color:var(--muted,#a8bfd9);text-transform:uppercase}
+.shop-empty{padding:27px 15px;text-align:center;border:1px dashed rgba(130,168,207,.36);border-radius:11px;font-size:12px;color:var(--muted,#a9bed8)}
+.shop-empty p{margin-bottom:0}
+.shop-two,.shop-three{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.shop-three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.shop-two>label,.shop-three>label{display:flex;flex-direction:column;gap:6px;color:var(--muted,#a9bed8);font-size:11px;min-width:0}
+.desk-shopping textarea.modal-input{width:100%;min-height:66px;resize:vertical}
+.shop-check{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:16px;color:var(--muted,#a9bfd8)}
+.desk-shopping [data-danger]{border-color:#8c4b59!important;color:#ffb7bc!important}
+.shop-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.shop-kpis>div{min-width:0;padding:13px;background:rgba(98,142,191,.1);border:1px solid rgba(122,165,207,.23);border-radius:9px;display:grid;gap:7px}
+.shop-kpis small{font-size:10px;color:var(--muted,#9eb5d2)}
+.shop-kpis strong{font-variant-numeric:tabular-nums;font-size:18px;color:var(--accent,#8ebfff);overflow-wrap:anywhere}
+.shop-target{font-size:11px;color:#91d5b6}
+.shop-search{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted,#9aacc6);margin:13px 0}
+.shop-search input{flex:1;min-width:150px}
+.shop-table-wrap{width:100%;overflow-x:auto;max-height:52vh;overflow-y:auto;border:1px solid rgba(116,150,187,.23);border-radius:9px}
+.shop-table{width:100%;border-collapse:collapse;min-width:760px;font-size:11px;font-variant-numeric:tabular-nums}
+.shop-table th{text-align:left;color:var(--muted,#a9c0d8);font-size:10px;letter-spacing:.4px;font-weight:700;position:sticky;top:0;z-index:1;background:#18263b}
+.shop-table td,.shop-table th{padding:10px 9px;border-bottom:1px solid rgba(122,165,207,.17);vertical-align:top}
+.shop-table td{color:var(--light,#e8eefb)}
+.shop-table td:nth-child(2){min-width:180px}
+.shop-table td strong{display:block;font-weight:600;overflow-wrap:anywhere}
+.shop-table td small{display:block;margin-top:5px;font-size:10px;color:var(--muted,#abc0d8);overflow-wrap:anywhere}
+.shop-table td a{color:var(--accent,#94bbff);text-decoration:none}
+.shop-table td .shop-met{color:#81d9b1}
+.shop-bought td{opacity:.67}
+.shop-bought td:nth-child(2)>strong{text-decoration:line-through}
+.shop-actions{display:flex;gap:4px;flex-wrap:wrap;min-width:150px}
+.shop-table .smallbutton{padding:5px 7px;font-size:10px;white-space:nowrap}
+.shop-table tr[hidden]{display:none}
+.shop-inline{display:flex;gap:8px;flex-wrap:wrap}
+.shop-inline input{flex:1}
+.shop-history{padding:0;list-style:none;margin:13px 0;display:grid;gap:8px;max-height:220px;overflow:auto}
+.shop-history li{padding:9px 12px;border:1px solid rgba(122,165,207,.23);border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px}
+.shop-history strong{font-size:12px}
+.shop-history small{color:var(--muted,#a9bed8)}
+@media(max-width:560px){.shop-two,.shop-three{grid-template-columns:1fr}.shop-kpis{gap:5px}.shop-kpis>div{padding:8px}.shop-kpis strong{font-size:13px}.shop-list-grid{grid-template-columns:1fr}.shop-hint{margin-left:0}.shop-history li{flex-wrap:wrap}.desk-shopping{padding:15px}}
