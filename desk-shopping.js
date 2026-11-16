@@ -170,12 +170,40 @@
   a.download=(l.title.replace(/[^a-z0-9_-]+/gi,'-').slice(0,60)||'shopping-list')+'.csv';
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
  }
+
+ function renderWidget(m){
+  const all=rows();
+  const configured=m?.config?.listId||'';
+  const selected=configured?list(configured):null;
+  const actions='<div class="shop-widget-actions">'+btn('＋ New list','new-list')+btn('Open manager','open')+'</div>';
+  if(configured&&!selected)return '<div class="shop-widget"><p class="empty-note">The selected shopping list is no longer available. Choose another list in widget settings.</p>'+actions+'</div>';
+  if(!selected){
+   if(!all.length)return '<div class="shop-widget"><p class="empty-note">No shopping lists yet. Start a grocery, wish or project list.</p>'+actions+'</div>';
+   return '<div class="shop-widget"><p class="module-sub">'+all.length+' SHOPPING '+(all.length===1?'LIST':'LISTS')+' · NO CURRENCY CONVERSION</p>'+
+    all.slice(0,5).map(l=>{
+     const t=totals(l);
+     return '<button type="button" class="shop-widget-list" data-shop="open-list" data-id="'+esc(l.id)+'"><span class="shop-widget-label"><strong>'+esc(l.title)+'</strong><small>'+
+      t.purchased+'/'+t.count+' purchased</small></span><span class="shop-widget-price">'+esc(money(t.remaining,l.currency))+'</span></button>';
+    }).join('')+(all.length>5?'<p class="shop-widget-muted">＋'+(all.length-5)+' more lists in the manager</p>':'')+actions+'</div>';
+  }
+  const t=totals(selected),pending=selected.items.filter(i=>!i.purchased);
+  return '<div class="shop-widget"><p class="module-sub">'+esc(selected.category.toUpperCase())+' · '+esc(selected.currency)+'</p>'+
+   '<div class="shop-widget-total"><small>Remaining to buy</small><strong>'+esc(money(t.remaining,selected.currency))+'</strong></div>'+
+   '<p class="shop-widget-muted">'+t.purchased+' of '+t.count+' purchased'+(t.unpriced?' · '+t.unpriced+' without prices':'')+'</p>'+
+   '<div class="shop-widget-items">'+pending.slice(0,4).map(i=>
+    '<div class="shop-widget-item"><span>'+esc(i.name)+'</span><small>'+esc(i.qty)+' × '+(i.priceCents===null?'Unpriced':esc(money(i.priceCents,selected.currency)))+'</small></div>'
+   ).join('')+(pending.length>4?'<p class="shop-widget-muted">＋'+(pending.length-4)+' more to buy</p>':'')+
+   (!pending.length?'<p class="empty-note">Nothing left to buy.</p>':'')+'</div>'+
+   '<div class="shop-widget-actions">'+btn('＋ Add item','quick-add','data-id="'+esc(selected.id)+'"')+btn('Open list','open-list','data-id="'+esc(selected.id)+'"')+'</div></div>';
+ }
  document.addEventListener('click',e=>{
   const b=e.target.closest('[data-shop]');if(!b)return;
   const a=b.dataset.shop,id=b.dataset.id,l=list(currentList);
   if(a==='close')api.close();
   else if(a==='open'||a==='home')home();
   else if(a==='new-list')editList();
+  else if(a==='open-list')listView(id);
+  else if(a==='quick-add'){const x=list(id);if(x){currentList=x.id;itemForm();}}
   else if(a==='edit-list')editList(id);
   else if(a==='list')listView(id);
   else if(a==='new-item')itemForm();
@@ -201,5 +229,5 @@
   const term=e.target.value.trim().toLowerCase();
   document.querySelectorAll('[data-shop-row]').forEach(row=>{row.hidden=!row.dataset.search.includes(term);});
  });
- window.DeskShopping={home,listView,totals,lineTotal,parsePrice,exportCsv};
+ window.DeskShopping={home,listView,totals,lineTotal,parsePrice,exportCsv,renderWidget};
 })();
