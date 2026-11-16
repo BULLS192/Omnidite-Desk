@@ -1,14 +1,18 @@
-# Omnidite Desk V0.10.1 — Shopping Lists Widget (Beta)
+# Omnidite Desk V0.10.1 — Shopping Lists (Stable)
 
-V0.10.1 builds on the V0.10.0 Shopping Lists manager and adds **Shopping lists** as an optional, resizable module in **Add module**. The module can display all lists (with per-list currency and remaining total) or a single selected list (remaining budget, purchased count, unpriced-item count, and the next four unpurchased items). Actions open the existing manager, create a new list, or add an item to the selected list.
+**V0.10.1 Stable includes the full Shopping Lists manager and the optional dashboard module**, built on the tested V0.9 Stable operations baseline.
 
-The widget always reads the same V2 Shopping Lists state as the full-screen manager; it does not duplicate product entries or recalculate across different currencies. The selected list ID is sanitized and retained through optional Chrome Sync / JSON backups alongside the rest of the V2 dashboard. Missing or deleted lists show a safe empty state. No existing workspace is altered or automatically populated with the widget.
+- **Shopping Lists manager:** Create separate grocery, holiday, tech, project, home and gift lists. Every list has its own line numbers, currency, quantities, unit prices, subtotals, total and remaining budget, URLs, store notes, purchased status, CSV export and price targets.
+- **Price handling:** Manually recorded price history (last 12 observations per item), advisory target checks and user-initiated Google Shopping search. No verified automatic retailer pricing, background scraping, or push price-drop notifications are claimed.
+- **Optional Shopping Lists module:** Add via **Add module** on any workspace; select **All lists** for independent currency totals or a specific list to show its remaining budget, bought/unpriced counts and up to four outstanding items. Actions open the same shopping manager or add an item to that list. Adding the module does not rearrange any existing widgets.
+- **Data privacy and compatibility:** Existing V2 local data and JSON backups are preserved; Chrome Sync is optional and subject to the existing 72 KB whole-dashboard cap. No new backend, paid provider, permissions, OAuth scope, extension public key change or Windows updater protocol change.
 
-Release safety: V0.10.1 changes no required or optional extension permissions, OAuth scopes, key, remote data sources, native host protocol, or price-monitoring claims. Price histories remain manually recorded; “Find cheaper” still opens Google Shopping rather than performing live price comparisons. Beta QA must cover New Tab and Side Panel module display, list selection, adding an item, backup round-trip, existing V0.7–V0.9 features, and Windows updater compilation before Stable promotion.
+**Release validation:** PR #46 merged to Beta after all CI jobs passed: static source/state regressions, simulated-shopping price calculations, real Chromium New Tab and Side Panel Shopping Lists/widget checks, V0.7–V0.9 browser regressions, and Windows PowerShell 5.1 native-host compilation. The user explicitly requested promotion to Stable. Windows Chrome on-device acceptance of this particular widget remains follow-up testing and is not claimed as completed.
 
----
+**Install:** In Desk Updates, choose **Stable** and **Switch to Stable** if currently on Beta, or choose **Check updates → Update now** on Stable. Open **Add module → Shopping lists** to place the new widget. The full Shopping Lists manager remains accessible from the existing sidebar/quick action.
 
-# Omnidite Desk V0.10.0 — Shopping Lists (Beta)
+
+# Omnidite Desk V0.10.0 — Shopping Lists (Original Beta)
 
 Shopping Lists is a new **local-first productivity tool** opened from the sidebar or the mobile/Side Panel quick actions. It supports up to 16 independently named lists (groceries, holiday wishlists, tech, project purchases and more), up to 100 items per list, and a separate currency for each list (SGD, USD, BRL, EUR, GBP, AUD, JPY or CAD).
 
@@ -16,7 +20,7 @@ Shopping Lists is a new **local-first productivity tool** opened from the sideba
 - Item-level **price tracking** retains the last 12 manually entered unit-price observations and a user-defined target. When a recorded price meets a target, Desk labels it as a *recorded* threshold, **not a live sale or retail price check**.
 - **Find cheaper** opens an explicit Google Shopping search for that item in a new tab. This release **does not fetch retailer offers, compare live prices automatically, run background scrapers, or send price-drop notifications**. Verified automatic monitoring requires a separate provider/API integration and consent, planned for a later release.
 - Supports editing/deleting lists and items, marking purchases, filtering rows, and per-list CSV export for budgeting. URL and user-entered text are validated/escaped. Shopping data is normalized within the existing V2 state, included in Desk JSON backups and eligible for opt-in Chrome Sync **only while the entire dashboard remains under its existing 72KB sync limit**; otherwise it remains stored locally.
-- No new required host permissions, OAuth scope, backend, retailer credentials or extension public key. Beta is staged on an isolated feature branch and must pass CI before merging into the beta updater channel; **Stable remains V0.9.0** until explicitly promoted after acceptance.
+- No new required host permissions, OAuth scope, backend, retailer credentials or extension public key. Beta is staged on an isolated feature branch and must pass CI before merging into the beta updater channel; **This was the original Beta release; the completed V0.10.1 release above supersedes it on Stable.**
 
 **Beta checklist:** add a grocery list, add an item with an unknown price, test 2.5 × 39.90 = 99.75, mark bought, update price in History, set a target, open Compare, export CSV, close/reopen New Tab and Side Panel, JSON backup/restore, and optionally test Chrome Sync below its quota. Live retailer price monitoring is not an acceptance criterion for this version.
 
