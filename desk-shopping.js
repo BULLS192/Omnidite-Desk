@@ -6,7 +6,7 @@
  const api=window.DeskBridge;if(!api)return;
  const S=()=>api.getState(),esc=api.esc;
  const $=(s,r=document)=>r.querySelector(s);
- const money=(c,cur)=>new Intl.NumberFormat('en-SG',{style:'currency',currency:cur,minimumFractionDigits:2,maximumFractionDigits:2}).format(c/100);
+ const money=(c,cur)=>new Intl.NumberFormat('en-SG',{style:'currency',currency:cur,currencyDisplay:'code',minimumFractionDigits:2,maximumFractionDigits:2}).format(c/100);
  const categories=['Groceries','Holiday wishlist','Tech','Projects','Home','Gifts','Other'];
  const currencies=['SGD','USD','BRL','EUR','GBP','AUD','JPY','CAD'];
  const today=t=>t?new Date(t).toLocaleString():'Not recorded';
