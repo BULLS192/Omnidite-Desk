@@ -89,6 +89,6 @@ assert.match(app,/opsPrefs/,'Alert threshold settings must survive backup');
 assert.match(v05,/const prefs=S\(\)\.opsPrefs/,'Pulse alert engine must respect thresholds');
 assert.match(v05,/window\.DeskV05=/,'V0.9 should reuse established collector');
 const manifest=JSON.parse(read('manifest.json'));
-assert.equal(manifest.version,'0.10.0');
+assert.equal(manifest.version,'0.10.1');
 assert.deepEqual(manifest.permissions,['storage','sidePanel','nativeMessaging','favicon','identity']);
 console.log('PASS: V0.9 source freshness, numerical limits, provider cache, project mapping, alert acknowledgement, configurable thresholds, daily brief, private state and extension permissions');
