@@ -231,3 +231,52 @@ jobs:
           name: desk-v09-browser-debug
           path: /tmp/desk-v09-*.html
           retention-days: 5
+
+  shopping-browser-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate local-only shopping-list browser fixtures
+        run: node tools/generate-v010-browser-preview.mjs
+      - name: Validate New Tab and Side Panel shopping dialogs in Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          BROWSER=$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$BROWSER" ]; then echo "Chromium not found"; exit 1; fi
+          python3 -m http.server 8768 --bind 127.0.0.1 >/tmp/desk-v010-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          sleep 2
+          for PAGE in newtab sidepanel; do
+            for VIEW in home list; do
+              URL="http://127.0.0.1:8768/v010-$PAGE-$VIEW.html"
+              "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-extensions --virtual-time-budget=5000 --dump-dom "$URL" > "/tmp/desk-v010-$PAGE-$VIEW.html"
+              if [ "$VIEW" = home ]; then
+                grep -Fq '<h2 id="modalTitle">Shopping lists</h2>' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'Test Tech List' "/tmp/desk-v010-$PAGE-$VIEW.html"
+              else
+                grep -Fq '<h2 id="modalTitle">Test Tech List</h2>' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'Headphones sample' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'SGD' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq '99.75' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'Not priced' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'data-shop="compare"' "/tmp/desk-v010-$PAGE-$VIEW.html"
+              fi
+              echo "PASS: $PAGE Shopping Lists $VIEW"
+            done
+            if [ "$PAGE" = newtab ]; then SIZE="1400,980"; else SIZE="440,1100"; fi
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-extensions --virtual-time-budget=5000 --hide-scrollbars --window-size="$SIZE" --screenshot="$PWD/v010-$PAGE-list.png" "http://127.0.0.1:8768/v010-$PAGE-list.html"
+            test -s "v010-$PAGE-list.png"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desk-v010-shopping-browser-qa
+          path: |
+            v010-newtab-list.png
+            v010-sidepanel-list.png
+          retention-days: 7
+
