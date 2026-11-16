@@ -43,7 +43,7 @@ assert.equal(api.totals(list).remaining,9975);
 assert.equal(item.history.length,1);
 assert.match(out.html,/Keyboard &lt;test&gt;/,'product names must be HTML escaped');
 assert.doesNotMatch(out.html,/<test>/,'untrusted markup cannot be inserted');
-assert.match(out.html,/S\$99\.75/);
+assert.match(out.html,/SGD\s*99\.75/);
 click('toggle',item.id);
 assert.equal(api.totals(list).remaining,0);
 assert.equal(api.totals(list).total,9975,'bought items stay in planned budget');
