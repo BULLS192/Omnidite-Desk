@@ -9,7 +9,7 @@ const state={shoppingLists:[]};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validUrl=s=>{try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)&&!!u.hostname;}catch{return false;}};
 const bridge={getState:()=>state,esc,validUrl,uid:()=>String(++counter),show:html=>out.html=html,close:()=>out.closed=true,save:()=>out.saved++};
-const document={addEventListener:(type,fn)=>handlers[type].push(fn),querySelector:()=>null,querySelectorAll:()=>[],body:{}};
+const document={addEventListener:(type,fn)=>(handlers[type]??=[]).push(fn),querySelector:()=>null,querySelectorAll:()=>[],body:{}};
 const window={DeskBridge:bridge,open:url=>out.opened=url};
 const ctx={window,document,console,Date,Intl,URL,Number,Blob,alert:m=>{out.alert=m;},confirm:()=>true};
 vm.runInNewContext(source,ctx,{filename:'desk-shopping.js'});
