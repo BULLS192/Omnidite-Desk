@@ -255,6 +255,26 @@ jobs:
             for VIEW in home list; do
               URL="http://127.0.0.1:8768/v010-$PAGE-$VIEW.html"
               "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-extensions --virtual-time-budget=5000 --dump-dom "$URL" > "/tmp/desk-v010-$PAGE-$VIEW.html"
+              if ! grep -Fq 'data-module="shoppingWidget"' "/tmp/desk-v010-$PAGE-$VIEW.html"; then
+                echo "Shopping widget missing expected UI: data-module="shoppingWidget" ($PAGE/$VIEW)"
+                grep -Eo '.{0,60}(Shopping lists loading|shoppingWidget|shop-widget|Remaining to buy).{0,90}' "/tmp/desk-v010-$PAGE-$VIEW.html" | head -n 12 || true
+                exit 1
+              fi
+              if ! grep -Fq 'class="shop-widget"' "/tmp/desk-v010-$PAGE-$VIEW.html"; then
+                echo "Shopping widget missing expected UI: class="shop-widget" ($PAGE/$VIEW)"
+                grep -Eo '.{0,60}(Shopping lists loading|shoppingWidget|shop-widget|Remaining to buy).{0,90}' "/tmp/desk-v010-$PAGE-$VIEW.html" | head -n 12 || true
+                exit 1
+              fi
+              if ! grep -Fq 'data-shop="quick-add"' "/tmp/desk-v010-$PAGE-$VIEW.html"; then
+                echo "Shopping widget missing expected UI: data-shop="quick-add" ($PAGE/$VIEW)"
+                grep -Eo '.{0,60}(Shopping lists loading|shoppingWidget|shop-widget|Remaining to buy).{0,90}' "/tmp/desk-v010-$PAGE-$VIEW.html" | head -n 12 || true
+                exit 1
+              fi
+              if ! grep -Fq 'Remaining to buy' "/tmp/desk-v010-$PAGE-$VIEW.html"; then
+                echo "Shopping widget missing expected UI: Remaining to buy ($PAGE/$VIEW)"
+                grep -Eo '.{0,60}(Shopping lists loading|shoppingWidget|shop-widget|Remaining to buy).{0,90}' "/tmp/desk-v010-$PAGE-$VIEW.html" | head -n 12 || true
+                exit 1
+              fi
               if [ "$VIEW" = home ]; then
                 grep -Fq '<h2 id="modalTitle">Shopping lists</h2>' "/tmp/desk-v010-$PAGE-$VIEW.html"
                 grep -Fq 'Test Tech List' "/tmp/desk-v010-$PAGE-$VIEW.html"

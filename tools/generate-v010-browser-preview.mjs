@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 const fixture={
  version:2,brand:'Omnidite Desk',theme:'midnight',activePage:'overview',updatedAt:Date.now(),
- pages:[{id:'overview',title:'Overview',modules:[]}],projects:[],captures:[],advancedTasks:[],contentItems:[],
+ pages:[{id:'overview',title:'Overview',modules:[{id:'shoppingWidget',type:'shopping',title:'Shopping lists',cols:6,gridW:3,gridH:4,config:{listId:'shop1'}}]}],projects:[],captures:[],advancedTasks:[],contentItems:[],
  shoppingLists:[{id:'shop1',title:'Test Tech List',category:'Tech',currency:'SGD',items:[
   {id:'item1',name:'Headphones sample',qty:2.5,unit:'pcs',priceCents:3990,targetCents:3000,merchant:'Sample Store',url:'https://example.com/product',purchased:false,note:'Over-ear',history:[{priceCents:4500,at:Date.now()-86400000},{priceCents:3990,at:Date.now()}]},
   {id:'item2',name:'Unpriced cable',qty:1,unit:'pcs',priceCents:null,targetCents:null,merchant:'',url:'',purchased:false,note:'',history:[]}

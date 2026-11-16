@@ -50,3 +50,25 @@
 .shop-history strong{font-size:12px}
 .shop-history small{color:var(--muted,#a9bed8)}
 @media(max-width:560px){.shop-two,.shop-three{grid-template-columns:1fr}.shop-kpis{gap:5px}.shop-kpis>div{padding:8px}.shop-kpis strong{font-size:13px}.shop-list-grid{grid-template-columns:1fr}.shop-hint{margin-left:0}.shop-history li{flex-wrap:wrap}.desk-shopping{padding:15px}}
+
+
+/* Optional dashboard shopping widget — inherits Desk theme, respects resize and Side Panel */
+.shop-widget{display:grid;gap:10px;min-width:0}
+.shop-widget .module-sub{margin:2px 0 4px;line-height:1.4}
+.shop-widget-list{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 11px;text-align:left;border:1px solid rgba(135,166,200,.25);background:rgba(95,135,183,.09);color:inherit;border-radius:9px;min-width:0}
+.shop-widget-list:hover{background:rgba(95,135,183,.22);border-color:var(--accent,#83aaff)}
+.shop-widget-label{display:grid;gap:4px;min-width:0;flex:1}
+.shop-widget-label strong{font-size:11px;overflow-wrap:anywhere}
+.shop-widget-label small,.shop-widget-muted{font-size:10px;color:var(--muted,#aabdd7);line-height:1.5}
+.shop-widget-price{font-weight:720;font-size:12px;color:var(--accent,#8dbaff);white-space:nowrap;font-variant-numeric:tabular-nums}
+.shop-widget-total{display:grid;gap:6px;padding:10px;background:rgba(93,135,186,.1);border:1px solid rgba(120,161,210,.2);border-radius:9px}
+.shop-widget-total small{font-size:10px;color:var(--muted,#aabdd7)}
+.shop-widget-total strong{font-size:clamp(18px,2vw,24px);overflow-wrap:anywhere;color:var(--accent,#8dbaff);font-variant-numeric:tabular-nums}
+.shop-widget-muted{margin:0}
+.shop-widget-items{display:grid;gap:0}
+.shop-widget-item{display:flex;align-items:baseline;justify-content:space-between;gap:9px;padding:8px 0;border-bottom:1px solid rgba(125,165,207,.18);font-size:11px;min-width:0}
+.shop-widget-item span{overflow-wrap:anywhere;min-width:0}
+.shop-widget-item small{font-size:10px;white-space:nowrap;color:var(--muted,#aabdd7)}
+.shop-widget-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px}
+.shop-widget-actions button{flex:1;white-space:nowrap;min-width:100px}
+body.side-mode .shop-widget-total strong{font-size:18px}

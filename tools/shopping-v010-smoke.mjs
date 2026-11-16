@@ -9,7 +9,7 @@ const state={shoppingLists:[]};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validUrl=s=>{try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)&&!!u.hostname;}catch{return false;}};
 const bridge={getState:()=>state,esc,validUrl,uid:()=>String(++counter),show:html=>out.html=html,close:()=>out.closed=true,save:()=>out.saved++};
-const document={addEventListener:(type,fn)=>handlers[type].push(fn),querySelector:()=>null,querySelectorAll:()=>[],body:{}};
+const document={addEventListener:(type,fn)=>(handlers[type]??=[]).push(fn),querySelector:()=>null,querySelectorAll:()=>[],body:{}};
 const window={DeskBridge:bridge,open:url=>out.opened=url};
 const ctx={window,document,console,Date,Intl,URL,Number,Blob,alert:m=>{out.alert=m;},confirm:()=>true};
 vm.runInNewContext(source,ctx,{filename:'desk-shopping.js'});
@@ -61,6 +61,21 @@ assert.equal(api.totals(list).target,1,'recorded price threshold is advisory onl
 assert.equal(api.parsePrice(''),null,'unknown should not become zero');
 assert.equal(api.parsePrice('bad'),undefined);
 assert.equal(api.parsePrice('12.345'),undefined);
+const allWidget=api.renderWidget({type:'shopping',config:{listId:''}});
+assert.match(allWidget,/Home &amp; Tech/,'all-lists dashboard widget shows saved lists');
+assert.match(allWidget,/data-shop="open-list"/,'widget opens full shopping manager');
+const chosenWidget=api.renderWidget({type:'shopping',config:{listId:list.id}});
+assert.match(chosenWidget,/SGD\s*73\.75/,'selected list reflects quantity × updated unit price');
+assert.match(chosenWidget,/Keyboard &lt;test&gt;/,'widget escapes product names');
+assert.match(chosenWidget,/data-shop="quick-add"/,'widget can add an item to selected list');
+assert.match(api.renderWidget({type:'shopping',config:{listId:'missing'}}),/no longer available/);
+click('open-list',list.id);
+assert.match(out.html,/Home &amp; Tech/);
+click('quick-add',list.id);
+assert.match(out.html,/shopItemForm/);
+assert.match(app,/shopping:\['🛒','Shopping lists'/,'shopping must be offered in module library');
+assert.match(app,/case 'shopping':return window\.DeskShopping\?\.renderWidget/,'shopping widget renders from shared state');
+assert.match(app,/shoppingWidgetList/,'shopping widget has list selector settings');
 const normalizer=app.slice(app.indexOf('function normalizeShoppingLists('),app.indexOf(' function normalizeOperations('));
 assert.ok(normalizer.includes('safeCents'),'V2 normalizer must handle shopping data');
 const sandbox={uid:()=>String(++counter),validUrl,Number,String,Set,Array,Math};
@@ -76,7 +91,7 @@ assert.match(app,/shoppingLists:normalizeShoppingLists\(obj\.shoppingLists\)/,'J
 for(const path of ['index.html','sidepanel.html']){
  const html=read(path);assert.match(html,/data-shop="open"/);assert.match(html,/desk-shopping.js/);assert.match(html,/desk-shopping.css/);
 }
-assert.equal(manifest.version,'0.10.0');
+assert.equal(manifest.version,'0.10.1');
 assert.deepEqual(manifest.permissions,['storage','sidePanel','nativeMessaging','favicon','identity']);
 assert.doesNotMatch(source,/\bfetch\s*\(/,'shopping should not scrape prices or upload product data');
 console.log('PASS: V0.10 shopping lists, decimal quantities, budgets, CSV hooks, recorded prices, target thresholds, safe HTML, V2 backup/sync normalization, navigability and unchanged permissions');
