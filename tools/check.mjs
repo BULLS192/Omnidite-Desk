@@ -46,6 +46,8 @@ for(const p of ['index.html','sidepanel.html']){
  }
  if(html.includes('0.5.5 DESIGN PREVIEW'))throw Error(p+': stale design preview label');
 }
+if(!read('app.js').includes("'snapshot','shopping'")||!read('app.js').includes("case 'shopping':")||!read('app.js').includes("shoppingWidgetList"))throw Error('Shopping Lists widget must be optional, renderable and configurable');
+if(!read('desk-shopping.js').includes('function renderWidget(m)')||!read('desk-shopping.js').includes("data-shop=\"open-list\""))throw Error('Shopping widget must use the existing manager');
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-shopping.js')||!read(p).includes('desk-shopping.css')||!read(p).includes('data-shop="open"'))throw Error(p+' missing Shopping Lists UI');
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-v09.js')||!read(p).includes('desk-v09.css')||!read(p).includes('data-v09="overview"')||!read(p).includes('data-v09="projects"')||!read(p).includes('data-v09="alerts"')||!read(p).includes('data-v09="brief"'))throw Error(p+' missing V0.9 operations hub');
 for(const p of ['index.html','sidepanel.html'])if(!read(p).includes('desk-v08.js')||!read(p).includes('desk-v08.css')||!read(p).includes('data-v08="agenda"')||!read(p).includes('data-v08="tasks"'))throw Error(p+' missing V0.8 productivity panels');
