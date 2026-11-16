@@ -6,7 +6,7 @@
  const api=window.DeskBridge;if(!api)return;
  const S=()=>api.getState(),esc=api.esc;
  const $=(s,r=document)=>r.querySelector(s);
- const money=(c,cur)=>new Intl.NumberFormat('en-SG',{style:'currency',currency:cur}).format(c/100);
+ const money=(c,cur)=>new Intl.NumberFormat('en-SG',{style:'currency',currency:cur,minimumFractionDigits:2,maximumFractionDigits:2}).format(c/100);
  const categories=['Groceries','Holiday wishlist','Tech','Projects','Home','Gifts','Other'];
  const currencies=['SGD','USD','BRL','EUR','GBP','AUD','JPY','CAD'];
  const today=t=>t?new Date(t).toLocaleString():'Not recorded';
@@ -52,7 +52,7 @@
    '<div class="shop-two"><label>Category<select class="modal-input" name="category">'+options(categories,l?.category||'Groceries')+'</select></label>'+
    '<label>Currency<select class="modal-input" name="currency">'+options(currencies,l?.currency||'SGD')+'</select></label></div>'+
    '<div class="modal-actions"><button class="button primary" type="submit">Save list</button>'+btn('Cancel',l?'list':'home',l?idAttr(l.id):'')+
-   (l?btn('Delete list','delete-list',idAttr(l.id)+' class="shop-danger"'):'')+'</div></form>');
+   (l?btn('Delete list','delete-list',idAttr(l.id)+' data-danger="true"'):'')+'</div></form>');
  }
  function listView(id){
   const l=list(id);if(!l)return home();currentList=id;
