@@ -12,9 +12,9 @@ jobs:
         with:
           node-version: '22'
       - name: Syntax validation
-        run: node --check app.js && node --check desk-v08.js && node --check desk-v09.js && node --check desk-v07.js && node --check desk-v07-alerts.js && node --check desk-v07-snapshot.js && node --check desk-health.js && node --check desk-update-channels.js && node --check air-quality.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check desk-google-calendar.js && node --check desk-v055.js && node --check desk-focus-audio.js && node --check desk-compact.js && node --check desk-grid.js && node --check background.js
+        run: node --check app.js && node --check desk-v08.js && node --check desk-v09.js && node --check desk-shopping.js && node --check desk-v07.js && node --check desk-v07-alerts.js && node --check desk-v07-snapshot.js && node --check desk-health.js && node --check desk-update-channels.js && node --check air-quality.js && node --check desk-v03.js && node --check desk-v04.js && node --check desk-v05.js && node --check desk-v052.js && node --check desk-google-calendar.js && node --check desk-v055.js && node --check desk-focus-audio.js && node --check desk-compact.js && node --check desk-grid.js && node --check background.js
       - name: Manifest and assets checks
-        run: node tools/check.mjs && node tools/v07-smoke.mjs && node tools/v07-alerts-smoke.mjs && node tools/v07-snapshot-smoke.mjs && node tools/v07-integration-smoke.mjs && node tools/v08-smoke.mjs && node tools/v09-smoke.mjs && node tools/modal-close-smoke.mjs && node tools/health-smoke.mjs && node tools/update-channels-smoke.mjs && node tools/air-quality-smoke.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs && node tools/google-calendar-smoke.mjs && node tools/v055-visual-smoke.mjs && node tools/v055-widget-smoke.mjs && node tools/project-favicon-smoke.mjs && node tools/v055-focus-smoke.mjs && node tools/v056-layout-smoke.mjs && node tools/v057-grid-smoke.mjs && node tools/v058-widgets-first-smoke.mjs
+        run: node tools/check.mjs && node tools/v07-smoke.mjs && node tools/v07-alerts-smoke.mjs && node tools/v07-snapshot-smoke.mjs && node tools/v07-integration-smoke.mjs && node tools/v08-smoke.mjs && node tools/v09-smoke.mjs && node tools/shopping-v010-smoke.mjs && node tools/modal-close-smoke.mjs && node tools/health-smoke.mjs && node tools/update-channels-smoke.mjs && node tools/air-quality-smoke.mjs && node tools/v03-smoke.mjs && node tools/v045-smoke.mjs && node tools/v052-smoke.mjs && node tools/google-calendar-smoke.mjs && node tools/v055-visual-smoke.mjs && node tools/v055-widget-smoke.mjs && node tools/project-favicon-smoke.mjs && node tools/v055-focus-smoke.mjs && node tools/v056-layout-smoke.mjs && node tools/v057-grid-smoke.mjs && node tools/v058-widgets-first-smoke.mjs
   design-screenshots:
     if: github.event_name == 'pull_request' && (github.head_ref == 'design/desk-v055-visual-refresh' || github.head_ref == 'feature/desk-v056-compact-masonry' || github.head_ref == 'feature/desk-v057-snap-grid' || github.head_ref == 'feature/desk-v058-widgets-first')
     runs-on: ubuntu-latest
@@ -231,3 +231,72 @@ jobs:
           name: desk-v09-browser-debug
           path: /tmp/desk-v09-*.html
           retention-days: 5
+
+  shopping-browser-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate local-only shopping-list browser fixtures
+        run: node tools/generate-v010-browser-preview.mjs
+      - name: Validate New Tab and Side Panel shopping dialogs in Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          BROWSER=$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$BROWSER" ]; then echo "Chromium not found"; exit 1; fi
+          python3 -m http.server 8768 --bind 127.0.0.1 >/tmp/desk-v010-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          sleep 2
+          for PAGE in newtab sidepanel; do
+            for VIEW in home list; do
+              URL="http://127.0.0.1:8768/v010-$PAGE-$VIEW.html"
+              "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-extensions --virtual-time-budget=5000 --dump-dom "$URL" > "/tmp/desk-v010-$PAGE-$VIEW.html"
+              if ! grep -Fq 'data-module="shoppingWidget"' "/tmp/desk-v010-$PAGE-$VIEW.html"; then
+                echo "Shopping widget missing expected UI: data-module="shoppingWidget" ($PAGE/$VIEW)"
+                grep -Eo '.{0,60}(Shopping lists loading|shoppingWidget|shop-widget|Remaining to buy).{0,90}' "/tmp/desk-v010-$PAGE-$VIEW.html" | head -n 12 || true
+                exit 1
+              fi
+              if ! grep -Fq 'class="shop-widget"' "/tmp/desk-v010-$PAGE-$VIEW.html"; then
+                echo "Shopping widget missing expected UI: class="shop-widget" ($PAGE/$VIEW)"
+                grep -Eo '.{0,60}(Shopping lists loading|shoppingWidget|shop-widget|Remaining to buy).{0,90}' "/tmp/desk-v010-$PAGE-$VIEW.html" | head -n 12 || true
+                exit 1
+              fi
+              if ! grep -Fq 'data-shop="quick-add"' "/tmp/desk-v010-$PAGE-$VIEW.html"; then
+                echo "Shopping widget missing expected UI: data-shop="quick-add" ($PAGE/$VIEW)"
+                grep -Eo '.{0,60}(Shopping lists loading|shoppingWidget|shop-widget|Remaining to buy).{0,90}' "/tmp/desk-v010-$PAGE-$VIEW.html" | head -n 12 || true
+                exit 1
+              fi
+              if ! grep -Fq 'Remaining to buy' "/tmp/desk-v010-$PAGE-$VIEW.html"; then
+                echo "Shopping widget missing expected UI: Remaining to buy ($PAGE/$VIEW)"
+                grep -Eo '.{0,60}(Shopping lists loading|shoppingWidget|shop-widget|Remaining to buy).{0,90}' "/tmp/desk-v010-$PAGE-$VIEW.html" | head -n 12 || true
+                exit 1
+              fi
+              if [ "$VIEW" = home ]; then
+                grep -Fq '<h2 id="modalTitle">Shopping lists</h2>' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'Test Tech List' "/tmp/desk-v010-$PAGE-$VIEW.html"
+              else
+                grep -Fq '<h2 id="modalTitle">Test Tech List</h2>' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'Headphones sample' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'SGD' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq '99.75' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'Not priced' "/tmp/desk-v010-$PAGE-$VIEW.html"
+                grep -Fq 'data-shop="compare"' "/tmp/desk-v010-$PAGE-$VIEW.html"
+              fi
+              echo "PASS: $PAGE Shopping Lists $VIEW"
+            done
+            if [ "$PAGE" = newtab ]; then SIZE="1400,980"; else SIZE="440,1100"; fi
+            "$BROWSER" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --disable-extensions --virtual-time-budget=5000 --hide-scrollbars --window-size="$SIZE" --screenshot="$PWD/v010-$PAGE-list.png" "http://127.0.0.1:8768/v010-$PAGE-list.html"
+            test -s "v010-$PAGE-list.png"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desk-v010-shopping-browser-qa
+          path: |
+            v010-newtab-list.png
+            v010-sidepanel-list.png
+          retention-days: 7
+
