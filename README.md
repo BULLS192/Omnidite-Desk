@@ -1,3 +1,13 @@
+# Omnidite Desk V0.10.1 — Shopping Lists Widget (Beta)
+
+V0.10.1 builds on the V0.10.0 Shopping Lists manager and adds **Shopping lists** as an optional, resizable module in **Add module**. The module can display all lists (with per-list currency and remaining total) or a single selected list (remaining budget, purchased count, unpriced-item count, and the next four unpurchased items). Actions open the existing manager, create a new list, or add an item to the selected list.
+
+The widget always reads the same V2 Shopping Lists state as the full-screen manager; it does not duplicate product entries or recalculate across different currencies. The selected list ID is sanitized and retained through optional Chrome Sync / JSON backups alongside the rest of the V2 dashboard. Missing or deleted lists show a safe empty state. No existing workspace is altered or automatically populated with the widget.
+
+Release safety: V0.10.1 changes no required or optional extension permissions, OAuth scopes, key, remote data sources, native host protocol, or price-monitoring claims. Price histories remain manually recorded; “Find cheaper” still opens Google Shopping rather than performing live price comparisons. Beta QA must cover New Tab and Side Panel module display, list selection, adding an item, backup round-trip, existing V0.7–V0.9 features, and Windows updater compilation before Stable promotion.
+
+---
+
 # Omnidite Desk V0.10.0 — Shopping Lists (Beta)
 
 Shopping Lists is a new **local-first productivity tool** opened from the sidebar or the mobile/Side Panel quick actions. It supports up to 16 independently named lists (groceries, holiday wishlists, tech, project purchases and more), up to 100 items per list, and a separate currency for each list (SGD, USD, BRL, EUR, GBP, AUD, JPY or CAD).
