@@ -27,5 +27,5 @@ for(const path of rest){
 for(const html of ['index.html','sidepanel.html']){
  assert.match(read(html),/v0\.10\.0<\/span>/,html+': correct release displayed');
 }
-assert.equal(JSON.parse(read('manifest.json')).version,'0.10.0');
+assert.equal(JSON.parse(read('manifest.json')).version,'0.10.1');
 console.log('PASS: modal close never implicitly submits, required title and Save validation preserved, both Desk entry points updated');
