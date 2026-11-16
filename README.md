@@ -1,3 +1,17 @@
+# Omnidite Desk V0.10.0 — Shopping Lists (Beta)
+
+Shopping Lists is a new **local-first productivity tool** opened from the sidebar or the mobile/Side Panel quick actions. It supports up to 16 independently named lists (groceries, holiday wishlists, tech, project purchases and more), up to 100 items per list, and a separate currency for each list (SGD, USD, BRL, EUR, GBP, AUD, JPY or CAD).
+
+- Each item displays its running line number, name, quantity (including two-decimal fractional quantities), unit label, recorded per-unit price, calculated subtotal, store, optional valid http(s) purchase URL, notes and purchase state. Lists show planned total, unpurchased remaining cost, item counts, and clear labels for unpriced items (not assumed free).
+- Item-level **price tracking** retains the last 12 manually entered unit-price observations and a user-defined target. When a recorded price meets a target, Desk labels it as a *recorded* threshold, **not a live sale or retail price check**.
+- **Find cheaper** opens an explicit Google Shopping search for that item in a new tab. This release **does not fetch retailer offers, compare live prices automatically, run background scrapers, or send price-drop notifications**. Verified automatic monitoring requires a separate provider/API integration and consent, planned for a later release.
+- Supports editing/deleting lists and items, marking purchases, filtering rows, and per-list CSV export for budgeting. URL and user-entered text are validated/escaped. Shopping data is normalized within the existing V2 state, included in Desk JSON backups and eligible for opt-in Chrome Sync **only while the entire dashboard remains under its existing 72KB sync limit**; otherwise it remains stored locally.
+- No new required host permissions, OAuth scope, backend, retailer credentials or extension public key. Beta is staged on an isolated feature branch and must pass CI before merging into the beta updater channel; **Stable remains V0.9.0** until explicitly promoted after acceptance.
+
+**Beta checklist:** add a grocery list, add an item with an unknown price, test 2.5 × 39.90 = 99.75, mark bought, update price in History, set a target, open Compare, export CSV, close/reopen New Tab and Side Panel, JSON backup/restore, and optionally test Chrome Sync below its quota. Live retailer price monitoring is not an acceptance criterion for this version.
+
+---
+
 # Omnidite Desk V0.9.0 — Operations Hub (Stable)
 
 **Four local-first operations panels**, built on the V0.8 stable baseline without adding a backend or provider token:
