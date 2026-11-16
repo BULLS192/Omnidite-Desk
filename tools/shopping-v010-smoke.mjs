@@ -91,7 +91,7 @@ assert.match(app,/shoppingLists:normalizeShoppingLists\(obj\.shoppingLists\)/,'J
 for(const path of ['index.html','sidepanel.html']){
  const html=read(path);assert.match(html,/data-shop="open"/);assert.match(html,/desk-shopping.js/);assert.match(html,/desk-shopping.css/);
 }
-assert.equal(manifest.version,'0.10.0');
+assert.equal(manifest.version,'0.10.1');
 assert.deepEqual(manifest.permissions,['storage','sidePanel','nativeMessaging','favicon','identity']);
 assert.doesNotMatch(source,/\bfetch\s*\(/,'shopping should not scrape prices or upload product data');
 console.log('PASS: V0.10 shopping lists, decimal quantities, budgets, CSV hooks, recorded prices, target thresholds, safe HTML, V2 backup/sync normalization, navigability and unchanged permissions');
