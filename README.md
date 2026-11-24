@@ -1,3 +1,14 @@
+# Omnidite Desk V0.10.2 — Per-City Weather Radar (Beta)
+
+**Beta feature, not promoted to Stable.** The existing Weather + Air Quality widget now includes a **Radar** tab. Select any saved city to see Windy's radar map centered on its stored coordinates. The **Now** view has a per-city **Radar** shortcut, and the map includes an **Open larger map** action. Both New Tab and Side Panel reuse the same city list and existing settings.
+
+- No city migration, account, API key, additional extension host permission, remote script or backend. Existing Open-Meteo forecasts and air-quality feeds remain unchanged.
+- The third-party iframe loads **only while the Radar tab is visible**; opening it shares the selected city coordinates with Windy. On-page interval refresh skips reloading the active radar map.
+- Radar is observed/near-real-time data, **not a forecast**; coverage, history, freshness and frame availability vary. In the embedded Windy viewer, radar history animation must be started manually. An external larger-map fallback is always available.
+- QA: static and simulated UI tests (tools/weather-v0102-smoke.mjs) plus existing Chrome extension checks. Live Windy embedding in Windows Chrome must be verified on Beta before Stable promotion.
+
+---
+
 # Omnidite Desk V0.10.1 — Shopping Lists (Stable)
 
 **V0.10.1 Stable includes the full Shopping Lists manager and the optional dashboard module**, built on the tested V0.9 Stable operations baseline.

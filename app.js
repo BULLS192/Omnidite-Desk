@@ -57,7 +57,7 @@ function sanitizeModule(x,ids){
  if(x.type==='notes')out.config.text=cleanText(c.text,12000);
  if(x.type==='focus'){const duration=Number.isFinite(c.duration)?Math.min(14400,Math.max(60,Math.round(c.duration))):1500;out.config={duration,seconds:Number.isFinite(c.seconds)?Math.min(14400,Math.max(0,Math.round(c.seconds))):duration,until:Number.isFinite(c.until)&&c.until<Date.now()+86400000?c.until:null,sound:['chime','soft','bell','digital','none','custom'].includes(c.sound)?c.sound:'chime',volume:Number.isFinite(c.volume)?Math.min(100,Math.max(0,Math.round(c.volume))):70};}
  if(x.type==='clock')out.config={...out.config,cities:sanitizeCities(c.cities,'clock')};
- if(x.type==='weather')out.config={...out.config,cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily','air'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
+ if(x.type==='weather')out.config={...out.config,cities:sanitizeCities(c.cities,'weather'),view:['now','hourly','daily','air','radar'].includes(c.view)?c.view:'now',selected:cleanText(c.selected||'',90)};
  if(x.type==='agenda')out.config.events=(Array.isArray(c.events)?c.events:[]).slice(0,75).filter(e=>e&&e.title&&e.when).map(e=>({id:cleanText(e.id||uid(),90),title:cleanText(e.title,140),when:cleanText(e.when,25)}));
  if(x.type==='countdown')out.config={target:/^\d{4}-\d{2}-\d{2}$/.test(c.target||'')?c.target:'2026-12-31',label:cleanText(c.label||'Milestone',80)};
  if(x.type==='markets')out.config={markets:[...new Set((Array.isArray(c.markets)?c.markets:['SGX','NYSE','NASDAQ','LSE','HKEX','SSE']).filter(v=>['SGX','NYSE','NASDAQ','LSE','HKEX','SSE'].includes(v)))].slice(0,6)};
@@ -380,7 +380,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   const c=m.config,cs=c.cities||[];
   return `<p class="module-sub">LIVE WEATHER + AIR QUALITY · UPDATED ABOUT EVERY 15 MINUTES</p>
    <div class="weather-city-bar">${cs.map(city=>`<button class="weather-city-pill ${c.selected===city.id?'selected':''}" type="button" data-weather-select="${esc(city.id)}" data-weather-mid="${esc(m.id)}">${esc(city.name)}</button>`).join('')}</div>
-   <div class="weather-tabs">${[['now','Now'],['hourly','Hourly'],['daily','7 days'],['air','Air quality']].map(([v,label])=>`<button type="button" class="${c.view===v?'selected':''}" data-weather-view="${v}" data-weather-mid="${esc(m.id)}">${label}</button>`).join('')}</div>
+   <div class="weather-tabs">${[['now','Now'],['hourly','Hourly'],['daily','7 days'],['air','Air quality'],['radar','Radar']].map(([v,label])=>`<button type="button" class="${c.view===v?'selected':''}" data-weather-view="${v}" data-weather-mid="${esc(m.id)}">${label}</button>`).join('')}</div>
    <div class="weather-content" data-weather-content="${esc(m.id)}"><p class="empty-note">Loading live forecasts…</p></div>
    <div class="weather-city-management">${cityPicker(m)}<div class="weather-remove-list">${cs.map((city,i)=>`<span>${esc(city.name)} ${itemOrderButtons(m.id,i,cs.length)} <button type="button" data-city-remove="${esc(city.id)}" data-city-mid="${esc(m.id)}" aria-label="Remove ${esc(city.name)}">×</button></span>`).join('')}</div></div>`;
  }
@@ -408,7 +408,7 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
  function weatherTile(city,data,mid,i,total,air){
   const w=data.current||{},[symbol,label]=weatherCondition(w.weather_code,!!w.is_day);
   return `<div class="weather-now" data-item-drop-mid="${esc(mid)}" data-item-drop-index="${i}"><div class="weather-main"><div class="weather-symbol">${symbol}</div><div><strong>${esc(city.name)}</strong><div class="weather-reading">${temperature(w.temperature_2m)}</div><div class="weather-desc">${label}</div></div></div>
-   <div class="desk-weather-actions">${itemOrderButtons(mid,i,total)}</div><div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div>${window.DeskAir?.summary(air)||''}</div>`;
+   <div class="desk-weather-actions">${itemOrderButtons(mid,i,total)}<button type="button" class="weather-radar-shortcut" data-weather-radar="${esc(city.id)}" data-weather-mid="${esc(mid)}" aria-label="View weather radar for ${esc(city.name)}">☂ Radar</button></div><div class="weather-stats"><span>Feels like <strong>${temperature(w.apparent_temperature)}</strong></span><span>Humidity <strong>${Number.isFinite(w.relative_humidity_2m)?w.relative_humidity_2m+'%':'—'}</strong></span><span>Wind <strong>${Number.isFinite(w.wind_speed_10m)?Math.round(w.wind_speed_10m)+' km/h':'—'}</strong></span></div>${window.DeskAir?.summary(air)||''}</div>`;
  }
  function weatherForecast(data,view){
   if(view==='hourly'){
@@ -426,6 +426,21 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
    return `<div class="forecast-row"><span>${esc(readable)}</span><span title="${esc(label)}">${sym}</span><strong>${temperature(d.temperature_2m_max?.[i])} / ${temperature(d.temperature_2m_min?.[i])}</strong><small>☂ ${Number.isFinite(d.precipitation_probability_max?.[i])?d.precipitation_probability_max[i]+'%':'—'}</small></div>`;
   }).join('')}</div>`;
  }
+ function weatherRadar(city){
+  // Only saved and validated city coordinates reach the provider. No embedded map loads outside the Radar tab.
+  const latitude=Number(city.latitude),longitude=Number(city.longitude);
+  if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||Math.abs(latitude)>90||Math.abs(longitude)>180)
+   return '<p class="weather-error">Radar coordinates are unavailable for this city.</p>';
+  const url=new URL('https://embed.windy.com/embed2.html');
+  for(const [key,value] of Object.entries({lat:latitude.toFixed(3),lon:longitude.toFixed(3),zoom:'8',level:'surface',overlay:'radar',product:'radar',type:'map',location:'coordinates',marker:'true',calendar:'now',radarRange:'-1'}))
+   url.searchParams.set(key,value);
+  const radarUrl=esc(url.toString());
+  return `<div class="weather-radar">
+   <div class="weather-forecast-head weather-radar-heading"><strong>☂ ${esc(city.name)} · Rain radar</strong><a class="weather-radar-open" href="${radarUrl}" target="_blank" rel="noopener noreferrer">Open larger map ↗</a></div>
+   <div class="weather-radar-frame"><iframe title="Weather radar map for ${esc(city.name)}" src="${radarUrl}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+   <p class="weather-radar-note">Radar imagery and playback provided by <a href="https://www.windy.com/" target="_blank" rel="noopener noreferrer">Windy</a>. Use the map controls to play available history; embedded playback does not start automatically. Coverage and image freshness vary by region. This is observed precipitation, not a forecast. If the map does not load, use “Open larger map.”</p>
+  </div>`;
+ }
  async function refreshWeather(){
   for(const m of page().modules.filter(x=>x.type==='weather')){
    const panel=document.querySelector(`[data-weather-content="${CSS.escape(m.id)}"]`);if(!panel)continue;
@@ -434,7 +449,9 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
    const selected=cities.find(x=>x.id===m.config.selected)||cities[0];
    const view=m.config.view||'now';
    try{
-    if(view==='now'){
+    if(view==='radar'){
+     panel.innerHTML=weatherRadar(selected);
+    }else if(view==='now'){
      const all=await Promise.all(cities.map(async city=>{
       const [weather,air]=await Promise.allSettled([weatherRequest(city),window.DeskAir.load(city)]);
       return {weather:weather.status==='fulfilled'?weather.value:null,air:air.status==='fulfilled'?air.value:null};
@@ -457,11 +474,12 @@ const quotes=[['The secret of getting ahead is getting started.','Mark Twain'],[
   }
  }
  document.addEventListener('click',e=>{
-  const tab=e.target.closest('[data-weather-view]'),city=e.target.closest('[data-weather-select]');
+  const tab=e.target.closest('[data-weather-view]'),city=e.target.closest('[data-weather-select]'),radar=e.target.closest('[data-weather-radar]');
   if(tab){const m=moduleFor(tab.dataset.weatherMid);if(m){m.config.view=tab.dataset.weatherView;change();}}
   if(city){const m=moduleFor(city.dataset.weatherMid);if(m){m.config.selected=city.dataset.weatherSelect;change();}}
+  if(radar){const m=moduleFor(radar.dataset.weatherMid);if(m){m.config.selected=radar.dataset.weatherRadar;m.config.view='radar';change();}}
  });
- setInterval(()=>{if(page().modules.some(m=>m.type==='weather'))refreshWeather();},15*60*1000);
+ setInterval(()=>{if(page().modules.some(m=>m.type==='weather'&&m.config.view!=='radar'))refreshWeather();},15*60*1000);
 
 
  function siteFavicon(url){
